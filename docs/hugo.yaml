@@ -10,7 +10,7 @@ params:
   author: Jeison Souza
   disableSpecial1stPost: false
   keywords: ["Blog", "Développement", "INF-1410", "Projet", "Jeison Souza"]
-  
+
   # Aparência e Comportamento
   defaultTheme: dark
 
@@ -39,10 +39,10 @@ menus:
       url: "/posts/"
       weight: 1
 
-    - identifier: "todo"
-      name: "ToDo"
-      url: "/todo/"
-      weight: 99
+    # - identifier: "todo"
+    #   name: "ToDo"
+    #   url: "/todo/"
+    #   weight: 99
 
     - identifier: "tags"
       name: "Tags"
