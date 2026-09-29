@@ -32,15 +32,15 @@
             result.Should().Be(a + b);
         }
 
-        //[Theory]
-        //[AutoData]
-        //public void TestFailWithAutoFixture(int a, int b)
-        //{
-        //    // Arrange & Act (O AutoFixture gera 'a' e 'b' com valores aleatórios válidos)
-        //    int result = a + b;
+        [Theory]
+        [AutoData]
+        public void TestFailWithAutoFixture(int a, int b)
+        {
+            // Arrange & Act (O AutoFixture gera 'a' e 'b' com valores aleatórios válidos)
+            int result = a + b;
 
-        //    // Assert
-        //    result.Should().Be(a - b);
-        //}
+            // Assert
+            result.Should().Be(a - b);
+        }
     }
 }
