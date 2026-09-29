@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  inf-1410:
+    image: mcr.microsoft.com/dotnet/aspnet:10.0
+    container_name: inf-1410
+    volumes:
+      - /volume1/docker/INF-1410/App:/app
+    working_dir: /app
+    command: ["dotnet", "HelloWorld.dll"]
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
