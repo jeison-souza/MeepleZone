@@ -1,5 +1,9 @@
 ---
 title: "Notes et To-Do List"
+menus:
+  main:
+    name: "ToDo"
+    weight: 99
 date: 2026-09-18
 draft: true
 hidden: false
