@@ -19,7 +19,6 @@ jobs:
     - name: Récupérer le dépôt (Checkout)
       uses: actions/checkout@v4
 
-    # Verifica se houve alterações na pasta 'code source'
     - name: Vérifier les fichiers modifiés
       id: changes
       uses: dorny/paths-filter@v3
@@ -34,14 +33,40 @@ jobs:
       with:
         dotnet-version: '10.0.x'
 
+    - name: Détecter les solutions
+      if: steps.changes.outputs.src == 'true'
+      run: |
+        find . \( -name '*.slnx' -o -name '*.sln' \) -not -path '*/.vs/*' | sort > "$RUNNER_TEMP/solutions.txt"
+        echo "Solutions détectées :"
+        cat "$RUNNER_TEMP/solutions.txt"
+        if [ ! -s "$RUNNER_TEMP/solutions.txt" ]; then
+          echo "::error::Aucune solution trouvée sous 'code source/'"
+          exit 1
+        fi
+
     - name: Restaurer les dépendances
       if: steps.changes.outputs.src == 'true'
-      run: dotnet restore
+      run: |
+        while read -r sln; do
+          echo "::group::restore $sln"
+          dotnet restore "$sln"
+          echo "::endgroup::"
+        done < "$RUNNER_TEMP/solutions.txt"
 
-    - name: Compiler la solution
+    - name: Compiler les solutions
       if: steps.changes.outputs.src == 'true'
-      run: dotnet build --no-restore --configuration Release
+      run: |
+        while read -r sln; do
+          echo "::group::build $sln"
+          dotnet build "$sln" --no-restore --configuration Release
+          echo "::endgroup::"
+        done < "$RUNNER_TEMP/solutions.txt"
 
     - name: Exécuter les tests unitaires
       if: steps.changes.outputs.src == 'true'
-      run: dotnet test --no-build --configuration Release --verbosity normal
+      run: |
+        while read -r sln; do
+          echo "::group::test $sln"
+          dotnet test "$sln" --no-build --configuration Release --verbosity normal
+          echo "::endgroup::"
+        done < "$RUNNER_TEMP/solutions.txt"

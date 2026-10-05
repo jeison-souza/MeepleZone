@@ -1,4 +1,4 @@
-# MeepleZone 🎲 (Nom à confirmer)
+# MeepleZone 🎲
 
 Application web de gestion de collection de jeux de société et de mise en réseau sociale pour les passionnés de ludisme. Projet développé dans le cadre du cours INF1410 (Génie logiciel).
 
@@ -14,9 +14,9 @@ Retrouvez le suivi des notes de développement, les choix d'architecture et l'av
 
 En tant que passionné de jeux de société, je me retrouve souvent confronté au même défi : ma collection grandit au fil des acquisitions, mais gérer ce petit inventaire personnel devient rapidement un véritable casse-tête. Entre la difficulté de trier mes boîtes selon des critères précis (comme les mécaniques, la durée ou le nombre de joueurs), l'impossibilité de savoir d'un coup d'œil ce que possèdent mes amis sans leur demander un inventaire manuel, et la complexité de synchroniser nos agendas pour organiser une soirée ludique, les frictions s'accumulent. C’est précisément pour répondre à ce besoin d'organisation et de partage que je développe **MeepleZone**.
 
-L'idée derrière cette application est de me simplifier la vie en centralisant tout ce dont un joueur a besoin sur une seule plateforme intuitive. Le cœur du projet repose sur un **catalogue personnel** qui me permet d'enregistrer, de filtrer et de classer toute ma ludothèque selon mes propres critères, avec à terme des statistiques de jeu détaillées pour suivre mes parties. Mais l'expérience va plus loin grâce à un **réseau social intégré** : je peux me connecter avec mes amis, explorer leurs collections (selon leurs préférences de confidentialité) pour découvrir de nouveaux titres ou imaginer des prêts croisés, et utiliser un **planificateur de soirées intelligent** pour coordonner nos disponibilités en un clin d'œil, éliminant ainsi les interminables discussions de groupe. 
+L'idée derrière cette application est de me simplifier la vie en centralisant tout ce dont un joueur a besoin sur une seule plateforme intuitive. Le cœur du projet repose sur un **catalogue personnel** qui me permet d'enregistrer, de filtrer et de classer toute la ludothèque selon certaines critères, comme par exemple, par nombre de joueurs, durée d'une partie. Mais l'expérience va plus loin grâce à un **réseau social intégré** : on peux me connecter avec nos amis, explorer leurs collections (selon leurs préférences de confidentialité) pour découvrir de nouveaux titres ou imaginer des prêts croisés, et utiliser un **planificateur de soirées intelligent** pour coordonner nos disponibilités en un clin d'œil, éliminant ainsi les interminables discussions de groupe. 
 
-En somme, **MeepleZone** transforme la gestion de mes loisirs en une activité aussi fluide et agréable que d'ouvrir une boîte de jeu un vendredi soir.
+En somme, **MeepleZone** transforme la gestion de nos loisirs en une activité aussi fluide et agréable que d'ouvrir une boîte de jeu un vendredi soir.
 
 ---
 

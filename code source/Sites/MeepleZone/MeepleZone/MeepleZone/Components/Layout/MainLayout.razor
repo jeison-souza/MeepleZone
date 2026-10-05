@@ -1,0 +1,56 @@
+﻿@inherits LayoutComponentBase
+<MudThemeProvider Theme="@MeepleZoneTheme" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+@code {
+    // Identité visuelle MeepleZone : orange #D67C2F, Galaxie Deep #101026, fond crème, Open Sans.
+    MudTheme MeepleZoneTheme = new MudTheme()
+    {
+        PaletteLight = new PaletteLight()
+        {
+            Primary = "#D67C2F",
+            PrimaryContrastText = "#FFFFFF",
+            Secondary = "#101026",
+            SecondaryContrastText = "#F4E9D4",
+            Background = "#FBF5E9",
+            Surface = "#FFFFFF",
+            AppbarBackground = "#101026",
+            AppbarText = "#F4E9D4",
+            DrawerBackground = "#101026",
+            DrawerText = "#F4E9D4",
+            TextPrimary = "#101026",
+            TextSecondary = "#4A4A63"
+        },
+        Typography = new Typography()
+        {
+            Default = new DefaultTypography()
+            {
+                FontFamily = new[] { "Open Sans", "Helvetica", "Arial", "sans-serif" }
+            }
+        }
+    };
+}
+
+<div class="page">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <main>
+        <div class="top-row px-4">
+            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">À propos</a>
+        </div>
+
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>
+
+<div id="blazor-error-ui" data-nosnippet>
+    Une erreur inattendue est survenue.
+    <a href="." class="reload">Recharger</a>
+    <span class="dismiss">🗙</span>
+</div>

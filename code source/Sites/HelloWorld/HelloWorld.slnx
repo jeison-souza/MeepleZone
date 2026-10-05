@@ -1,9 +1,0 @@
-<Solution>
-  <Folder Name="/Solution Items/">
-    <File Path="docker-compose.yml" />
-    <File Path="Dockerfile" />
-  </Folder>
-  <Project Path="HelloWorld.Tests/HelloWorld.Tests.csproj" />
-  <Project Path="HelloWorld/HelloWorld.Client/HelloWorld.Client.csproj" />
-  <Project Path="HelloWorld/HelloWorld/HelloWorld.csproj" />
-</Solution>

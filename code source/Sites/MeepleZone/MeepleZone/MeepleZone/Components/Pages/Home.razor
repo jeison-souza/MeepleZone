@@ -1,0 +1,83 @@
+﻿@page "/"
+
+<PageTitle>MeepleZone - Accueil</PageTitle>
+
+<!-- Identité de marque : logo original sur fond clair -->
+<section class="mz-brand">
+    <img src="images/logo.svg" alt="" class="mz-brand-logo" />
+    <h1 class="mz-wordmark" aria-label="MeepleZone"><span class="mz-wordmark-meeple">Meeple</span><span class="mz-wordmark-zone">Zone</span></h1>
+</section>
+
+<!-- Section Hero (Bannière principale) -->
+<MudContainer MaxWidth="MaxWidth.False" Class="pa-0">
+    <MudPaper Elevation="0" Class="mz-hero pa-12 d-flex flex-column align-center justify-center text-center">
+        <MudText Typo="Typo.h2" GutterBottom="true" Class="mz-slogan">
+            ORGANISER. PARTAGER. <span class="mz-slogan-accent">JOUER.</span>
+        </MudText>
+
+        <MudText Typo="Typo.h6" Class="mb-6 mz-hero-text">
+            Répertoriez votre ludothèque et découvrez celle de vos amis pour trouver votre prochain jeu.
+        </MudText>
+
+        <!-- Boutons d'Action -->
+        <MudStack Row="true" Spacing="4" Class="mt-4" Wrap="Wrap.Wrap" Justify="Justify.Center">
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       Size="Size.Large"
+                       Href="/catalogue"
+                       StartIcon="@Icons.Material.Filled.SportsEsports">
+                Explorer le Catalogue
+            </MudButton>
+
+            <MudButton Variant="Variant.Outlined"
+                       Color="Color.Inherit"
+                       Size="Size.Large"
+                       Href="/register"
+                       StartIcon="@Icons.Material.Filled.PersonAdd"
+                       Style="border-color: rgba(255,255,255,0.5);">
+                Créer un Compte
+            </MudButton>
+        </MudStack>
+    </MudPaper>
+</MudContainer>
+
+<!-- Section Secondaire : les trois axes du projet -->
+<MudContainer MaxWidth="MaxWidth.Large" Class="my-12">
+    <MudGrid Spacing="4">
+        <MudItem xs="12" md="4">
+            <MudCard Elevation="2" Class="pa-4 text-center">
+                <MudCardContent>
+                    <MudIcon Icon="@Icons.Material.Filled.LibraryBooks" Color="Color.Primary" Size="Size.Large" Class="mb-2" />
+                    <MudText Typo="Typo.h6">Catalogue personnel</MudText>
+                    <MudText Typo="Typo.body2" Class="mt-2">
+                        Enregistrez, filtrez et classez votre ludothèque selon vos propres critères : mécaniques, nombre de joueurs, durée ou complexité.
+                    </MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" md="4">
+            <MudCard Elevation="2" Class="pa-4 text-center">
+                <MudCardContent>
+                    <MudIcon Icon="@Icons.Material.Filled.Groups" Color="Color.Primary" Size="Size.Large" Class="mb-2" />
+                    <MudText Typo="Typo.h6">Amis et collections</MudText>
+                    <MudText Typo="Typo.body2" Class="mt-2">
+                        Connectez-vous avec vos amis et consultez leurs ludothèques, selon leurs préférences de confidentialité, pour découvrir de nouveaux jeux.
+                    </MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" md="4">
+            <MudCard Elevation="2" Class="pa-4 text-center">
+                <MudCardContent>
+                    <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Color="Color.Primary" Size="Size.Large" Class="mb-2" />
+                    <MudText Typo="Typo.h6">Statistiques de jeu</MudText>
+                    <MudText Typo="Typo.body2" Class="mt-2">
+                        Suivez l'historique et la fréquence de vos parties.
+                    </MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
