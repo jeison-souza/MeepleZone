@@ -1,0 +1,12 @@
+# Résultats de compilation et fichiers de l'IDE (chemins Windows, inutiles dans l'image)
+**/bin
+**/obj
+**/.vs
+**/*.user
+TestResults
+
+# Non nécessaires à l'image de production
+MeepleZone.Test
+Dockerfile
+docker-compose*.yml
+.dockerignore
