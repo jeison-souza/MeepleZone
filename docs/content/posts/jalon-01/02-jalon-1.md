@@ -11,17 +11,19 @@ Notre application s'adresse à tous les passionnés et amateurs de jeux de soci�
 
 ### Quel problème résolvez-vous ?
 Pour ce MVP (Produit Minimum Viable), nous répondons aux besoins fondamentaux suivants :
-* **Cataloguer la collection :** Permettre à chaque utilisateur de répertorier facilement l'ensemble de ses jeux de société.
-* **Connexion sociale :** Permettre à un usager de s'ajouter en ami avec d'autres utilisateurs.
-* **Partage de collections :** Permettre de consulter la collection de ses amis pour découvrir de nouveaux jeux.
+* **Cataloguer la collection :** Permettre à chaque utilisateur de répertorier facilement l'ensemble de ses jeux de société par différents critères.
 
 *Objectifs futurs / Si possible :*
+
+* Connexion sociale : Permettre à un usager de s'ajouter en ami avec d'autres utilisateurs.
+* Partage de collections : Permettre de consulter la collection de ses amis pour découvrir de nouveaux jeux.
 * Organiser un calendrier de disponibilité personnelle.
 * Faciliter l'organisation des soirées de jeux en croisant directement les disponibilités des invités.
 
 ### Quels sont vos premiers choix techniques ?
 * **Langage :** C# (.NET 10)
 * **Framework :** Blazor Web App
+* **Base de données:** MySQL MariaDB
 * **Hébergement & Déploiement :** Auto-hébergement dans un HomeLab personnel via Docker, avec une pipeline CI/CD automatisée via GitHub Actions.
 
 ### Quelles alternatives avez-vous considérées ?
@@ -31,5 +33,5 @@ Pour ce MVP (Produit Minimum Viable), nous répondons aux besoins fondamentaux s
 
 ### Qu’est-ce qui est encore incertain à ce stade ?
 * **Le Front-End :** Définir la meilleure approche pour l'interface utilisateur sans y passer un temps excessif.
-* **La faisibilité dans le temps restant :** Valider que toutes les fonctionnalités prévues pour le MVP pourront être livrées sereinement d'ici novembre.
+* **La faisibilité dans le temps restant :** Valider que toutes les fonctionnalités prévues pour le MVP pourront être livrées d'ici novembre.
 - **Le nom du projet :** Encore en phase de réflexion pour trouver une identité captivante, facile à mémoriser et dont le nom de domaine est entièrement libre.

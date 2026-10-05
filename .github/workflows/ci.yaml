@@ -7,30 +7,41 @@ on:
       - 'code source/**'
   pull_request:
     branches: [ "main" ]
-    paths:
-      - 'code source/**'
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: 'code source/Sites/HelloWorld'
+        working-directory: 'code source/'
 
     steps:
     - name: Récupérer le dépôt (Checkout)
       uses: actions/checkout@v4
 
+    # Verifica se houve alterações na pasta 'code source'
+    - name: Vérifier les fichiers modifiés
+      id: changes
+      uses: dorny/paths-filter@v3
+      with:
+        filters: |
+          src:
+            - 'code source/**'
+
     - name: Configurer le SDK .NET
+      if: steps.changes.outputs.src == 'true'
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '10.0.x'
 
     - name: Restaurer les dépendances
+      if: steps.changes.outputs.src == 'true'
       run: dotnet restore
 
     - name: Compiler la solution
+      if: steps.changes.outputs.src == 'true'
       run: dotnet build --no-restore --configuration Release
 
     - name: Exécuter les tests unitaires
+      if: steps.changes.outputs.src == 'true'
       run: dotnet test --no-build --configuration Release --verbosity normal
