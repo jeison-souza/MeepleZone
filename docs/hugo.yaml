@@ -1,35 +1,35 @@
 baseURL: "https://jeison-souza.github.io/MeepleZone/"
 locale: fr-ca
 defaultContentLanguage: "fr"
-title: Projet INF-1410 - Jeison Souza
+title: MeepleZone
 theme: papermod
 enableRobotsTXT: true
 
 params:
-  description: Documentation des études et du développement du projet pour le cours INF-1410.
+  description: Journal de bord technique de MeepleZone, une application web de gestion de collection de jeux de société réalisée dans le cadre du cours INF-1410.
   author: Jeison Souza
   disableSpecial1stPost: false
   keywords: ["Blog", "Développement", "INF-1410", "Projet", "Jeison Souza"]
 
-  # Aparência e Comportamento
+  # Apparence et comportement
   defaultTheme: dark
 
-  # Recursos de Leitura e Navegação
+  # Fonctions de lecture et de navigation
   showReadingTime: true
   ShowShareButtons: false
   showPostNavLinks: true
   showBreadcrumbs: true
   showCodeCopyButton: true
 
-  # Ativa o bloco de introdução na Home que exibe os socialIcons
+  # Active le bloc d'introduction de la page d'accueil, qui affiche aussi les icônes sociales
   homeInfoParams:
-    Title: ""
-    Content: "Bienvenue sur le journal de bord technique du projet. Retrouvez ci-dessous l'historique des notes et des décisions d'architecture."
+    Title: "Le journal de bord de MeepleZone 🎲"
+    Content: "Organiser, partager, jouer : voici les coulisses de **MeepleZone**, une application web pour gérer sa ludothèque, découvrir celle de ses amis et planifier des soirées de jeux. Ce journal suit le projet pas à pas : idées, choix techniques, décisions d'architecture et défis rencontrés en cours de route."
 
-  # Redes Sociais (Sintaxe correta com duplo colchete)
+  # Réseaux sociaux (liste d'icônes)
   socialIcons:
     - name: "github"
-      title: "View Source on Github"
+      title: "Voir le code source sur GitHub"
       url: "https://github.com/jeison-souza/MeepleZone"
 
 menus:
