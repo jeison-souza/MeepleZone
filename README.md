@@ -6,7 +6,7 @@ Application web de gestion de collection de jeux de société et de mise en rés
 
 ## 📖 Journal de bord (Blog technique)
 
-Retrouvez le suivi des notes de développement, les choix d'architecture et l'avancement du projet sur mon [blogue technique hébergé sur GitHub Pages](https://jeison-souza.github.io/inf1410-projet/).
+Retrouvez le suivi des notes de développement, les choix d'architecture et l'avancement du projet sur mon [blogue technique hébergé sur GitHub Pages](https://jeison-souza.github.io/MeepleZone/).
 
 ---
 
@@ -26,13 +26,16 @@ Pour éliminer ces obstacles et transformer la gestion des loisirs en une expér
 
 * **Catalogue personnel de jeux (MVP - Core) :** 
   * *Le problème :* Il est difficile de trier, filtrer et classer rapidement ses boîtes selon des critères spécifiques (mécaniques, nombre de joueurs, durée ou complexité) lorsque la collection grandit.
-  * *La solution :* Un espace unifié pour enregistrer et organiser toute sa ludothèque selon ses propres attributs, complété par des statistiques de jeu détaillées pour suivre l'historique et la fréquence des parties.
+  * *La solution :* Un espace unifié pour enregistrer et organiser toute sa ludothèque selon ses propres attributs.
 * **Réseau social et partage d'amis (SH - Social) :** 
   * *Le problème :* Les collections restent isolées, rendant impossible la découverte des jeux détenus par ses proches sans passer par des inventaires manuels et fastidieux.
   * *La solution :* Une dimension collaborative permettant de se connecter avec ses cercles d'amis, de consulter leurs ludothèques (dans le strict respect des paramètres de confidentialité) pour stimuler les découvertes, faciliter les prêts croisés et simplifier le choix des jeux lors de l'organisation des soirées entre amis.
 * **Planificateur de soirées de jeux (CH - Calendrier) :** 
   * *Le problème :* Organiser une soirée ludique se solde souvent par des discussions interminables sur les applications de messagerie pour concilier les agendas de tout le monde.
   * *La solution :* Un module de calendrier intelligent et intégré qui permet de synchroniser les disponibilités du groupe pour planifier la prochaine table de jeu idéale sans efforts.
+* **Statistiques de jeu (CH - Statistiques) :** 
+  * *Le problème :* Sans historique, il est difficile de savoir quels jeux de la ludothèque sont réellement joués et à quelle fréquence.
+  * *La solution :* Un suivi de l'historique et de la fréquence des parties pour chaque jeu.
 
 En somme, **MeepleZone** rassemble tout ce dont un joueur a besoin pour que le partage et l'organisation soient aussi agréables que de s'installer autour d'une table pour lancer une nouvelle partie.
 
@@ -42,4 +45,4 @@ En somme, **MeepleZone** rassemble tout ce dont un joueur a besoin pour que le p
 * **Frontend & Backend :** Blazor Web App (.NET 10) avec composants UI MudBlazor.
 * **Architecture :** Solution full-stack intégrée (Server/WebAssembly) organisée en couches.
 * **Tests :** Tests unitaires automatisés (TDD).
-* **Déploiement :** Conteneurisation Docker, CI/CD via GitHub Actions.
+* **Déploiement :** Conteneurisation Docker, CI/CD via GitHub Actions.

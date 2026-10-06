@@ -1,4 +1,4 @@
-baseURL: "https://jeison-souza.github.io/inf1410-projet/"
+baseURL: "https://jeison-souza.github.io/MeepleZone/"
 locale: fr-ca
 defaultContentLanguage: "fr"
 title: Projet INF-1410 - Jeison Souza
@@ -30,7 +30,7 @@ params:
   socialIcons:
     - name: "github"
       title: "View Source on Github"
-      url: "https://github.com/jeison-souza/inf1410-projet"
+      url: "https://github.com/jeison-souza/MeepleZone"
 
 menus:
   main:
