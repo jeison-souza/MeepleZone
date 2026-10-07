@@ -4,6 +4,11 @@ services:
     container_name: MeepleZone
     volumes:
       - ${DOCKERDIR:?Définir DOCKERDIR dans .env}/MeepleZone/App:/app
+    environment:
+      - Authentication__Microsoft__ClientId=${MICROSOFT_CLIENT_ID:?Définir MICROSOFT_CLIENT_ID dans .env}
+      - Authentication__Microsoft__ClientSecret=${MICROSOFT_CLIENT_SECRET:?Définir MICROSOFT_CLIENT_SECRET dans .env}
+      - Authentication__Google__ClientId=${GOOGLE_CLIENT_ID:-}
+      - Authentication__Google__ClientSecret=${GOOGLE_CLIENT_SECRET:-}
     working_dir: /app
     command: ["dotnet", "MeepleZone.dll"]
     ports:
