@@ -3,7 +3,7 @@ services:
     image: mcr.microsoft.com/dotnet/aspnet:10.0
     container_name: MeepleZone
     volumes:
-      - /volume1/docker/MeepleZone/App:/app
+      - ${DOCKERDIR:?Définir DOCKERDIR dans .env}/MeepleZone/App:/app
     working_dir: /app
     command: ["dotnet", "MeepleZone.dll"]
     ports:
