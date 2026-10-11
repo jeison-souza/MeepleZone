@@ -31,7 +31,7 @@ hidden: false
 - [ ] Volet social (MVP) : amis, partage de collections (#26, #27, #36)
 - [ ] Déploiement continu à chaque push sur `main`
 - [ ] Application accessible en ligne pour la correction
-- [ ] Should : prêts croisés, choix des jeux pour une soirée
+- [ ] Should : choix des jeux pour une soirée
 - [ ] Could : planificateur de soirées, statistiques
 
 ## 📅 Entrevues
