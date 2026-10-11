@@ -27,7 +27,6 @@ La remarque de l'enseignant est que le catalogue seul ne suffit pas à faire une
 
 **Should have**
 
-* Prêts croisés entre amis.
 * Choix des jeux pour une soirée (#45).
 
 **Could have**
@@ -37,7 +36,7 @@ La remarque de l'enseignant est que le catalogue seul ne suffit pas à faire une
 
 ### Pourquoi ne pas monter aussi les « Should have »
 
-Le temps disponible est limité et le MVP s'est déjà élargi. Remonter aussi les prêts et le choix des jeux mettrait en péril la qualité du catalogue et du volet social, qui sont maintenant le noyau. Ces deux éléments restent donc « Should have » et seront abordés seulement si le noyau est solide.
+Le temps disponible est limité et le MVP s'est déjà élargi. Remonter aussi le choix des jeux mettrait en péril la qualité du catalogue et du volet social, qui sont maintenant le noyau. Ces deux éléments restent donc « Should have » et seront abordés seulement si le noyau est solide.
 
 ## 3. Conséquences sur le calendrier
 

@@ -5,7 +5,7 @@
 
 ## Contexte
 
-MeepleZone doit conserver des données relationnelles : utilisateurs (voir l'[ADR 0001](0001-authentification.md)), catalogue de jeux, collections personnelles, relations d'amitié et, plus tard, soirées et prêts. Ces données ont des liens nets entre elles (un utilisateur possède plusieurs jeux, une amitié relie deux utilisateurs), ce qui oriente vers une base de données relationnelle.
+MeepleZone doit conserver des données relationnelles : utilisateurs, catalogue de jeux, collections personnelles, relations d'amitié et, plus tard, les soirées. Ces données ont des liens nets entre elles (un utilisateur possède plusieurs jeux, une amitié relie deux utilisateurs), ce qui oriente vers une base de données relationnelle.
 
 L'application est écrite en C# sous .NET 10. L'accès aux données passera par un connecteur compatible avec cette version; la qualité et la maintenance de ce connecteur sont le critère principal du choix. Le serveur de base de données doit aussi pouvoir tourner dans l'environnement d'hébergement (conteneurs Docker).
 

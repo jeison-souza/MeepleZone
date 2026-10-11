@@ -27,7 +27,6 @@ Ces fonctionnalités apportent beaucoup de valeur, mais l'application reste util
 
 * **Connexion sociale :** s'ajouter en ami avec d'autres utilisateurs.
 * **Consultation de la ludothèque d'un ami,** dans le respect de ses préférences de confidentialité, pour découvrir de nouveaux jeux.
-* **Prêts entre amis :** faciliter les prêts croisés de jeux.
 * **Choix des jeux pour une soirée :** simplifier la sélection des jeux lors de l'organisation d'une soirée entre amis.
 
 ### Could have : souhaitable (« nice to have »)
