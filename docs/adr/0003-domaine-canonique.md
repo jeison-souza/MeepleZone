@@ -13,12 +13,12 @@ Il faut décider si les deux domaines servent le site ou si un seul est l'adress
 
 | Option | Avantages | Inconvénients |
 |---|---|---|
-| A. Un domaine canonique, l'autre redirige (301) | Un seul hôte à déclarer chez les fournisseurs OAuth; une seule session; pas de contenu dupliqué | Une règle de redirection à maintenir; un domaine reste « secondaire » |
+| A. Un domaine canonique, l'autre redirige | Un seul hôte à déclarer chez les fournisseurs OAuth; une seule session; pas de contenu dupliqué | Une règle de redirection à maintenir; un domaine reste « secondaire » |
 | B. Les deux domaines servent le site | Aucune redirection; les deux adresses fonctionnent telles quelles | URL de redirection OAuth à doubler; sessions distinctes selon le domaine d'arrivée; plus de certificats à gérer; contenu dupliqué |
 
 ## Décision
 
-Option A : `meeplezone.ca` est le domaine canonique, et `meeplezone.com` redirige vers celui-ci par une redirection 301 (règle de redirection Cloudflare).
+Option A : `meeplezone.ca` est le domaine canonique, et `meeplezone.com` redirige vers celui-ci (règle de redirection Cloudflare). La redirection est d'abord temporaire (302), pour qu'aucun navigateur ne garde en mémoire une destination qui pourrait encore changer; elle devient permanente (301) une fois le choix du domaine canonique jugé définitif.
 
 Le choix du `.ca` s'explique par la langue : le site est en français et s'adresse d'abord à un public québécois et canadien. Le `.com` reste utile comme adresse de repli que les gens saisissent par réflexe.
 
