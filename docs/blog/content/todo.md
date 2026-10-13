@@ -12,13 +12,13 @@ hidden: false
 ## 📌 Planification (périmètre révisé)
 
 ### Jalon 2 : Architecture et données (02/11)
-- [ ] Choisir la base de données (MariaDB ou PostgreSQL) selon le connecteur .NET 10
-- [ ] Schéma de données commenté : utilisateurs, amitiés, visibilité des collections, jeux
-- [ ] Source de données des jeux (saisie manuelle ou source externe)
-- [ ] Authentification déléguée (Google et Microsoft)
-- [ ] Rédiger 2 à 3 ADR dans `docs/adr/`
-- [ ] Acheter le domaine et configurer Cloudflare
-- [ ] Renommer `ci.yaml` en `ci.yml` et valider l'exécution sur GitHub Actions
+- [x] Choisir la base de données : PostgreSQL (ADR 0005)
+- [ ] Schéma de données commenté, dans `docs/schema/` : version 0.1 faite (utilisateurs, connexions externes, annexes); restent les jeux, la collection, les amitiés et la visibilité
+- [x] Source de données des jeux : base locale alimentée par les utilisateurs; BoardGameGeek hors du produit minimal viable
+- [ ] Authentification déléguée (Google et Microsoft) : décision prise (ADR 0001), mise en œuvre à faire
+- [x] Rédiger 2 à 3 ADR dans `docs/adr/` (ADR 0001 à 0005 acceptés, 0006 en rédaction)
+- [x] Acheter le domaine et configurer Cloudflare
+- [ ] Valider l'exécution du CI sur GitHub Actions (le nom `ci.yaml` est conservé)
 - [ ] Billet de blogue du Jalon 2
 - [ ] Réévaluer le placement du volet social à la fin du jalon
 
