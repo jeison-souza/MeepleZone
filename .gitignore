@@ -62,4 +62,4 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
-/docs/public/
+/docs/blog/public/

@@ -6,7 +6,7 @@ on:
   push:
     branches: ["main"]
     paths:
-      - 'docs/**'
+      - 'docs/blog/**'
       - '.github/workflows/hugo.yaml'
       
   # Allows you to run this workflow manually from the Actions tab
@@ -57,13 +57,13 @@ jobs:
           HUGO_ENVIRONMENT: production
         run: |
           hugo \
-            -s docs \
+            -s docs/blog \
             --minify \
             --baseURL "${{ steps.pages.outputs.base_url }}/"
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./docs/public
+          path: ./docs/blog/public
 
   # Deployment job
   deploy:
