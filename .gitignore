@@ -63,3 +63,5 @@ CodeCoverage/
 TestResult.xml
 nunit-*.xml
 /docs/blog/public/
+/docs/blog/resources/_gen/
+/docs/blog/.hugo_build.lock
