@@ -13,10 +13,10 @@ hidden: false
 
 ### Jalon 2 : Architecture et données (02/11)
 - [x] Choisir la base de données : PostgreSQL (ADR 0005)
-- [ ] Schéma de données commenté, dans `docs/schema/` : version 0.1 faite (utilisateurs, connexions externes, annexes); restent les jeux, la collection, les amitiés et la visibilité
+- [x] Schéma de données commenté, dans `docs/schema/` : version 0.3 publiée, avec toutes les tables du produit minimal viable (comptes, jeux, collection, amitiés)
 - [x] Source de données des jeux : base locale alimentée par les utilisateurs; BoardGameGeek hors du produit minimal viable
 - [ ] Authentification déléguée (Google et Microsoft) : décision prise (ADR 0001), mise en œuvre à faire
-- [x] Rédiger 2 à 3 ADR dans `docs/adr/` (ADR 0001 à 0005 acceptés, 0006 en rédaction)
+- [x] Rédiger 2 à 3 ADR dans `docs/adr/` (ADR 0001 à 0006 acceptés; l'ADR 0004 a été amendé le 14/10)
 - [x] Acheter le domaine et configurer Cloudflare
 - [ ] Valider l'exécution du CI sur GitHub Actions (le nom `ci.yaml` est conservé)
 - [ ] Billet de blogue du Jalon 2
