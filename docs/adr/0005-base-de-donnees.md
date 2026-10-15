@@ -31,7 +31,7 @@ MariaDB est un dérivé de MySQL dont les fonctionnalités ont divergé : ce qui
 | Licence et gouvernance | GPL, propriété d'Oracle | GPL, fondation MariaDB | Licence PostgreSQL (permissive), communautaire |
 | Types et fonctions | JSON natif; types plus classiques | JSON stocké comme texte validé; types plus classiques | Types riches (JSONB, tableaux, plages), index avancés, extensions, recherche plein texte |
 | Modifications de schéma (migrations) | Non transactionnelles : une migration interrompue peut laisser le schéma à moitié modifié | Idem MySQL | Transactionnelles : une migration en échec est annulée |
-| Comparaison de texte | Insensible à la casse par défaut | Idem MySQL | Sensible à la casse par défaut. Pas de réglage au niveau de la base : on applique une collation insensible à la casse par colonne, ou à toutes les colonnes de texte par une convention d'EF Core (nécessaire pour l'unicité des courriels, voir l'[ADR 0004](0004-liaison-comptes-fournisseurs.md)) |
+| Comparaison de texte | Insensible à la casse par défaut | Idem MySQL | Sensible à la casse par défaut. Pas de réglage au niveau de la base : on applique une collation insensible à la casse colonne par colonne (nécessaire pour l'unicité des courriels, voir l'[ADR 0004](0004-liaison-comptes-fournisseurs.md)) |
 | Croissance | Réplicas de lecture et service géré disponibles | Idem | Idem; meilleur pour les requêtes complexes |
 | Avantages pour le projet | Connecteur officiel; simple; très répandu | Simple; très répandu | Connecteur solide; schéma plus sûr; portabilité infonuagique maximale |
 | Inconvénients pour le projet | Moins riche; migrations non transactionnelles | Connecteur communautaire seulement; hébergement géré réduit | Plus lourd; sensibilité à la casse à gérer |
@@ -53,7 +53,7 @@ Les migrations sont gérées par l'outil commun d'EF Core (`dotnet ef migrations
 
 ## Tests automatisés
 
-La documentation d'EF Core recommande de tester contre le vrai système de base de données, et déconseille SQLite en mémoire et le fournisseur `InMemory` comme substituts : leur comportement diffère de celui de la base de production (sensibilité à la casse, requêtes non prises en charge, transactions). Des modules Testcontainers existent pour PostgreSQL (`Testcontainers.PostgreSql`), MariaDB (`Testcontainers.MariaDb`) et MySQL (`Testcontainers.MySql`) et démarrent une base jetable dans un conteneur Docker pour chaque série de tests. L'approche est possible avec les deux options, mais elle exige Docker sur le poste de développement et dans la chaîne d'intégration continue.
+La logique d'affaires est testée sans base de données réelle, avec des dépôts factices (voir l'[ADR 0007](0007-strategie-de-migrations.md)). Cette approche ne dépend pas du système retenu.
 
 ## Décision
 
@@ -82,7 +82,6 @@ Les comparaisons de texte insensibles à la casse (courriel unique, voir l'[ADR 
 - Le connecteur est communautaire (équipe Npgsql) et non fourni par le projet PostgreSQL ni par Microsoft.
 - Les comparaisons de texte sont sensibles à la casse par défaut : une collation doit être déclarée pour les colonnes concernées (courriel, au minimum). Les collations non déterministes ont un coût : performance moindre, index B-tree sans déduplication et « certaines opérations de recherche par motif » impossibles selon la documentation (`LIKE` est pris en charge depuis la version 18, retenue ici). Elles ne conviennent donc qu'aux colonnes qui en ont besoin.
 - Système un peu plus lourd à administrer que MySQL.
-- Les tests contre une vraie base exigent Docker (Testcontainers) sur le poste de développement et dans la chaîne d'intégration continue.
 
 ## Sources
 
@@ -95,5 +94,3 @@ Les comparaisons de texte insensibles à la casse (courriel unique, voir l'[ADR 
 - [Bases de données gérées de DigitalOcean](https://docs.digitalocean.com/products/databases) (MariaDB absent de la liste des moteurs). Pour Google Cloud SQL, des sources tierces donnent MySQL, PostgreSQL et SQL Server; à confirmer dans la documentation de Google
 - [Collations et sensibilité à la casse avec Npgsql (EF Core)](https://www.npgsql.org/efcore/misc/collations-and-case-sensitivity.html)
 - [Notes de version de PostgreSQL 18](https://www.postgresql.org/docs/18/release-18.html) et [collations non déterministes](https://www.postgresql.org/docs/18/collation.html)
-- [Choisir une stratégie de test avec EF Core (Microsoft)](https://learn.microsoft.com/en-us/ef/core/testing/choosing-a-testing-strategy)
-- [Modules Testcontainers pour .NET](https://dotnet.testcontainers.org/modules/)
