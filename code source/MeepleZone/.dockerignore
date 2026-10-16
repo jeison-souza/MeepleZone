@@ -6,7 +6,7 @@
 TestResults
 
 # Non nécessaires à l'image de production
-MeepleZone.Test
+**/*.Test
 Dockerfile
 docker-compose*.yml
 .dockerignore
