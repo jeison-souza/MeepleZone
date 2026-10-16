@@ -1,5 +1,5 @@
-using MeepleZone.Client.Pages;
-using MeepleZone.Components;
+using MeepleZone.Site.Client.Pages;
+using MeepleZone.Site.Components;
 using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -33,6 +33,6 @@ app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
-    .AddAdditionalAssemblies(typeof(MeepleZone.Client._Imports).Assembly);
+    .AddAdditionalAssemblies(typeof(MeepleZone.Site.Client._Imports).Assembly);
 
 app.Run();

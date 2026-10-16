@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="Site/Site.Test/MeepleZone.Site.Test.csproj" />
+  <Project Path="Site/Site.Client/MeepleZone.Site.Client.csproj" />
+  <Project Path="Site/Site/MeepleZone.Site.csproj" />
+</Solution>

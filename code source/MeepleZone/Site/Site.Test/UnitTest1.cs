@@ -1,4 +1,4 @@
-﻿namespace MeepleZone.Test
+﻿namespace MeepleZone.Site.Test
 {
     using AutoFixture;
     using AutoFixture.Xunit3;

@@ -10,7 +10,7 @@ services:
       - Authentication__Google__ClientId=${GOOGLE_CLIENT_ID:-}
       - Authentication__Google__ClientSecret=${GOOGLE_CLIENT_SECRET:-}
     working_dir: /app
-    command: ["dotnet", "MeepleZone.dll"]
+    command: ["dotnet", "MeepleZone.Site.dll"]
     ports:
       - "8080:8080"
     restart: unless-stopped

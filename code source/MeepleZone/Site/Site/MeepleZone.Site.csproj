@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="MudBlazor" Version="9.11.0" />
-    <ProjectReference Include="..\MeepleZone.Client\MeepleZone.Client.csproj" />
+    <ProjectReference Include="..\Site.Client\MeepleZone.Site.Client.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.12" />
   </ItemGroup>
 
