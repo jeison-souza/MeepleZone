@@ -16,12 +16,12 @@ hidden: false
 - [x] Schéma de données commenté, dans `docs/schema/` : version 0.3 publiée, avec toutes les tables du produit minimal viable (comptes, jeux, collection, amitiés)
 - [x] Source de données des jeux : base locale alimentée par les utilisateurs; BoardGameGeek hors du produit minimal viable
 - [ ] Authentification déléguée (Google et Microsoft) : décision prise (ADR 0001), mise en œuvre à faire
-- [x] Rédiger 2 à 3 ADR dans `docs/adr/` (ADR 0001 à 0007 acceptés; l'ADR 0004 a été amendé le 14/10)
+- [x] Rédiger 2 à 3 ADR dans `docs/adr/` (ADR 0001 à 0009 acceptés; l'ADR 0004 a été amendé le 14/10 et l'ADR 0007 le 15/10, pour le chiffrement de la connexion)
 - [x] Stratégie de migrations et comptes de base de données : migrations EF Core générées, appliquées par script, deux comptes distincts pour le déploiement et pour l'application (ADR 0007)
 - [x] Serveur PostgreSQL préparé : connexion chiffrée (TLS) vérifiée, comptes séparés, bases de développement et de production
-- [ ] Organisation de la solution (domaine, données, site, tests de la logique d'affaires) : vue d'ensemble arrêtée, détails à fixer
+- [x] Organisation de la solution en projets par domaine (ADR 0009, logique d'affaires testable : ADR 0008); le dossier du site est réorganisé (`Site/Site`, `Site/Site.Client`, `Site/Site.Test`), les autres projets seront créés au moment du besoin
 - [x] Acheter le domaine et configurer Cloudflare
-- [ ] Valider l'exécution du CI sur GitHub Actions (le nom `ci.yaml` est conservé)
+- [x] Valider l'exécution du CI sur GitHub Actions (le nom `ci.yaml` est conservé)
 - [ ] Billet de blogue du Jalon 2
 - [ ] Réévaluer le placement du volet social à la fin du jalon
 
