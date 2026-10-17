@@ -2,9 +2,9 @@
 
 | | |
 |---|---|
-| **Version** | 0.4 |
+| **Version** | 0.4 ([historique des versions](#historique-des-versions)) |
 | **Date** | 17 octobre 2026 |
-| **Statut** | Toutes les tables du produit minimal viable, en un seul document; à relire |
+| **Statut** | Complet pour le produit minimal viable; sujet à révision après la mise en œuvre de l'authentification par les fournisseurs d'identité et les premiers tests contre une base de données réelle |
 | **Portée** | Comptes, annexes, catalogue de jeux, collection et amitiés |
 
 Ce document décrit les tables de la base de données, leurs champs et leurs relations. Il réunit en un seul schéma les quatre blocs du produit minimal viable : les comptes et les annexes, le catalogue de jeux, la collection de chaque utilisateur et les amitiés.
@@ -20,6 +20,7 @@ Le système retenu est PostgreSQL (voir l'[ADR 0005](../adr/0005-base-de-donnees
 5. [Collection](#collection) : `possession`
 6. [Amitiés](#amitiés) : `demande_amitie`, `amitie`
 7. [Reste à décider](#reste-à-décider)
+8. [Historique des versions](#historique-des-versions)
 
 ## Conventions
 
