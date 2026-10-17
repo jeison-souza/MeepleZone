@@ -2,9 +2,9 @@
 
 | | |
 |---|---|
-| **Version** | 0.3 |
-| **Date** | 14 octobre 2026 |
-| **Statut** | Toutes les tables du produit minimal viable, en un seul document; à relire |
+| **Version** | 0.4 ([historique des versions](#historique-des-versions)) |
+| **Date** | 17 octobre 2026 |
+| **Statut** | Complet pour le produit minimal viable; sujet à révision après la mise en œuvre de l'authentification par les fournisseurs d'identité et les premiers tests contre une base de données réelle |
 | **Portée** | Comptes, annexes, catalogue de jeux, collection et amitiés |
 
 Ce document décrit les tables de la base de données, leurs champs et leurs relations. Il réunit en un seul schéma les quatre blocs du produit minimal viable : les comptes et les annexes, le catalogue de jeux, la collection de chaque utilisateur et les amitiés.
@@ -20,11 +20,12 @@ Le système retenu est PostgreSQL (voir l'[ADR 0005](../adr/0005-base-de-donnees
 5. [Collection](#collection) : `possession`
 6. [Amitiés](#amitiés) : `demande_amitie`, `amitie`
 7. [Reste à décider](#reste-à-décider)
+8. [Historique des versions](#historique-des-versions)
 
 ## Conventions
 
 - Les noms de tables et de colonnes sont en français, en `snake_case` minuscule, sans accent mais en conservant la lettre (« Crée le » devient `cree_le`), au singulier et sans article. Dans le code C#, les propriétés restent en PascalCase (`CreeLe`) : la conversion est automatique.
-- Les clés primaires s'appellent `id` et sont des `uuid`. Les clés étrangères se nomment `<table>_id`; quand le rôle compte, le rôle précède `_id` (`cree_par_id`, `demandeur_id`).
+- Les clés primaires s'appellent `id` et sont des `uuid`. Les clés étrangères se nomment `<table>_id` (par exemple `utilisateur_id`). Quand il faut préciser la fonction de la ligne référencée dans la relation, ce nom de fonction remplace le nom de la table : `cree_par_id` (l'utilisateur qui a créé) et `demandeur_id` (l'utilisateur qui fait la demande).
 - Les dates et heures sont stockées en UTC (type `timestamptz`). Les colonnes d'horodatage se terminent par `_le`. `cree_le` est rempli par la base de données (valeur par défaut `DEFAULT now()`); `modifie_le` reçoit la même valeur par défaut à l'insertion, puis l'application le met à jour à chaque modification (aucun déclencheur dans la base). `modifie_le` n'existe que dans les tables dont les lignes changent.
 - Les colonnes de texte comparées sans égard à la casse (le courriel) utilisent une collation non déterministe (ICU), car la comparaison de texte de PostgreSQL est sensible à la casse par défaut.
 - Les valeurs qui forment une courte liste fixe (rôle, statut) sont des textes limités par une contrainte `CHECK`.
@@ -81,6 +82,7 @@ erDiagram
     utilisateur {
         uuid id PK
         text courriel UK "collation ICU"
+        timestamptz courriel_verifie_le "nullable"
         text nom_affichage
         text role "membre, administrateur, systeme"
         uuid photo_id FK "nullable"
@@ -96,7 +98,6 @@ erDiagram
         text fournisseur "Google, Microsoft"
         text identifiant_compte_externe "sub chez Google, oid chez Microsoft"
         text courriel "collation ICU"
-        timestamptz courriel_verifie_le "nullable"
         timestamptz derniere_connexion_le
         timestamptz cree_le
         timestamptz modifie_le
@@ -120,7 +121,8 @@ Représente une personne dans MeepleZone, indépendamment du fournisseur qu'elle
 | Colonne | Type | Contraintes | Description |
 |---|---|---|---|
 | `id` | `uuid` | `PRIMARY KEY` | Identifiant de l'utilisateur. |
-| `courriel` | `text` (collation ICU) | `NOT NULL`, `UNIQUE` | Courriel du compte. Copié de la première connexion externe, il est unique dans toute la table, sans égard à la casse (ADR 0004, règle 1). |
+| `courriel` | `text` (collation ICU) | `NOT NULL`, `UNIQUE` | Courriel du compte : celui que MeepleZone utilise pour joindre la personne et pour la retrouver (recherche d'amis). Copié de la première connexion externe, il appartient ensuite à la personne, qui pourra le changer. Il est unique dans toute la table, sans égard à la casse (ADR 0004, règle 1). |
+| `courriel_verifie_le` | `timestamptz` | | Moment où le courriel du compte a été reconnu comme vérifié (UTC) : dès la première connexion si le fournisseur l'atteste, sinon par un code envoyé par MeepleZone. Vide tant qu'il ne l'est pas, et effacé quand le courriel change. La connexion ne dépend pas de cette valeur : elle autorise les communications par courriel et la recherche d'amis par courriel. |
 | `nom_affichage` | `text` | `NOT NULL` | Nom montré aux autres utilisateurs. Copié du fournisseur lors de la première connexion. |
 | `role` | `text` | `NOT NULL`, `DEFAULT 'membre'`, `CHECK (role IN ('membre', 'administrateur', 'systeme'))`¹ | Ce que la personne peut faire dans MeepleZone (voir ci-dessous). |
 | `photo_id` | `uuid` | `REFERENCES annexe(id) ON DELETE SET NULL` | Photo de profil. Vide tant qu'aucune photo n'est enregistrée. |
@@ -137,7 +139,7 @@ Rôles :
 - Un seul rôle par utilisateur. Si des rôles qui s'additionnent deviennent nécessaires (par exemple modérateur et administrateur), la colonne sera remplacée par une table de rôles.
 - Le rôle ne se modifie jamais à partir d'une saisie de l'utilisateur. Le premier administrateur est promu par une mise à jour manuelle dans la base de données, après sa première connexion.
 
-La suppression d'un compte n'ajoute aucune colonne à cette table : les données personnelles sont supprimées et le contenu partagé est rattaché au compte technique « Utilisateur supprimé » (voir l'[ADR 0006](../adr/0006-suppression-de-compte.md)).
+Quand une personne supprime son compte, sa ligne est supprimée et ses données personnelles disparaissent avec elle. Le contenu partagé qu'elle a créé (jeux, couvertures) est conservé et rattaché au compte technique « Utilisateur supprimé » (voir l'[ADR 0006](../adr/0006-suppression-de-compte.md)).
 
 ### Table `identite_externe`
 
@@ -149,8 +151,7 @@ Chaque ligne est une façon de se connecter : un fournisseur et l'identifiant qu
 | `utilisateur_id` | `uuid` | `NOT NULL`, `REFERENCES utilisateur(id) ON DELETE CASCADE` | Utilisateur auquel appartient cette connexion. |
 | `fournisseur` | `text` | `NOT NULL` | Nom du fournisseur (`Google`, `Microsoft`). Un texte plutôt qu'une table de référence : l'ajout d'un fournisseur (ADR 0001) ne demande pas de modification du schéma. |
 | `identifiant_compte_externe` | `text` | `NOT NULL` | Identifiant stable du compte de la personne chez le fournisseur : le `sub` chez Google, l'`oid` chez Microsoft. Contrairement au courriel, il ne change pas. |
-| `courriel` | `text` (collation ICU) | `NOT NULL` | Courriel communiqué par ce fournisseur. Il peut changer chez le fournisseur : la règle de mise à jour reste à fixer. |
-| `courriel_verifie_le` | `timestamptz` | | Moment où le courriel a été reconnu comme vérifié (UTC), par le fournisseur ou par un code propre à MeepleZone. La connexion ne dépend pas de cette valeur : elle sert à autoriser d'éventuelles communications par courriel, et à ne retrouver que des courriels vérifiés dans la recherche d'amis. |
+| `courriel` | `text` (collation ICU) | `NOT NULL` | Courriel communiqué par ce fournisseur, conservé à titre d'information (il aide le soutien à retrouver un compte). Il se met à jour quand il change chez le fournisseur, sans effet sur le courriel du compte. |
 | `derniere_connexion_le` | `timestamptz` | `NOT NULL`, `DEFAULT now()` | Dernière fois que la personne s'est connectée avec ce fournisseur (UTC). Écrite à la connexion, pas à chaque requête. |
 | `cree_le` | `timestamptz` | `NOT NULL`, `DEFAULT now()` | Moment où la connexion a été associée au compte (UTC). |
 | `modifie_le` | `timestamptz` | `NOT NULL`, `DEFAULT now()` | Moment de la dernière modification (UTC), mis à jour par l'application. Une simple connexion (`derniere_connexion_le`) ne compte pas comme une modification. |
@@ -162,7 +163,7 @@ Règles :
 - Le couple (`fournisseur`, `identifiant_compte_externe`) est unique : une même connexion externe ne peut appartenir qu'à un seul utilisateur (ADR 0004, règle 2).
 - Un utilisateur possède une ou plusieurs connexions externes (relation un à plusieurs). La dernière connexion d'un compte ne peut pas être retirée; cette règle est appliquée par le code et non par la base.
 - Le courriel n'est pas unique dans cette table : une même personne peut avoir le même courriel chez deux fournisseurs. L'unicité entre comptes différents est garantie par `utilisateur.courriel` et par le code.
-- Le courriel de l'utilisateur correspond à celui d'une de ses connexions externes (règle appliquée par le code).
+- À la création du compte, `utilisateur.courriel` est celui de la première connexion. Ensuite il peut différer de ceux des connexions, car la personne peut changer le sien et les fournisseurs peuvent changer le leur.
 - Le dernier accès d'une personne, et le fournisseur utilisé, se lisent dans la connexion dont `derniere_connexion_le` est la plus récente. Aucune adresse IP ni information sur le navigateur n'est conservée.
 - Les connexions n'appartiennent qu'à l'utilisateur et aucune autre table n'en dépend : la suppression en cascade (`ON DELETE CASCADE`) est sûre ici. Le comportement des autres clés étrangères vers `utilisateur` est fixé par l'[ADR 0006](../adr/0006-suppression-de-compte.md) : `CASCADE` pour les données personnelles, `RESTRICT` pour `cree_par_id`.
 
@@ -250,7 +251,7 @@ Un jeu de société du catalogue. Chaque jeu y existe **une seule fois** : plusi
 | Colonne | Type | Contraintes | Description |
 |---|---|---|---|
 | `id` | `uuid` | `PRIMARY KEY` | Identifiant du jeu. |
-| `nom` | `text` | `NOT NULL`, `CHECK (char_length(nom) BETWEEN 1 AND 255)`¹ | Nom du jeu. C'est le seul champ obligatoire : un jeu créé à la main peut être décrit en peu de mots. Plusieurs jeux peuvent porter le même nom. |
+| `nom` | `text` | `NOT NULL`, `CHECK (char_length(nom) BETWEEN 1 AND 255)`¹ | Nom du jeu. C'est le seul champ que la personne doit remplir : un jeu créé à la main peut être décrit en peu de mots. Les autres colonnes obligatoires (`statut`, `cree_par_id`, dates) sont remplies par l'application ou par la base de données. Plusieurs jeux peuvent porter le même nom. |
 | `annee_publication` | `smallint` | | Année de publication. |
 | `joueurs_min` | `smallint` | `CHECK (joueurs_min >= 1)`¹ | Nombre minimal de joueurs. |
 | `joueurs_max` | `smallint` | `CHECK (joueurs_max >= 1)`¹ | Nombre maximal de joueurs. |
@@ -487,8 +488,8 @@ Règles :
 
 Comptes :
 
-- Mise à jour du courriel d'une connexion externe lorsqu'il change chez le fournisseur, et traitement des conflits avec un autre compte.
-- Vérification du courriel par un code envoyé par l'application, pour les communications futures (colonne `courriel_verifie_le`).
+- Changement du courriel du compte par la personne : saisie du nouveau courriel, code de vérification envoyé à cette adresse, puis remplacement. Ce parcours dépend de la mise en place de l'envoi de courriels.
+- Vérification du courriel par un code envoyé par l'application, pour les communications futures (colonne `utilisateur.courriel_verifie_le`).
 
 Catalogue :
 
@@ -521,5 +522,6 @@ Amitiés :
 | 0.1 | 13 octobre 2026 | Première version : `utilisateur`, `identite_externe` et `annexe`. |
 | 0.2 | 13 octobre 2026 | Ajout du catalogue de jeux, de la collection et des amitiés; colonnes `utilisateur.code_amitie` et `utilisateur.visibilite_collection`. |
 | 0.3 | 14 octobre 2026 | Publication des onze tables en un seul document. `sujet_id` devient `identifiant_compte_externe`; `cree_par_id` est obligatoire (`ON DELETE RESTRICT`), avec le compte technique « Utilisateur supprimé » (ADR 0006); `modifie_le` est mis à jour par l'application, sans déclencheur; marqueur `¹` pour les contraintes aussi vérifiées dans le code. |
+| 0.4 | 17 octobre 2026 | `courriel_verifie_le` passe de `identite_externe` à `utilisateur` : la vérification porte sur le courriel du compte, qui appartient à la personne; le courriel d'une connexion externe devient une information. Reformulation de textes (suppression de compte, noms des clés étrangères). |
 
 Le numéro de version monte à chaque ajout ou modification importante du schéma. La version 1.0 correspondra au schéma complet du produit minimal viable.
