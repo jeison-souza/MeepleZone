@@ -2,15 +2,20 @@ services:
   meeplezone:
     image: mcr.microsoft.com/dotnet/aspnet:10.0
     container_name: MeepleZone
+    environment:
+      Authentication__Microsoft__ClientId: ${MICROSOFT_CLIENT_ID:?Définir MICROSOFT_CLIENT_ID dans .env}
+      Authentication__Microsoft__ClientSecret: ${MICROSOFT_CLIENT_SECRET:?Définir MICROSOFT_CLIENT_SECRET dans .env}
+      Authentication__Google__ClientId: ${GOOGLE_CLIENT_ID:-}
+      Authentication__Google__ClientSecret: ${GOOGLE_CLIENT_SECRET:-}
+    extra_hosts: ["postgresdb:${POSTGRES_IP}"]
     volumes:
       - ${DOCKERDIR:?Définir DOCKERDIR dans .env}/MeepleZone/App:/app
-    environment:
-      - Authentication__Microsoft__ClientId=${MICROSOFT_CLIENT_ID:?Définir MICROSOFT_CLIENT_ID dans .env}
-      - Authentication__Microsoft__ClientSecret=${MICROSOFT_CLIENT_SECRET:?Définir MICROSOFT_CLIENT_SECRET dans .env}
-      - Authentication__Google__ClientId=${GOOGLE_CLIENT_ID:-}
-      - Authentication__Google__ClientSecret=${GOOGLE_CLIENT_SECRET:-}
     working_dir: /app
     command: ["dotnet", "MeepleZone.Site.dll"]
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     ports:
       - "8080:8080"
     restart: unless-stopped
