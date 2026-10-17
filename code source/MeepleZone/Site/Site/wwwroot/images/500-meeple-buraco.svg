@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 300 220" role="img" aria-label="Un meeple sort d'un trou dans le sol, les yeux au ciel, une fiche d&#233;branch&#233;e dans la main">
+<title>Un meeple et une fiche d&#233;branch&#233;e</title>
+<defs><path id="mpd" d="M-1.7487806,-2.560343 A0.05,0.05 209.042599 0,1 -1.7050677,-2.58607 L-0.9507524,-2.58607 A0.05,0.05 270 0,1 -0.9045198,-2.5170294 L-1.393202,-1.3304593 A0.05,0.05 202.3840408 0,0 -1.3499605,-1.2615082 A2,2 273.4295712 0,1 -0.9696194,-1.2015858 A0.2,0.2 284.4770465 0,1 -0.9001749,-0.84752 A1.9326545,1.9326545 53.3293164 0,1 -1.6969893,-0.4983446 A0.4,0.4 333.3149482 1,1 -2.4117802,-0.4983446 A1.9326545,1.9326545 100.6567387 0,1 -3.2085947,-0.84752 A0.2,0.2 126.6706836 0,1 -3.1391501,-1.2015858 A2,2 255.5229535 0,1 -2.758809,-1.2615082 A0.05,0.05 86.5704288 0,0 -2.7155675,-1.3304593 L-3.2042498,-2.5170294 A0.05,0.05 157.6159592 0,1 -3.1580172,-2.58607 L-2.4037019,-2.58607 A0.05,0.05 270 0,1 -2.3599889,-2.560343 L-2.0980977,-2.0887061 A0.05,0.05 150.957401 0,0 -2.0106718,-2.0887061 L-1.7487806,-2.560343z"/></defs>
+<defs><clipPath id="sortie"><path d="M0 0H300V196H226A76 15 0 0 1 74 196H0Z"/></clipPath></defs>
+<ellipse cx="150" cy="196" rx="76" ry="15" fill="#0B0B22"/>
+<ellipse cx="150" cy="196" rx="76" ry="15" fill="none" stroke="#2E2E5E" stroke-width="2"/>
+<g clip-path="url(#sortie)">
+<g transform="translate(150,253) scale(54) translate(-1.2348,-5.1464)">
+<g transform="translate(0.1,0.04)"><use href="#mpd" xlink:href="#mpd" transform="matrix(1,0,0,-1,3.2891517,2.5603575)" fill="#7A3C0E"/></g>
+<g transform="translate(0.08,0.04)"><use href="#mpd" xlink:href="#mpd" transform="matrix(1,0,0,-1,3.2891517,2.5603575)" fill="#84410F"/></g>
+<g transform="translate(0.07,0.03)"><use href="#mpd" xlink:href="#mpd" transform="matrix(1,0,0,-1,3.2891517,2.5603575)" fill="#8E4611"/></g>
+<g transform="translate(0.06,0.03)"><use href="#mpd" xlink:href="#mpd" transform="matrix(1,0,0,-1,3.2891517,2.5603575)" fill="#984C13"/></g>
+<g transform="translate(0.05,0.02)"><use href="#mpd" xlink:href="#mpd" transform="matrix(1,0,0,-1,3.2891517,2.5603575)" fill="#A05216"/></g>
+<g transform="translate(0.04,0.02)"><use href="#mpd" xlink:href="#mpd" transform="matrix(1,0,0,-1,3.2891517,2.5603575)" fill="#A85A1C"/></g>
+<g transform="translate(0.02,0.01)"><use href="#mpd" xlink:href="#mpd" transform="matrix(1,0,0,-1,3.2891517,2.5603575)" fill="#B06220"/></g>
+<g transform="translate(0.01,0.01)"><use href="#mpd" xlink:href="#mpd" transform="matrix(1,0,0,-1,3.2891517,2.5603575)" fill="#B86B25"/></g>
+<use href="#mpd" xlink:href="#mpd" transform="matrix(1,0,0,-1,3.2891517,2.5603575)" fill="#D6762F" stroke="#E58B40" stroke-width=".022" stroke-linejoin="round"/>
+<ellipse cx="1.1" cy="2.68" rx=".16" ry=".07" fill="#F0A860" opacity=".8"/>
+<path d="M.93 2.70L1.17 2.64M1.30 2.64L1.54 2.70" stroke="#9A4F14" stroke-width=".04" stroke-linecap="round"/>
+<circle cx="1.07" cy="2.86" r=".15" fill="#fff"/><circle cx="1.40" cy="2.86" r=".15" fill="#fff"/>
+<circle cx="1.08" cy="2.80" r=".06" fill="#101026"/><circle cx="1.41" cy="2.80" r=".06" fill="#101026"/>
+<ellipse cx="1.235" cy="3.1" rx=".05" ry=".065" fill="#101026"/></g>
+</g>
+<path d="M91 161C89 174 80 181 86 191C90 197 98 200 108 200" fill="none" stroke="#3E8C7A" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round"/>
+<g><rect x="86" y="138" width="2.6" height="10" rx="1" fill="#B8B8C8"/><rect x="93.4" y="138" width="2.6" height="10" rx="1" fill="#B8B8C8"/><rect x="82" y="145" width="18" height="17" rx="3" fill="#1C1C26" stroke="#4A4A70" stroke-width="1.2"/></g>
+<path d="M74 196A76 15 0 0 0 226 196" fill="none" stroke="#3A3A6E" stroke-width="3" stroke-linecap="round"/>
+</svg>

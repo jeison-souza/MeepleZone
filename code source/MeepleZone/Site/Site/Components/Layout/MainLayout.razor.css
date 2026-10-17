@@ -2,11 +2,24 @@
     position: relative;
     display: flex;
     flex-direction: column;
+    min-height: 100vh;
 }
 
+/* Colonne : le contenu (article) prend l'espace libre et pousse le pied de page tout en bas. */
 main {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
 }
+
+    main > article {
+        flex: 1;
+    }
+
+    main > .top-row, main > .mz-footer {
+        flex-shrink: 0;
+    }
 
 .sidebar {
     background-color: #101026;
@@ -58,6 +71,8 @@ main {
         height: 100vh;
         position: sticky;
         top: 0;
+        display: flex;
+        flex-direction: column;
     }
 
     .top-row {
