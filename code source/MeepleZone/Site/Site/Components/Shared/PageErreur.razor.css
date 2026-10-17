@@ -1,0 +1,133 @@
+.mz-erreur {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    max-width: 760px;
+    /* Occupe la hauteur disponible (barre du haut, marges et pied de page déduits), sans descendre sous un minimum. */
+    min-height: max(24rem, calc(100vh - 13.5rem));
+    margin: 2rem auto;
+    padding: 2rem 1.5rem 2.5rem;
+    border-radius: 20px;
+    background: #17173A;
+    color: #F4E9D4;
+    text-align: center;
+}
+
+@media (max-width: 640.98px) {
+    .mz-erreur {
+        min-height: max(24rem, calc(100vh - 17rem));
+        padding: 1.5rem 1rem 2rem;
+    }
+}
+
+.mz-erreur-code {
+    margin: 0;
+    font-size: clamp(3.5rem, 12vmin, 8rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: .04em;
+    color: transparent;
+    -webkit-text-stroke: 2px #F4E9D4;
+}
+
+/* La figure absorbe la hauteur qui reste dans le panneau (flex), entre un minimum et un maximum.
+   Elle est un « conteneur de taille » : la légende se place d'après la taille réelle du dessin. */
+.mz-erreur-figure {
+    position: relative;
+    width: 100%;
+    flex: 1 1 0;
+    min-height: 160px;
+    max-height: 480px;
+    margin: 1rem auto 1.5rem;
+    container-type: size;
+}
+
+.mz-erreur-image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* Légende écrite sur le dessin. Le dessin occupe un rectangle de proportion 300:220, centré dans la figure
+   (object-fit: contain) ; la légende se place dans ce rectangle : à 7 % du bord gauche et à 22 % du haut,
+   en angle montant, avec une taille proportionnelle au dessin. */
+.mz-erreur-legende {
+    --dessin-l: min(100cqw, 136.36cqh);
+    --dessin-h: min(100cqh, 73.33cqw);
+    position: absolute;
+    left: calc((100cqw - var(--dessin-l)) / 2 + var(--dessin-l) * .07);
+    top: calc((100cqh - var(--dessin-h)) / 2 + var(--dessin-h) * .22);
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 700;
+    font-size: calc(var(--dessin-l) * .095);
+    color: #C4601A;
+    white-space: nowrap;
+    transform: rotate(-12deg);
+    transform-origin: left bottom;
+}
+
+/* Dessin coupé en bas (meeple en gros plan) : la base s'estompe au lieu de finir net. */
+.mz-erreur-image--rogne {
+    -webkit-mask-image: linear-gradient(to bottom, #000 72%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 72%, transparent 100%);
+}
+
+.mz-erreur-texte {
+    width: 100%;
+}
+
+.mz-erreur-attente {
+    visibility: hidden;
+}
+
+.mz-erreur-titre {
+    margin: 0 0 .5rem;
+    font-size: clamp(1.5rem, 4vw, 2.25rem);
+    font-weight: 700;
+    color: #F4E9D4;
+}
+
+.mz-erreur-phrase {
+    max-width: 34rem;
+    margin: 0 auto 1.5rem;
+    font-size: clamp(.95rem, 2vw, 1.1rem);
+    color: #D8CDB4;
+}
+
+.mz-erreur-phrase a {
+    color: #F0A860;
+}
+
+.mz-erreur-apparition {
+    animation: mz-erreur-apparition .4s ease-out both;
+}
+
+@keyframes mz-erreur-apparition {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .mz-erreur-apparition {
+        animation: none;
+    }
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}

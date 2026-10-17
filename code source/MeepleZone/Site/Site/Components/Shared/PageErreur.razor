@@ -1,0 +1,67 @@
+<section class="mz-erreur">
+    <p class="mz-erreur-code" aria-hidden="true">@Code</p>
+
+    @if (Pret)
+    {
+        <div class="mz-erreur-figure mz-erreur-apparition">
+            <img class="mz-erreur-image @ClasseImage" src="@Image" alt="@Alt" />
+            @if (!string.IsNullOrEmpty(Legende))
+            {
+                <span class="mz-erreur-legende" aria-hidden="true">@Legende</span>
+            }
+        </div>
+
+        <div class="mz-erreur-texte mz-erreur-apparition">
+            <h1 class="mz-erreur-titre"><span class="visually-hidden">Erreur @Code : </span>@Titre</h1>
+            <p class="mz-erreur-phrase">@Phrase</p>
+            @ChildContent
+            <MudButton Href="/" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large">@Bouton</MudButton>
+        </div>
+    }
+    else
+    {
+        @* Espace réservé : même taille que l'illustration et le texte, pour que la page ne saute pas à l'apparition. *@
+        <div class="mz-erreur-figure" aria-hidden="true"></div>
+        <div class="mz-erreur-texte mz-erreur-attente" aria-hidden="true">
+            <h1 class="mz-erreur-titre">&nbsp;</h1>
+            <p class="mz-erreur-phrase">&nbsp;</p>
+            <MudButton Href="/" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" tabindex="-1">&nbsp;</MudButton>
+        </div>
+        <noscript>
+            <h1 class="mz-erreur-titre">Erreur @Code</h1>
+            <p class="mz-erreur-phrase"><a href="/">Retour à l'accueil</a></p>
+        </noscript>
+    }
+</section>
+
+@code {
+    [Parameter, EditorRequired] public string Code { get; set; } = "";
+
+    [Parameter, EditorRequired] public string Image { get; set; } = "";
+
+    [Parameter, EditorRequired] public string Alt { get; set; } = "";
+
+    [Parameter, EditorRequired] public string Titre { get; set; } = "";
+
+    [Parameter, EditorRequired] public string Phrase { get; set; } = "";
+
+    [Parameter, EditorRequired] public string Bouton { get; set; } = "";
+
+    /// <summary>Classe CSS supplémentaire pour l'image (par exemple <c>mz-erreur-image--rogne</c>).</summary>
+    [Parameter] public string ClasseImage { get; set; } = "";
+
+    /// <summary>
+    /// Texte court écrit sur le dessin (par exemple « Sniff… »), en police du site, en angle montant à gauche.
+    /// Le texte vient de la page, et non du fichier SVG, pour suivre la police du site et rester accessible.
+    /// </summary>
+    [Parameter] public string? Legende { get; set; }
+
+    /// <summary>
+    /// Faux tant que le contenu n'est pas prêt (choix de l'illustration encore à faire) : la page réserve alors
+    /// l'espace sans rien montrer.
+    /// </summary>
+    [Parameter] public bool Pret { get; set; } = true;
+
+    /// <summary>Contenu additionnel, affiché entre la phrase et le bouton.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

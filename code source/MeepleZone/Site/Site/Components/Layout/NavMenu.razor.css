@@ -99,8 +99,12 @@
         /* Never collapse the sidebar for wide screens */
         display: block;
 
+        /* Remplit l'espace restant de la barre latérale (qui est une colonne flex de 100vh), sans dépasser :
+           une hauteur fixe de « 100vh - 3.5rem » débordait de 2 px quand l'en-tête du menu dépassait 3.5rem. */
+        flex: 1 1 auto;
+        min-height: 0;
+
         /* Allow sidebar to scroll for tall menus */
-        height: calc(100vh - 3.5rem);
         overflow-y: auto;
     }
 }

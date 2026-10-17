@@ -26,6 +26,7 @@ hidden: false
 - [ ] Réévaluer le placement du volet social à la fin du jalon
 
 ### Jalon 3 : Développement (16/11)
+- [x] Interface en français, page À propos et pages d'erreur illustrées (404 et 500, avec scénarios tirés au hasard)
 - [ ] Première migration EF Core appliquée à la base de développement (valide aussi la collation du courriel)
 - [ ] Connexion de l'application à la base (Npgsql, certificat du serveur vérifié)
 - [ ] Catalogue : ajouter, modifier, retirer, noter, filtrer

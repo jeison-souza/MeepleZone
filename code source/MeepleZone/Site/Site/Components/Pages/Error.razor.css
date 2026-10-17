@@ -1,0 +1,21 @@
+/* Contenu additionnel de la page d'erreur (rendu dans le panneau sombre de PageErreur). */
+.mz-erreur-info {
+    max-width: 34rem;
+    margin: 0 auto 1rem;
+    font-size: .85rem;
+    color: #D8CDB4;
+}
+
+/* Le bloc de développement est replié par défaut : il ne vole pas de hauteur au dessin. */
+.mz-erreur-info summary {
+    cursor: pointer;
+    color: #F4E9D4;
+}
+
+.mz-erreur-info p {
+    margin: .5rem 0 0;
+}
+
+.mz-erreur-info code {
+    color: #F0A860;
+}
