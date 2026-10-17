@@ -7,7 +7,8 @@ services:
       Authentication__Microsoft__ClientSecret: ${MICROSOFT_CLIENT_SECRET:?Définir MICROSOFT_CLIENT_SECRET dans .env}
       Authentication__Google__ClientId: ${GOOGLE_CLIENT_ID:-}
       Authentication__Google__ClientSecret: ${GOOGLE_CLIENT_SECRET:-}
-    extra_hosts: ["postgresdb:${POSTGRES_IP}"]
+    extra_hosts:
+      - "${POSTGRES_HOST:?Définir POSTGRES_HOST dans .env}:${POSTGRES_IP:?Définir POSTGRES_IP dans .env}"
     volumes:
       - ${DOCKERDIR:?Définir DOCKERDIR dans .env}/MeepleZone/App:/app
     working_dir: /app
