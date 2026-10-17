@@ -1,0 +1,203 @@
+/* Identité visuelle MeepleZone par-dessus PaperMod (voir contexte/identite-visuelle.md).
+   Palette : orange #D67C2F, Galaxie Deep #101026, crème #FBF5E9. Corps : Open Sans. */
+
+:root {
+    --mz-orange: #D67C2F;
+    --mz-orange-link: #A8530F; /* orange plus foncé pour le contraste sur le crème */
+    --mz-deep: #101026;
+    --mz-cream: #FBF5E9;
+
+    /* Thème clair : fond crème, texte Galaxie Deep */
+    --theme: var(--mz-cream);
+    --entry: #FFFFFF;
+    --primary: var(--mz-deep);
+    --secondary: #5B5873;
+    --tertiary: #E6DCC8;
+    --content: #1E1E3A;
+    --border: #E6DCC8;
+    --code-bg: #F1E8D6;
+
+    /* Cubes empilés : arêtes fines (SVG en ligne, une variante par thème) */
+    --mz-cubes: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='100' viewBox='0 0 56 100'%3E%3Cpath d='M28 66L0 50L0 16L28 0L56 16L56 50L28 66L28 100' fill='none' stroke='%23D67C2F' stroke-opacity='.14'/%3E%3Cpath d='M28 0L28 34L0 50L0 84L28 100L56 84L56 50L28 34' fill='none' stroke='%23D67C2F' stroke-opacity='.14'/%3E%3C/svg%3E");
+    --mz-fond: linear-gradient(var(--mz-cream), var(--mz-cream));
+}
+
+:root {
+    --mz-cubes-banniere: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='100' viewBox='0 0 56 100'%3E%3Cpath d='M28 66L0 50L0 16L28 0L56 16L56 50L28 66L28 100' fill='none' stroke='%23D67C2F' stroke-opacity='.14'/%3E%3Cpath d='M28 0L28 34L0 50L0 84L28 100L56 84L56 50L28 34' fill='none' stroke='%23D67C2F' stroke-opacity='.14'/%3E%3C/svg%3E");
+    --mz-ban-fond: linear-gradient(#FFFBF2, #FFFBF2);
+    --mz-ban-texte: var(--mz-deep);
+    --mz-ban-texte-2: #5B5873;
+    --mz-ban-bord: #E6DCC8;
+    --mz-ban-lien: var(--mz-orange-link);
+}
+
+:root[data-theme="dark"] {
+    --theme: var(--mz-deep);
+    --entry: #1A1A3D;
+    --primary: var(--mz-cream);
+    --secondary: #B4B0C8;
+    --tertiary: #2A2A55;
+    --content: #E4E0EC;
+    --border: #2A2A55;
+    --code-bg: #23234A;
+    --code-block-bg: #181838;
+
+    --mz-cubes: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='100' viewBox='0 0 56 100'%3E%3Cpath d='M28 66L0 50L0 16L28 0L56 16L56 50L28 66L28 100' fill='none' stroke='%23F4E9D4' stroke-opacity='.07'/%3E%3Cpath d='M28 0L28 34L0 50L0 84L28 100L56 84L56 50L28 34' fill='none' stroke='%23F4E9D4' stroke-opacity='.07'/%3E%3C/svg%3E");
+    --mz-fond: linear-gradient(135deg, #1D1D47 0%, #101026 100%);
+    --mz-cubes-banniere: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='100' viewBox='0 0 56 100'%3E%3Cpath d='M28 66L0 50L0 16L28 0L56 16L56 50L28 66L28 100' fill='none' stroke='%23F4E9D4' stroke-opacity='.07'/%3E%3Cpath d='M28 0L28 34L0 50L0 84L28 100L56 84L56 50L28 34' fill='none' stroke='%23F4E9D4' stroke-opacity='.07'/%3E%3C/svg%3E");
+    --mz-ban-fond: linear-gradient(135deg, #1D1D47 0%, #101026 100%);
+    --mz-ban-texte: #F4E9D4;
+    --mz-ban-texte-2: #D9D2C4;
+    --mz-ban-bord: #2A2A55;
+    --mz-ban-lien: var(--mz-orange);
+}
+
+body {
+    font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--theme);
+    background-image: var(--mz-cubes), var(--mz-fond);
+    background-attachment: fixed;
+}
+
+/* Titres : sans-serif grasse, comme "MeepleZone" dans le mockup */
+h1, h2, h3, .logo a, .post-title, .entry-hint {
+    font-family: "Open Sans", sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+}
+
+/* Liens et accents en orange */
+.post-content a,
+.home-info .entry-content a {
+    color: var(--mz-orange-link);
+    box-shadow: none;
+    border-bottom: 1px solid currentColor;
+}
+
+[data-theme="dark"] .post-content a,
+[data-theme="dark"] .home-info .entry-content a {
+    color: var(--mz-ban-lien);
+}
+
+.logo a {
+    color: var(--primary);
+}
+
+#menu a.active span {
+    border-bottom: 2px solid var(--mz-orange);
+}
+
+/* Bloc d'accueil : bandeau Galaxie Deep façon "hero" */
+.home-info .entry-header h1 {
+    font-size: 2rem;
+    text-transform: uppercase;
+}
+
+.post-entry {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+
+.post-entry:hover {
+    border-color: var(--mz-orange);
+}
+
+.post-entry .entry-link:focus-visible,
+a:focus-visible,
+button:focus-visible {
+    outline: 2px solid var(--mz-orange);
+    outline-offset: 2px;
+}
+
+/* Étiquettes (tags) en pastilles */
+.post-tags a {
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--entry);
+}
+
+.post-tags a:hover {
+    border-color: var(--mz-orange);
+    color: var(--mz-orange);
+}
+
+/* Boutons principaux (pagination, recherche) */
+.paginav a:hover,
+.page-footer .pagination a:hover {
+    color: var(--mz-orange);
+}
+
+/* Logo : variante selon le thème, "Zone" en orange */
+.mz-logo { vertical-align: middle; margin-right: 8px; }
+.mz-logo-sombre, [data-theme="dark"] .mz-logo-clair { display: none; }
+[data-theme="dark"] .mz-logo-sombre { display: inline; }
+.mz-logo-text { font-weight: 800; font-size: 1.15rem; vertical-align: middle; }
+.mz-logo-accent { color: var(--mz-orange); }
+
+/* Texte lisible : un seul cadre derrière le contenu des pages */
+.post-single,
+.terms-tags,
+.archive-year,
+#searchbox {
+    background: var(--entry);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+    padding: 24px 28px;
+    margin-bottom: 24px;
+}
+
+/* Bannière façon "hero" de l'application : accueil et pages fixes */
+.home-info .entry-content,
+.page-header {
+    color: var(--mz-ban-texte);
+}
+
+.home-info,
+.page-header {
+    background-color: var(--theme);
+    background-image: var(--mz-cubes-banniere), var(--mz-ban-fond);
+    border: 1px solid var(--mz-ban-bord);
+    border-radius: 12px;
+    padding: 28px 32px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+
+.home-info .entry-header,
+.home-info .entry-content {
+    padding: 0;
+}
+
+.home-info .entry-header h1,
+.page-header h1 {
+    color: var(--mz-ban-texte);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.home-info .entry-header h1::after,
+.page-header h1::after {
+    content: "";
+    display: block;
+    width: 64px;
+    height: 4px;
+    margin-top: 10px;
+    border-radius: 2px;
+    background: var(--mz-orange);
+}
+
+.home-info .entry-content a {
+    color: var(--mz-ban-lien);
+}
+
+.home-info .entry-content strong {
+    color: var(--mz-ban-lien);
+}
+
+.page-header .post-description,
+.page-header .breadcrumbs,
+.page-header .breadcrumbs a {
+    color: var(--mz-ban-texte-2);
+}
