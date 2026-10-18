@@ -51,7 +51,7 @@ h1:focus {
 }
 
     .blazor-error-boundary::after {
-        content: "An error has occurred."
+        content: "Une erreur est survenue."
     }
 
 .darker-border-checkbox.form-check-input {
@@ -67,7 +67,64 @@ h1:focus {
     text-align: start;
 }
 
-/* ===== Home : identité de marque ===== */
+/* ===== Mise en page (MudLayout) ===== */
+.mz-barre {
+    border-bottom: 1px solid rgba(244, 233, 212, 0.12);
+}
+
+.mz-menu-lateral {
+    border-right: 1px solid rgba(244, 233, 212, 0.12);
+}
+
+.mz-marque {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: #F4E9D4;
+    font-size: 1.1rem;
+    letter-spacing: 0.01em;
+    text-decoration: none;
+}
+
+    .mz-marque img {
+        height: 2rem;
+        width: auto;
+    }
+
+    .mz-marque strong {
+        color: var(--mz-orange);
+        font-weight: 700;
+    }
+
+/* Le contenu occupe au moins la hauteur de l'écran : le pied de page reste en bas. */
+.mz-contenu {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    box-sizing: border-box;
+}
+
+    .mz-contenu > article {
+        flex: 1;
+    }
+
+.mz-navigation .mud-nav-link {
+    border-radius: 4px;
+    color: #E8DEC9;
+}
+
+    .mz-navigation .mud-nav-link:hover {
+        background-color: rgba(244, 233, 212, 0.08);
+        color: #FFFFFF;
+    }
+
+    .mz-navigation .mud-nav-link.active {
+        background-color: rgba(244, 233, 212, 0.08);
+        box-shadow: inset 3px 0 0 var(--mz-orange);
+        color: #FFFFFF;
+    }
+
+/* ===== Accueil : identité de marque ===== */
 .mz-brand {
     display: flex;
     flex-direction: column;
@@ -94,7 +151,7 @@ h1:focus {
     color: var(--mz-orange);
 }
 
-/* ===== Home : bannière ===== */
+/* ===== Accueil : bannière ===== */
 .mz-hero {
     min-height: 50vh;
     color: #F4E9D4;
