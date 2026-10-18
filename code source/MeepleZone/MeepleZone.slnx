@@ -1,5 +1,12 @@
 <Solution>
-  <Project Path="Site/Site.Test/MeepleZone.Site.Test.csproj" />
-  <Project Path="Site/Site.Client/MeepleZone.Site.Client.csproj" />
-  <Project Path="Site/Site/MeepleZone.Site.csproj" />
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path="Directory.Build.props" />
+    <File Path="dotnet-tools.json" />
+  </Folder>
+  <Folder Name="/Site/">
+    <Project Path="Site/Site.Client/MeepleZone.Site.Client.csproj" />
+    <Project Path="Site/Site.Test/MeepleZone.Site.Test.csproj" />
+    <Project Path="Site/Site/MeepleZone.Site.csproj" />
+  </Folder>
 </Solution>
