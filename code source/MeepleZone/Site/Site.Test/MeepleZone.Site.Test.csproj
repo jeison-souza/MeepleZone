@@ -19,8 +19,4 @@
 		<ProjectReference Include="..\Site\MeepleZone.Site.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-		<Using Include="Xunit" />
-	</ItemGroup>
-
 </Project>
