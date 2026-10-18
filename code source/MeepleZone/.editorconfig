@@ -1,0 +1,11 @@
+root = true
+
+[*.cs]
+# Chaves obrigatórias em qualquer bloco (if, else, for, foreach, while, do, using, lock).
+csharp_prefer_braces = true:error
+dotnet_diagnostic.IDE0011.severity = error
+
+# Espaço de nomes de portée fichier (namespace X;).
+csharp_style_namespace_declarations = file_scoped:warning
+
+# Posição dos using: a decidir (fora ou dentro do espaço de nomes).
