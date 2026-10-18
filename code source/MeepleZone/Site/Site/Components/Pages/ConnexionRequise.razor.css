@@ -1,0 +1,124 @@
+.mz-connexion {
+    display: flex;
+    justify-content: center;
+    padding: 2rem 0;
+}
+
+/* MudPaper est un composant enfant : ::deep est nécessaire pour que le CSS isolé l'atteigne. */
+.mz-connexion ::deep .mz-connexion-carte {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 26rem;
+    padding: 2rem 1.75rem 1.75rem;
+    border-radius: 20px;
+    text-align: center;
+}
+
+.mz-connexion-logo {
+    height: 6rem;
+    width: auto;
+}
+
+.mz-connexion-marque {
+    margin: .5rem 0 1.25rem;
+    font-size: 1.75rem;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    line-height: 1;
+    color: var(--mz-deep);
+}
+
+.mz-connexion-marque-zone {
+    color: var(--mz-orange);
+}
+
+.mz-connexion-titre {
+    margin: 0 0 1rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--mz-deep);
+}
+
+.mz-connexion-phrase {
+    margin: 0 0 1.25rem;
+}
+
+.mz-connexion ::deep .mz-connexion-alerte {
+    width: 100%;
+    margin-bottom: 1.25rem;
+    text-align: left;
+}
+
+.mz-connexion-boutons {
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+    width: 100%;
+}
+
+/* Boutons de fournisseur : icône de la marque à gauche, texte en casse normale, alignés à gauche. */
+.mz-fournisseur {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: .85rem;
+    height: 3rem;
+    padding: 0 1rem;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font-size: .95rem;
+    font-weight: 600;
+    text-decoration: none;
+    text-align: left;
+    transition: box-shadow .15s ease, background-color .15s ease;
+}
+
+.mz-fournisseur:hover {
+    text-decoration: none;
+    box-shadow: 0 2px 8px rgba(16, 16, 38, .22);
+}
+
+.mz-fournisseur:focus-visible {
+    outline: 3px solid var(--mz-orange);
+    outline-offset: 2px;
+}
+
+.mz-fournisseur-icone {
+    flex: none;
+    width: 1.35rem;
+    height: 1.35rem;
+}
+
+/* Google : fond blanc, bordure grise, texte gris foncé (gabarit de la marque). */
+.mz-fournisseur-google {
+    background: #FFFFFF;
+    border-color: #DADCE0;
+    color: #3C4043;
+}
+
+.mz-fournisseur-google:hover {
+    background: #F8F9FA;
+}
+
+/* Microsoft : mêmes couleurs que Google, pour que les deux boutons soient identiques. */
+.mz-fournisseur-microsoft {
+    background: #FFFFFF;
+    border-color: #DADCE0;
+    color: #3C4043;
+}
+
+.mz-fournisseur-microsoft:hover {
+    background: #F8F9FA;
+}
+
+.mz-connexion-note {
+    margin: 1.25rem 0 1rem;
+    font-size: .85rem;
+    color: #4A4A63;
+}
+
+.mz-connexion ::deep .mz-connexion-retour {
+    font-size: .9rem;
+}
