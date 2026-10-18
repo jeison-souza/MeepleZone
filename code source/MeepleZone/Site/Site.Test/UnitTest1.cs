@@ -3,6 +3,7 @@
     using AutoFixture;
     using AutoFixture.Xunit3;
     using FluentAssertions;
+    using Xunit;
 
     public class UnitTest1
     {
