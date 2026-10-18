@@ -67,7 +67,7 @@ h1:focus {
     text-align: start;
 }
 
-/* ===== Home : identité de marque ===== */
+/* ===== Accueil : identité de marque ===== */
 .mz-brand {
     display: flex;
     flex-direction: column;
@@ -94,7 +94,7 @@ h1:focus {
     color: var(--mz-orange);
 }
 
-/* ===== Home : bannière ===== */
+/* ===== Accueil : bannière ===== */
 .mz-hero {
     min-height: 50vh;
     color: #F4E9D4;
