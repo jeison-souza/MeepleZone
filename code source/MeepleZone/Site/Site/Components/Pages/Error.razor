@@ -76,10 +76,10 @@
     [SupplyParameterFromQuery(Name = "debogage")]
     public string? Debogage { get; set; }
 
-    private bool MasquerDebogage =>
-        Debogage is not null && (Debogage == "0" || Debogage.Equals("false", StringComparison.OrdinalIgnoreCase));
+    private bool MasquerDebogage => Debogage is not null && (Debogage == "0" || Debogage.Equals("false", StringComparison.OrdinalIgnoreCase));
 
     private string? RequestId { get; set; }
+
     private bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
 
     private int _choix = -1;
