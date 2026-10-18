@@ -4,8 +4,8 @@
     align-items: center;
     justify-content: center;
     max-width: 760px;
-    /* Occupe la hauteur disponible (barre du haut, marges et pied de page déduits), sans descendre sous un minimum. */
-    min-height: max(24rem, calc(100vh - 13.5rem));
+    /* Occupe la hauteur disponible (barre du haut de 4 rem, marges et pied de page déduits), sans descendre sous un minimum. */
+    min-height: max(24rem, calc(100vh - 14rem));
     margin: 2rem auto;
     padding: 2rem 1.5rem 2.5rem;
     border-radius: 20px;
@@ -16,7 +16,7 @@
 
 @media (max-width: 640.98px) {
     .mz-erreur {
-        min-height: max(24rem, calc(100vh - 17rem));
+        min-height: max(24rem, calc(100vh - 14rem));
         padding: 1.5rem 1rem 2rem;
     }
 }

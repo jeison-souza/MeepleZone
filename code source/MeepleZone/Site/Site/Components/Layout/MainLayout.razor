@@ -1,4 +1,4 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
 <MudThemeProvider Theme="@MeepleZoneTheme" />
 <MudPopoverProvider />
 <MudDialogProvider />
@@ -31,18 +31,38 @@
             }
         }
     };
+
+    // Ouvert par défaut : sur grand écran le menu reste affiché, sur petit écran MudBlazor le ferme tout seul.
+    private bool _menuOuvert = true;
+
+    private void BasculerMenu() => _menuOuvert = !_menuOuvert;
 }
 
-<div class="page">
-    <div class="sidebar">
+<MudLayout>
+    <MudAppBar Elevation="0" Class="mz-barre">
+        @* Le bouton et la marque ne servent que sur petit écran : sur grand écran, le menu latéral reste visible. *@
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start"
+                       aria-label="Ouvrir le menu de navigation" Class="d-sm-none" OnClick="BasculerMenu" />
+        <a href="/" class="mz-marque d-sm-none" aria-label="MeepleZone, accueil">
+            <img src="images/logo-dark.svg" alt="" />
+            <span>Meeple<strong>Zone</strong></span>
+        </a>
+        <MudSpacer />
+        <MudLink Href="/a-propos" Color="Color.Inherit" Underline="Underline.Hover">À propos</MudLink>
+    </MudAppBar>
+
+    <MudDrawer @bind-Open="_menuOuvert" Variant="DrawerVariant.Responsive" Breakpoint="Breakpoint.Sm"
+               ClipMode="DrawerClipMode.Never" Elevation="0" Width="250px" Class="mz-menu-lateral">
+        <MudDrawerHeader Class="mz-menu-entete">
+            <a href="/" class="mz-marque" aria-label="MeepleZone, accueil">
+                <img src="images/logo-dark.svg" alt="" />
+                <span>Meeple<strong>Zone</strong></span>
+            </a>
+        </MudDrawerHeader>
         <NavMenu />
-    </div>
+    </MudDrawer>
 
-    <main>
-        <div class="top-row px-4">
-            <a href="/a-propos">À propos</a>
-        </div>
-
+    <MudMainContent Class="mz-contenu">
         <article class="content px-4">
             @Body
         </article>
@@ -51,8 +71,8 @@
             <a href="/confidentialite">Confidentialité</a>
             <a href="/conditions">Conditions d'utilisation</a>
         </footer>
-    </main>
-</div>
+    </MudMainContent>
+</MudLayout>
 
 <div id="blazor-error-ui" data-nosnippet>
     Une erreur inattendue est survenue.
