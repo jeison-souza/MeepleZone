@@ -124,6 +124,75 @@ h1:focus {
         color: #FFFFFF;
     }
 
+/* ===== Menu de l'utilisateur ===== */
+/* Le bouton natif enveloppe l'avatar : il reçoit le clic, le focus et le clavier. */
+.mz-avatar-bouton {
+    display: inline-flex;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: none;
+    line-height: 0;
+    cursor: pointer;
+}
+
+    .mz-avatar-bouton:focus-visible {
+        outline: 3px solid #F4E9D4;
+        outline-offset: 2px;
+    }
+
+.mz-menu-identite {
+    display: flex;
+    flex-direction: column;
+    min-width: 14rem;
+    max-width: 18rem;
+    padding: 0.75rem 1rem;
+}
+
+.mz-menu-nom {
+    font-weight: 600;
+}
+
+.mz-menu-courriel {
+    font-size: 0.8rem;
+    color: #4A4A63;
+    overflow-wrap: anywhere;
+}
+
+.mz-menu-deconnexion {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.5rem 1rem;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+    .mz-menu-deconnexion:hover {
+        background-color: rgba(16, 16, 38, 0.06);
+    }
+
+/* Comme « À propos », le bouton garde la casse normale (MudButton met le texte en majuscules par défaut). */
+.mz-bouton-connexion {
+    text-transform: none;
+}
+
+/* Petit écran : le bouton de connexion ne garde que son icône. */
+.mz-bouton-connexion-texte {
+    display: none;
+}
+
+@media (min-width: 600px) {
+    .mz-bouton-connexion-texte {
+        display: inline;
+    }
+}
+
 /* ===== Accueil : identité de marque ===== */
 .mz-brand {
     display: flex;
