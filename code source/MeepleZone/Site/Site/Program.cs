@@ -20,10 +20,18 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
 
+// Fournit l'état d'authentification aux composants (AuthorizeView, AuthorizeRouteView).
+builder.Services.AddCascadingAuthenticationState();
+
 builder.Services
     .AddAuthorization()
     .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie()
+    .AddCookie(options =>
+    {
+        // Une page protégée ouverte sans connexion mène à la page de connexion, avec l'adresse d'origine.
+        options.LoginPath = "/connexion-requise";
+        options.ReturnUrlParameter = "retour";
+    })
     .AddGoogle(options =>
     {
         builder.Configuration.GetSection("Authentication:Google").Bind(options);
@@ -76,8 +84,11 @@ app.MapRazorComponents<App>()
     .AddAdditionalAssemblies(typeof(MeepleZone.Site.Client._Imports).Assembly);
 
 // (Endpoints)
-app.MapGet("/connexion/Google", () => Results.Challenge(new AuthenticationProperties { RedirectUri = "/" }, [GoogleDefaults.AuthenticationScheme]));
-app.MapGet("/connexion/Microsoft", () => Results.Challenge(new AuthenticationProperties { RedirectUri = "/" }, [MicrosoftAccountDefaults.AuthenticationScheme]));
-app.MapPost("/deconnexion", () => Results.SignOut(new AuthenticationProperties { RedirectUri = "/" }, [CookieAuthenticationDefaults.AuthenticationScheme]));
+// L'adresse de retour passe toujours par UrlRetour : seul un chemin local du site est accepté.
+app.MapGet("/connexion/Google", (string? retour) => Results.Challenge(new AuthenticationProperties { RedirectUri = UrlRetour.Valider(retour) }, [GoogleDefaults.AuthenticationScheme]));
+app.MapGet("/connexion/Microsoft", (string? retour) => Results.Challenge(new AuthenticationProperties { RedirectUri = UrlRetour.Valider(retour) }, [MicrosoftAccountDefaults.AuthenticationScheme]));
+
+// Le paramètre de formulaire fait valider le jeton antiforgery par l'intergiciel : sans jeton, la requête est refusée (400).
+app.MapPost("/deconnexion", (IFormCollection _) => Results.SignOut(new AuthenticationProperties { RedirectUri = "/" }, [CookieAuthenticationDefaults.AuthenticationScheme]));
 
 app.Run();
