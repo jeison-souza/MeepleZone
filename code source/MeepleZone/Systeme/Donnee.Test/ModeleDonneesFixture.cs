@@ -1,3 +1,4 @@
+using MeepleZone.Systeme.Donnee.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -8,15 +9,14 @@ namespace MeepleZone.Systeme.Donnee.Test;
 /// <summary>
 /// Construit le contexte et son modèle une seule fois pour tous les tests d'une classe.
 /// La connexion n'est jamais ouverte : le modèle se construit sans base de données.
-/// Ces options devront venir d'un seul endroit quand la fabrique de la migration existera.
+/// Les options viennent de la même extension que la fabrique de migration.
 /// </summary>
 public sealed class ModeleDonneesFixture : IDisposable
 {
     public ModeleDonneesFixture()
     {
         var options = new DbContextOptionsBuilder<MeepleZoneContexte>()
-            .UseNpgsql("Host=hote-inexistant")
-            .UseSnakeCaseNamingConvention()
+            .UtiliserPostgreSql("Host=hote-inexistant")
             .Options;
 
         Contexte = new MeepleZoneContexte(options);
