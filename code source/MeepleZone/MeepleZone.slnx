@@ -4,6 +4,11 @@
     <File Path="Directory.Build.props" />
     <File Path="dotnet-tools.json" />
   </Folder>
+  <Folder Name="/Systeme/">
+    <Project Path="Systeme/Donnee/MeepleZone.Systeme.Donnee.csproj" />
+    <Project Path="Systeme/Donnee.Test/MeepleZone.Systeme.Donnee.Test.csproj" />
+    <Project Path="Systeme/Entites/MeepleZone.Systeme.Entites.csproj" />
+  </Folder>
   <Folder Name="/Site/">
     <Project Path="Site/Site.Client/MeepleZone.Site.Client.csproj" />
     <Project Path="Site/Site.Test/MeepleZone.Site.Test.csproj" />

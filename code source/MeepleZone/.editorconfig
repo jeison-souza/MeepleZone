@@ -8,4 +8,5 @@ dotnet_diagnostic.IDE0011.severity = error
 # Espaço de nomes de portée fichier (namespace X;).
 csharp_style_namespace_declarations = file_scoped:warning
 
-# Posição dos using: a decidir (fora ou dentro do espaço de nomes).
+# Using fora do espaço de nomes (padrão do gabarito .NET).
+csharp_using_directive_placement = outside_namespace:warning
