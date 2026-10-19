@@ -1,5 +1,9 @@
 root = true
 
+# Migrações geradas pelo EF Core: não se editam à mão, então as regras de estilo não se aplicam.
+[**/Migrations/*.cs]
+generated_code = true
+
 [*.cs]
 # Chaves obrigatórias em qualquer bloco (if, else, for, foreach, while, do, using, lock).
 csharp_prefer_braces = true:error

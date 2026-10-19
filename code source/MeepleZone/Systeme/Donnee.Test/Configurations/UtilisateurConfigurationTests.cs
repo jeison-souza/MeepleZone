@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using MeepleZone.Systeme.Donnee.Test.Extensions;
 using MeepleZone.Systeme.Entites;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
@@ -191,7 +192,7 @@ public class UtilisateurConfigurationTests : IClassFixture<ModeleDonneesFixture>
     {
         // Arrange
         var propriete = _modele.Propriete<Utilisateur>(nom);
-        var valeurAttendue = ConversionsDeNoms.EnSnakeCase(nom);
+        var valeurAttendue = nom.EnSnakeCase();
 
         // Act
         var colonne = propriete.GetColumnName();
