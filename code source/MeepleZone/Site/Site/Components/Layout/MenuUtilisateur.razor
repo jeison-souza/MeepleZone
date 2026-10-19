@@ -1,0 +1,69 @@
+@using System.Security.Claims
+@implements IDisposable
+@inject NavigationManager Navigation
+
+<AuthorizeView>
+    <Authorized Context="authentification">
+        <MudMenu AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight" AriaLabel="Menu de l'utilisateur">
+            <ActivatorContent Context="menu">
+                @* Avatar provisoire : une image générique, en attendant la photo du fournisseur. Avec un ActivatorContent personnalisé,
+                   MudMenu ne branche pas le clic : le bouton appelle lui-même menu.ToggleAsync. *@
+                <button type="button" class="mz-avatar-bouton" aria-label="Ouvrir le menu de l'utilisateur" @onclick="menu.ToggleAsync"><MudAvatar Size="Size.Medium" Color="Color.Primary">
+                    <MudIcon Icon="@Icons.Material.Filled.Person" />
+                </MudAvatar></button>
+            </ActivatorContent>
+            <ChildContent>
+                <div class="mz-menu-identite">
+                    <span class="mz-menu-nom">@NomAffiche(authentification.User)</span>
+                    @if (Courriel(authentification.User) is { } courriel)
+                    {
+                        <span class="mz-menu-courriel">@courriel</span>
+                    }
+                </div>
+                <MudDivider />
+                <MudMenuItem Href="/profil" Icon="@Icons.Material.Filled.Person">Mon profil</MudMenuItem>
+                @* Formulaire POST avec jeton antiforgery : sans jeton, le serveur refuse la déconnexion. *@
+                <form method="post" action="/deconnexion">
+                    <AntiforgeryToken />
+                    <button type="submit" class="mz-menu-deconnexion">
+                        <MudIcon Icon="@Icons.Material.Filled.Logout" Size="Size.Small" />
+                        <span>Se déconnecter</span>
+                    </button>
+                </form>
+            </ChildContent>
+        </MudMenu>
+    </Authorized>
+    <NotAuthorized>
+        <MudButton Href="@LienConnexion" Color="Color.Inherit" Variant="Variant.Text" Class="mz-bouton-connexion"
+                   StartIcon="@Icons.Material.Filled.Login" aria-label="Se connecter">
+            <span class="mz-bouton-connexion-texte">Se connecter</span>
+        </MudButton>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    // Le lien de connexion contient la page actuelle : la personne y revient après s'être connectée.
+    private string LienConnexion =>
+        $"/connexion-requise?retour={Uri.EscapeDataString(UrlRetour.Valider("/" + Navigation.ToBaseRelativePath(Navigation.Uri)))}";
+
+    protected override void OnInitialized()
+    {
+        Navigation.LocationChanged += APresChangementDePage;
+    }
+
+    // Le composant n'a aucun paramètre : sans cet abonnement, il ne serait pas redessiné à chaque navigation
+    // et le lien de connexion garderait l'adresse de la première page.
+    private void APresChangementDePage(object? expediteur, LocationChangedEventArgs arguments)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private static string NomAffiche(ClaimsPrincipal utilisateur) => utilisateur.Identity?.Name ?? "Mon compte";
+
+    private static string? Courriel(ClaimsPrincipal utilisateur) => utilisateur.FindFirst(ClaimTypes.Email)?.Value;
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= APresChangementDePage;
+    }
+}

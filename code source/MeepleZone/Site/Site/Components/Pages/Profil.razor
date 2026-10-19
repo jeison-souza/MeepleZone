@@ -1,0 +1,25 @@
+@page "/profil"
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
+<PageTitle>MeepleZone - Mon profil</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="my-8">
+    <AuthorizeView Context="authentification">
+        <MudPaper Elevation="2" Class="pa-6 d-flex flex-column align-center text-center">
+            <MudAvatar Size="Size.Large" Color="Color.Primary" Class="mb-3">
+                <MudIcon Icon="@Icons.Material.Filled.Person" />
+            </MudAvatar>
+            <MudText Typo="Typo.h4" HtmlTag="h1">Mon profil</MudText>
+            <MudText Typo="Typo.h6" Class="mt-2">@(authentification.User.Identity?.Name ?? "Mon compte")</MudText>
+            @if (authentification.User.FindFirst(ClaimTypes.Email)?.Value is { } courriel)
+            {
+                <MudText Typo="Typo.body2" Class="mz-profil-courriel">@courriel</MudText>
+            }
+            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mt-6">
+                La gestion du profil (photo, courriel, fournisseurs associés) n'est pas encore disponible.
+            </MudAlert>
+        </MudPaper>
+    </AuthorizeView>
+</MudContainer>
