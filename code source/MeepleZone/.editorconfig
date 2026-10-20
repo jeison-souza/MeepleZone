@@ -14,3 +14,11 @@ csharp_style_namespace_declarations = file_scoped:warning
 
 # Using fora do espaço de nomes (padrão do gabarito .NET).
 csharp_using_directive_placement = outside_namespace:warning
+
+# Formatação: espaços no fim da linha e outras diferenças do formatador (IDE0055), mais de uma linha
+# em branco seguida (IDE2000) e instrução colada depois de um bloco (IDE2003). Erro de compilação.
+dotnet_diagnostic.IDE0055.severity = error
+dotnet_style_allow_multiple_blank_lines_experimental = false:error
+dotnet_diagnostic.IDE2000.severity = error
+dotnet_style_allow_statement_immediately_after_block_experimental = false:error
+dotnet_diagnostic.IDE2003.severity = error
