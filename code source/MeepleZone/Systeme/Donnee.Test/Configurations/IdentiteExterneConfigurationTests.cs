@@ -18,7 +18,7 @@ public class IdentiteExterneConfigurationTests : IClassFixture<ModeleDonneesFixt
     }
 
     [Fact]
-    public void IdentiteExterneTable_PorteLeNomIdentiteExterne()
+    public void IdentiteExterne_Table_PorteLeNomIdentiteExterne()
     {
         // Arrange
         var type = _modele.TypeEntite<IdentiteExterne>();
@@ -91,7 +91,7 @@ public class IdentiteExterneConfigurationTests : IClassFixture<ModeleDonneesFixt
     [InlineData(nameof(IdentiteExterne.DerniereConnexionLe), false)]
     [InlineData(nameof(IdentiteExterne.CreeLe), false)]
     [InlineData(nameof(IdentiteExterne.ModifieLe), false)]
-    public void IdentiteExterne_Propriete_NEstPasUnique(string nom, bool doitEtreUnique)
+    public void IdentiteExterne_Propriete_PossedeUnIndexUnique(string nom, bool doitEtreUnique)
     {
         // Arrange
         var propriete = _modele.Propriete<IdentiteExterne>(nom);
@@ -134,7 +134,7 @@ public class IdentiteExterneConfigurationTests : IClassFixture<ModeleDonneesFixt
     }
 
     [Fact]
-    public void IdentiteExterne_CleEtrangereUtilisateurId_EstComposeeDeUtilisateur()
+    public void IdentiteExterne_CleEtrangereUtilisateurId_PossedeLaBonneConfiguration()
     {
         // Arrange
         var type = _modele.TypeEntite<IdentiteExterne>();
@@ -206,6 +206,27 @@ public class IdentiteExterneConfigurationTests : IClassFixture<ModeleDonneesFixt
 
         // Assert
         colonne.Should().Be(valeurAttendue);
+    }
+
+    [Theory]
+    [InlineData(nameof(IdentiteExterne.Id), "uuid")]
+    [InlineData(nameof(IdentiteExterne.UtilisateurId), "uuid")]
+    [InlineData(nameof(IdentiteExterne.Fournisseur), "text")]
+    [InlineData(nameof(IdentiteExterne.IdentifiantCompteExterne), "text")]
+    [InlineData(nameof(IdentiteExterne.Courriel), "text")]
+    [InlineData(nameof(IdentiteExterne.DerniereConnexionLe), "timestamp with time zone")]
+    [InlineData(nameof(IdentiteExterne.CreeLe), "timestamp with time zone")]
+    [InlineData(nameof(IdentiteExterne.ModifieLe), "timestamp with time zone")]
+    public void IdentiteExterne_Propriete_PorteLeBonTypeDeColonneDansSchema(string nom, string typeAttendu)
+    {
+        // Arrange
+        var propriete = _modele.Propriete<IdentiteExterne>(nom);
+
+        // Act
+        var colonne = propriete.GetColumnType();
+
+        // Assert
+        colonne.Should().Be(typeAttendu);
     }
 
     public static TheoryData<string> NomsDesProprietes()

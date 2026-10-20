@@ -16,6 +16,13 @@ internal class UtilisateurConfiguration : IEntityTypeConfiguration<Utilisateur>
         });
 
         builder.HasKey(u => u.Id);
+
+        builder.HasOne<Annexe>()
+            .WithMany()
+            .HasForeignKey(u => u.PhotoId)
+            .HasConstraintName("fk_utilisateur_annexe_photo_id")
+            .OnDelete(DeleteBehavior.SetNull);
+
         builder.HasIndex(u => u.CodeAmitie)
             .IsUnique();
 

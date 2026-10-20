@@ -142,9 +142,27 @@ public class UtilisateurConfigurationTests : IClassFixture<ModeleDonneesFixture>
         cle!.GetName().Should().Be("pk_utilisateur");
     }
 
+    [Fact]
+    public void Utilisateur_CleEtrangerePhotoId_PossedeLaBonneConfiguration()
+    {
+        // Arrange
+        var type = _modele.TypeEntite<Utilisateur>();
+        var propriete = _modele.Propriete<Utilisateur>(nameof(Utilisateur.PhotoId));
+
+        // Act
+        var cle = type.GetForeignKeys().SingleOrDefault(c => c.Properties.Contains(propriete));
+
+        // Assert
+        cle.Should().NotBeNull();
+        cle.DeleteBehavior.Should().Be(DeleteBehavior.SetNull);
+        cle.GetConstraintName().Should().Be("fk_utilisateur_annexe_photo_id");
+        cle.PrincipalEntityType.ClrType.Should().Be(typeof(Annexe));
+    }
+
     [Theory]
     [InlineData(nameof(Utilisateur.CodeAmitie), "ix_utilisateur_code_amitie")]
     [InlineData(nameof(Utilisateur.Courriel), "ix_utilisateur_courriel")]
+    [InlineData(nameof(Utilisateur.PhotoId), "ix_utilisateur_photo_id")]
     public void Utilisateur_Index_PorteLeNomDeLaConvention(string nom, string nomAttendu)
     {
         // Arrange
@@ -199,6 +217,29 @@ public class UtilisateurConfigurationTests : IClassFixture<ModeleDonneesFixture>
 
         // Assert
         colonne.Should().Be(valeurAttendue);
+    }
+
+    [Theory]
+    [InlineData(nameof(Utilisateur.Id), "uuid")]
+    [InlineData(nameof(Utilisateur.Courriel), "text")]
+    [InlineData(nameof(Utilisateur.CourrielVerifieLe), "timestamp with time zone")]
+    [InlineData(nameof(Utilisateur.NomAffichage), "text")]
+    [InlineData(nameof(Utilisateur.Role), "text")]
+    [InlineData(nameof(Utilisateur.PhotoId), "uuid")]
+    [InlineData(nameof(Utilisateur.CodeAmitie), "text")]
+    [InlineData(nameof(Utilisateur.VisibiliteCollection), "text")]
+    [InlineData(nameof(Utilisateur.CreeLe), "timestamp with time zone")]
+    [InlineData(nameof(Utilisateur.ModifieLe), "timestamp with time zone")]
+    public void Utilisateur_Propriete_PorteLeBonTypeDeColonneDansSchema(string nom, string typeAttendu)
+    {
+        // Arrange
+        var propriete = _modele.Propriete<Utilisateur>(nom);
+
+        // Act
+        var colonne = propriete.GetColumnType();
+
+        // Assert
+        colonne.Should().Be(typeAttendu);
     }
 
     public static TheoryData<string> NomsDesProprietes()

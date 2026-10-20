@@ -23,6 +23,56 @@ namespace MeepleZone.Systeme.Donnee.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("MeepleZone.Systeme.Entites.Annexe", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<byte[]>("Contenu")
+                        .IsRequired()
+                        .HasColumnType("bytea")
+                        .HasColumnName("contenu");
+
+                    b.Property<DateTimeOffset>("CreeLe")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("cree_le")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<Guid>("CreeParId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("cree_par_id");
+
+                    b.Property<string>("NomFichier")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("nom_fichier");
+
+                    b.Property<int>("TailleOctets")
+                        .HasColumnType("integer")
+                        .HasColumnName("taille_octets");
+
+                    b.Property<string>("TypeMime")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("type_mime");
+
+                    b.HasKey("Id")
+                        .HasName("pk_annexe");
+
+                    b.HasIndex("CreeParId")
+                        .HasDatabaseName("ix_annexe_cree_par_id");
+
+                    b.ToTable("annexe", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_annexe_nom_fichier", "char_length(nom_fichier) BETWEEN 1 AND 255");
+
+                            t.HasCheckConstraint("ck_annexe_taille_octets", "taille_octets > 0");
+                        });
+                });
+
             modelBuilder.Entity("MeepleZone.Systeme.Entites.IdentiteExterne", b =>
                 {
                     b.Property<Guid>("Id")
@@ -149,6 +199,9 @@ namespace MeepleZone.Systeme.Donnee.Migrations
                         .IsUnique()
                         .HasDatabaseName("ix_utilisateur_courriel");
 
+                    b.HasIndex("PhotoId")
+                        .HasDatabaseName("ix_utilisateur_photo_id");
+
                     b.ToTable("utilisateur", null, t =>
                         {
                             t.HasCheckConstraint("ck_utilisateur_code_amitie", "code_amitie ~ '^[A-HJ-NP-Z2-9]{8}$'");
@@ -159,6 +212,16 @@ namespace MeepleZone.Systeme.Donnee.Migrations
                         });
                 });
 
+            modelBuilder.Entity("MeepleZone.Systeme.Entites.Annexe", b =>
+                {
+                    b.HasOne("MeepleZone.Systeme.Entites.Utilisateur", null)
+                        .WithMany()
+                        .HasForeignKey("CreeParId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_annexe_utilisateur_cree_par_id");
+                });
+
             modelBuilder.Entity("MeepleZone.Systeme.Entites.IdentiteExterne", b =>
                 {
                     b.HasOne("MeepleZone.Systeme.Entites.Utilisateur", null)
@@ -167,6 +230,15 @@ namespace MeepleZone.Systeme.Donnee.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_identite_externe_utilisateur_utilisateur_id");
+                });
+
+            modelBuilder.Entity("MeepleZone.Systeme.Entites.Utilisateur", b =>
+                {
+                    b.HasOne("MeepleZone.Systeme.Entites.Annexe", null)
+                        .WithMany()
+                        .HasForeignKey("PhotoId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_utilisateur_annexe_photo_id");
                 });
 #pragma warning restore 612, 618
         }

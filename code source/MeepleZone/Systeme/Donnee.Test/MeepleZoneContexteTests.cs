@@ -26,6 +26,26 @@ public class MeepleZoneContexteTests : IClassFixture<ModeleDonneesFixture>
     }
 
     [Fact]
+    public void IdentitesExternes_Ensemble_EstLieALEntiteIdentiteExterne()
+    {
+        // Arrange + Act : le type est lu dans le modèle, sans interroger la base
+        var type = _modele.Contexte.IdentitesExternes.EntityType;
+
+        // Assert
+        type.ClrType.Should().Be(typeof(IdentiteExterne));
+    }
+
+    [Fact]
+    public void Annexes_Ensemble_EstLieALEntiteAnnexe()
+    {
+        // Arrange + Act : le type est lu dans le modèle, sans interroger la base
+        var type = _modele.Contexte.Annexes.EntityType;
+
+        // Assert
+        type.ClrType.Should().Be(typeof(Annexe));
+    }
+
+    [Fact]
     public void Modele_Collations_DoitPossederCollationCourriel()
     {
         // Arrange + Act : la collation est lue dans le modèle, sans interroger la base

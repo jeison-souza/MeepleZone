@@ -16,6 +16,8 @@ public class MeepleZoneContexte : DbContext
 
     public DbSet<IdentiteExterne> IdentitesExternes => Set<IdentiteExterne>();
 
+    public DbSet<Annexe> Annexes => Set<Annexe>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasCollation(CollationCourriel, locale: "und-u-ks-level2", provider: "icu", deterministic: false);
