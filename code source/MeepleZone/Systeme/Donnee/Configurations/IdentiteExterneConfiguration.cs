@@ -11,7 +11,7 @@ internal class IdentiteExterneConfiguration : IEntityTypeConfiguration<IdentiteE
         builder.ToTable("identite_externe");
 
         builder.HasKey(u => u.Id);
-        
+
         builder.HasOne<Utilisateur>()
             .WithMany()
             .HasForeignKey(ie => ie.UtilisateurId)
