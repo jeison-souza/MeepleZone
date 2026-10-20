@@ -23,6 +23,64 @@ namespace MeepleZone.Systeme.Donnee.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("MeepleZone.Systeme.Entites.IdentiteExterne", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Courriel")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("courriel")
+                        .UseCollation("courriel_ci");
+
+                    b.Property<DateTimeOffset>("CreeLe")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("cree_le")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<DateTimeOffset>("DerniereConnexionLe")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("derniere_connexion_le")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Fournisseur")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("fournisseur");
+
+                    b.Property<string>("IdentifiantCompteExterne")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("identifiant_compte_externe");
+
+                    b.Property<DateTimeOffset>("ModifieLe")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modifie_le")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<Guid>("UtilisateurId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("utilisateur_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_identite_externe");
+
+                    b.HasIndex("UtilisateurId")
+                        .HasDatabaseName("ix_identite_externe_utilisateur_id");
+
+                    b.HasIndex("Fournisseur", "IdentifiantCompteExterne")
+                        .IsUnique()
+                        .HasDatabaseName("ix_identite_externe_fournisseur_identifiant_compte_externe");
+
+                    b.ToTable("identite_externe", (string)null);
+                });
+
             modelBuilder.Entity("MeepleZone.Systeme.Entites.Utilisateur", b =>
                 {
                     b.Property<Guid>("Id")
@@ -99,6 +157,16 @@ namespace MeepleZone.Systeme.Donnee.Migrations
 
                             t.HasCheckConstraint("ck_utilisateur_visibilite_collection", "visibilite_collection IN ('privee', 'amis')");
                         });
+                });
+
+            modelBuilder.Entity("MeepleZone.Systeme.Entites.IdentiteExterne", b =>
+                {
+                    b.HasOne("MeepleZone.Systeme.Entites.Utilisateur", null)
+                        .WithMany()
+                        .HasForeignKey("UtilisateurId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_identite_externe_utilisateur_utilisateur_id");
                 });
 #pragma warning restore 612, 618
         }
