@@ -85,3 +85,17 @@ VALUES ('20261020142005_CreationTableAnnexe', '10.0.13');
 
 COMMIT;
 
+START TRANSACTION;
+ALTER TABLE utilisateur ALTER COLUMN courriel DROP NOT NULL;
+
+ALTER TABLE identite_externe ALTER COLUMN courriel DROP NOT NULL;
+
+ALTER TABLE utilisateur ADD CONSTRAINT ck_utilisateur_courriel CHECK (courriel = btrim(courriel) AND courriel <> '');
+
+ALTER TABLE identite_externe ADD CONSTRAINT ck_identite_externe_courriel CHECK (courriel = btrim(courriel) AND courriel <> '');
+
+INSERT INTO historique_migration (migration_id, product_version)
+VALUES ('20261021010837_ModificationCourrielFacultatif', '10.0.13');
+
+COMMIT;
+
