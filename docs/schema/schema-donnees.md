@@ -11,7 +11,7 @@ Ce document décrit les tables de la base de données, leurs champs et leurs rel
 
 Le système retenu est PostgreSQL (voir l'[ADR 0005](../adr/0005-base-de-donnees.md)). L'authentification passe uniquement par des fournisseurs externes, sans mot de passe local (voir l'[ADR 0001](../adr/0001-authentification.md)), et la liaison de plusieurs fournisseurs à un même compte suit l'[ADR 0004](../adr/0004-liaison-comptes-fournisseurs.md).
 
-Le script SQL généré par les migrations d'EF Core se trouve dans [`schema.sql`](schema.sql). Il crée les tables décrites ici, dans l'ordre des migrations, et ne couvre pour l'instant que celles qui sont déjà migrées : `utilisateur`, `identite_externe` et `annexe`. Il est généré à nouveau à chaque migration, à partir de `code source/MeepleZone` : `dotnet ef migrations script --project Systeme/Donnee --output ../../docs/schema/schema.sql`.
+Le script SQL généré par les migrations d'EF Core se trouve dans [`schema.sql`](schema.sql). Il crée les tables décrites ici, dans l'ordre des migrations, et ne couvre pour l'instant que celles qui sont déjà migrées : `utilisateur`, `identite_externe` et `annexe`. Il est généré à nouveau à chaque migration, à partir de `code source/MeepleZone` : `dotnet ef migrations script --project Systeme/Donnee --output ../../docs/schema/schema.sql`. Sa version idempotente, [`schema-idempotent.sql`](schema-idempotent.sql), vérifie `historique_migration` avant chaque migration : elle s'applique à une base dans n'importe quel état, et se régénère de la même façon avec `--idempotent` et `--output ../../docs/schema/schema-idempotent.sql`.
 
 ## Contenu
 
