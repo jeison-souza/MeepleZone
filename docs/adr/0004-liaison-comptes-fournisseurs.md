@@ -1,6 +1,6 @@
 # ADR 0004 : Liaison des comptes de plusieurs fournisseurs d'identité
 
-- **Statut :** accepté, amendé le 2026-10-14 (règle 3) et le 2026-10-17 (règle 4)
+- **Statut :** accepté, amendé le 2026-10-14 (règle 3), le 2026-10-17 (règle 4) et le 2026-10-20 (règle 5)
 - **Date :** 2026-10-10
 
 ## Contexte
@@ -23,12 +23,13 @@ Il faut décider si ces comptes sont reliés et comment. Le courriel ne peut pas
 
 Option B : liaison explicite, sans fusion automatique à partir du courriel. Depuis son profil, un utilisateur déjà connecté choisit d'associer un autre fournisseur, termine la connexion chez celui-ci, et le couple fournisseur + `identifiant_compte_externe` correspondant est ajouté à son compte. Le modèle de données prévoit un utilisateur et plusieurs connexions externes qui lui sont rattachées (relation un à plusieurs).
 
-Quatre règles complètent la décision :
+Cinq règles complètent la décision :
 
-1. **Le courriel est unique.** Deux comptes ne peuvent pas partager le même courriel. Si une personne se connecte avec un fournisseur dont le courriel appartient déjà à un compte existant, aucun compte n'est créé : un message l'invite à se connecter avec le fournisseur d'origine, puis à associer le nouveau fournisseur depuis son profil.
+1. **Le courriel, quand il existe, est unique.** Deux comptes ne peuvent pas partager le même courriel; un compte sans courriel n'entre pas dans cette règle (règle 5). Si une personne se connecte avec un fournisseur dont le courriel appartient déjà à un compte existant, aucun compte n'est créé : un message l'invite à se connecter avec le fournisseur d'origine, puis à associer le nouveau fournisseur depuis son profil.
 2. **Aucune liaison vers un fournisseur déjà utilisé par un autre compte.** Si le fournisseur à associer est déjà rattaché à un autre compte (par exemple parce que la personne s'y est connectée d'abord et a créé un compte), la liaison est refusée. Le système demande de supprimer l'un des deux comptes (normalement le plus récent, encore sans données), puis de se reconnecter avec le compte d'origine pour faire l'association (voir l'[ADR 0006](0006-suppression-de-compte.md)).
 3. **La connexion ne dépend que du fournisseur.** Si le fournisseur a authentifié la personne, elle entre; l'application n'exige pas de confirmation du courriel de la part du fournisseur, que certains n'offrent pas de façon fiable (c'est le cas de Microsoft). Le courriel ne sert jamais à identifier la personne ni à lier des comptes : seul `identifiant_compte_externe` identifie. Une vérification propre à l'application, par un code envoyé au courriel, est réservée aux communications par courriel (par exemple les demandes d'amitié) et enregistrée dans `utilisateur.courriel_verifie_le`; sans elle, la personne se connecte normalement mais ne reçoit pas ces communications.
-4. **Le courriel du compte appartient à la personne.** Il est copié de la première connexion, puis la personne peut le changer (le nouveau courriel est confirmé par un code, voir la règle 3). Le courriel de chaque connexion externe est conservé à titre d'information et se met à jour quand il change chez le fournisseur, sans modifier celui du compte : un changement chez un fournisseur ne peut donc pas entrer en conflit avec un autre compte. La comparaison ignore la casse, et l'unicité vaut pour le seul courriel du compte.
+4. **Le courriel du compte appartient à la personne.** Il est copié de la première connexion quand le fournisseur en communique un, puis la personne peut le changer ou l'ajouter (le nouveau courriel est confirmé par un code, voir les règles 3 et 5). Le courriel de chaque connexion externe est conservé à titre d'information et se met à jour quand il change chez le fournisseur, sans modifier celui du compte : un changement chez un fournisseur ne peut donc pas entrer en conflit avec un autre compte. La comparaison ignore la casse, et l'unicité vaut pour le seul courriel du compte.
+5. **Le courriel du compte est facultatif.** Un fournisseur qui ne communique pas de courriel, ou qui en donne un vide, ne bloque ni la connexion ni la création du compte : le compte est créé sans courriel, et la règle 1 ne vaut que pour les comptes qui en ont un. Google et Microsoft, les fournisseurs actuels, en communiquent toujours un; la règle évite de refaire le parcours de création le jour où un fournisseur n'en donnera pas. La personne peut ajouter un courriel depuis son profil : il n'est enregistré qu'après confirmation par un code (règles 3 et 4), jamais tel que saisi, pour qu'un courriel saisi à la main ne bloque pas l'inscription d'une autre personne. Sans courriel, la personne se connecte normalement, utilise le catalogue et sa collection et peut être retrouvée par son code d'amitié, mais elle ne reçoit ni demandes d'amitié ni communications par courriel avant d'en avoir confirmé un. Un texte vide, fait seulement d'espaces, ou avec des espaces au début ou à la fin n'est pas un courriel : la base le refuse, le code retire ces espaces avant d'enregistrer et traite un texte vide comme une absence.
 
 ## Conséquences
 
@@ -37,6 +38,7 @@ Quatre règles complètent la décision :
 - Aucune possibilité de prendre le contrôle d'un compte en usurpant un courriel.
 - Un courriel correspond à un seul compte, et un fournisseur à un seul compte : aucune ambiguïté sur l'identité de la personne qui se connecte.
 - Une personne n'est jamais bloquée à la connexion parce que son fournisseur ne confirme pas son courriel.
+- Une personne n'est jamais bloquée à la création du compte parce que son fournisseur ne donne pas de courriel : le compte est créé en une seule étape, sans page de saisie préalable.
 - L'ajout futur de fournisseurs (voir l'ADR 0001) suit le même mécanisme, sans règle spéciale.
 
 ### Négatives
@@ -46,4 +48,5 @@ Quatre règles complètent la décision :
 - Comme le courriel d'une connexion n'est pas garanti vérifié, quelqu'un pourrait inscrire l'adresse d'une autre personne et lui bloquer l'inscription (règle 1). Le risque est jugé faible pour ce projet; la personne lésée s'adresse au soutien, qui règle le cas à la main.
 - Un écran de gestion des fournisseurs associés (ajout, retrait) est à développer et à tester, y compris le cas où le dernier fournisseur d'un compte ne peut pas être retiré.
 - La vérification du courriel par code, et donc le changement du courriel du compte par la personne, dépendent de l'envoi de courriels depuis le domaine, qui reste à mettre en place.
+- Le courriel du compte pouvant manquer, le code doit traiter son absence partout où il est lu (recherche d'amis, communications, affichage du profil), et la colonne n'offre plus la garantie « tout compte a un courriel ». Une personne sans courriel ne reçoit ni demandes d'amitié ni communications avant d'en avoir ajouté un et de l'avoir confirmé.
 - Le courriel du compte peut différer de celui des fournisseurs : en cas de problème, le soutien consulte les deux.
