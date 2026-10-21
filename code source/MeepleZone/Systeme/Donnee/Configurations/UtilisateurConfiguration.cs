@@ -13,6 +13,7 @@ internal class UtilisateurConfiguration : IEntityTypeConfiguration<Utilisateur>
             t.HasCheckConstraint("ck_utilisateur_role", "role IN ('membre', 'administrateur', 'systeme')");
             t.HasCheckConstraint("ck_utilisateur_visibilite_collection", "visibilite_collection IN ('privee', 'amis')");
             t.HasCheckConstraint("ck_utilisateur_code_amitie", "code_amitie ~ '^[A-HJ-NP-Z2-9]{8}$'");
+            t.HasCheckConstraint("ck_utilisateur_courriel", "courriel = btrim(courriel) AND courriel <> ''");
         });
 
         builder.HasKey(u => u.Id);
@@ -30,7 +31,6 @@ internal class UtilisateurConfiguration : IEntityTypeConfiguration<Utilisateur>
             .IsUnique();
 
         builder.Property(u => u.Courriel)
-            .IsRequired()
             .UseCollation(MeepleZoneContexte.CollationCourriel);
 
         builder.Property(u => u.CodeAmitie)

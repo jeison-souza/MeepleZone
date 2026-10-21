@@ -6,7 +6,7 @@ public class Utilisateur
 {
     public Guid Id { get; set; }
 
-    public string Courriel { get; set; } = string.Empty;
+    public string? Courriel { get; set; }
 
     public DateTimeOffset? CourrielVerifieLe { get; set; }
 

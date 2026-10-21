@@ -81,7 +81,6 @@ namespace MeepleZone.Systeme.Donnee.Migrations
                         .HasColumnName("id");
 
                     b.Property<string>("Courriel")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("courriel")
                         .UseCollation("courriel_ci");
@@ -128,7 +127,10 @@ namespace MeepleZone.Systeme.Donnee.Migrations
                         .IsUnique()
                         .HasDatabaseName("ix_identite_externe_fournisseur_identifiant_compte_externe");
 
-                    b.ToTable("identite_externe", (string)null);
+                    b.ToTable("identite_externe", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_identite_externe_courriel", "courriel = btrim(courriel) AND courriel <> ''");
+                        });
                 });
 
             modelBuilder.Entity("MeepleZone.Systeme.Entites.Utilisateur", b =>
@@ -144,7 +146,6 @@ namespace MeepleZone.Systeme.Donnee.Migrations
                         .HasColumnName("code_amitie");
 
                     b.Property<string>("Courriel")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("courriel")
                         .UseCollation("courriel_ci");
@@ -205,6 +206,8 @@ namespace MeepleZone.Systeme.Donnee.Migrations
                     b.ToTable("utilisateur", null, t =>
                         {
                             t.HasCheckConstraint("ck_utilisateur_code_amitie", "code_amitie ~ '^[A-HJ-NP-Z2-9]{8}$'");
+
+                            t.HasCheckConstraint("ck_utilisateur_courriel", "courriel = btrim(courriel) AND courriel <> ''");
 
                             t.HasCheckConstraint("ck_utilisateur_role", "role IN ('membre', 'administrateur', 'systeme')");
 

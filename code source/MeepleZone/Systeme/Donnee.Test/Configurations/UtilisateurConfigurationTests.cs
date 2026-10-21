@@ -33,6 +33,7 @@ public class UtilisateurConfigurationTests : IClassFixture<ModeleDonneesFixture>
     [InlineData("ck_utilisateur_role", "role IN ('membre', 'administrateur', 'systeme')")]
     [InlineData("ck_utilisateur_visibilite_collection", "visibilite_collection IN ('privee', 'amis')")]
     [InlineData("ck_utilisateur_code_amitie", "code_amitie ~ '^[A-HJ-NP-Z2-9]{8}$'")]
+    [InlineData("ck_utilisateur_courriel", "courriel = btrim(courriel) AND courriel <> ''")]
     public void Utilisateur_ContrainteCheck_EstDeclareeAvecSonSql(string nom, string sqlAttendu)
     {
         // Arrange
@@ -77,7 +78,7 @@ public class UtilisateurConfigurationTests : IClassFixture<ModeleDonneesFixture>
 
     [Theory]
     [InlineData(nameof(Utilisateur.Id), false)]
-    [InlineData(nameof(Utilisateur.Courriel), false)]
+    [InlineData(nameof(Utilisateur.Courriel), true)]
     [InlineData(nameof(Utilisateur.CodeAmitie), false)]
     [InlineData(nameof(Utilisateur.NomAffichage), false)]
     [InlineData(nameof(Utilisateur.Role), false)]

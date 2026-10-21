@@ -8,7 +8,10 @@ internal class IdentiteExterneConfiguration : IEntityTypeConfiguration<IdentiteE
 {
     public void Configure(EntityTypeBuilder<IdentiteExterne> builder)
     {
-        builder.ToTable("identite_externe");
+        builder.ToTable("identite_externe", t =>
+        {
+            t.HasCheckConstraint("ck_identite_externe_courriel", "courriel = btrim(courriel) AND courriel <> ''");
+        });
 
         builder.HasKey(u => u.Id);
 
@@ -28,7 +31,6 @@ internal class IdentiteExterneConfiguration : IEntityTypeConfiguration<IdentiteE
             .IsRequired();
 
         builder.Property(u => u.Courriel)
-            .IsRequired()
             .UseCollation(MeepleZoneContexte.CollationCourriel);
 
         builder.Property(u => u.DerniereConnexionLe)

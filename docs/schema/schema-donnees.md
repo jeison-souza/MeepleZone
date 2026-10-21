@@ -2,8 +2,8 @@
 
 | | |
 |---|---|
-| **Version** | 0.4 ([historique des versions](#historique-des-versions)) |
-| **Date** | 17 octobre 2026 |
+| **Version** | 0.5 ([historique des versions](#historique-des-versions)) |
+| **Date** | 20 octobre 2026 |
 | **Statut** | Complet pour le produit minimal viable; sujet à révision après la mise en œuvre de l'authentification par les fournisseurs d'identité et les premiers tests contre une base de données réelle |
 | **Portée** | Comptes, annexes, catalogue de jeux, collection et amitiés |
 
@@ -11,7 +11,7 @@ Ce document décrit les tables de la base de données, leurs champs et leurs rel
 
 Le système retenu est PostgreSQL (voir l'[ADR 0005](../adr/0005-base-de-donnees.md)). L'authentification passe uniquement par des fournisseurs externes, sans mot de passe local (voir l'[ADR 0001](../adr/0001-authentification.md)), et la liaison de plusieurs fournisseurs à un même compte suit l'[ADR 0004](../adr/0004-liaison-comptes-fournisseurs.md).
 
-Le script SQL généré par les migrations d'EF Core se trouve dans [`schema.sql`](schema.sql). Il crée les tables décrites ici, dans l'ordre des migrations, et ne couvre pour l'instant que celles qui sont déjà migrées : `utilisateur`, `identite_externe` et `annexe`. Il est généré à nouveau à chaque migration, à partir de `code source/MeepleZone` : `dotnet ef migrations script --project Systeme/Donnee --output ../../docs/schema/schema.sql`.
+Le script SQL généré par les migrations d'EF Core se trouve dans [`schema.sql`](schema.sql). Il crée les tables décrites ici, dans l'ordre des migrations, et ne couvre pour l'instant que celles qui sont déjà migrées : `utilisateur`, `identite_externe` et `annexe`. Il est généré à nouveau à chaque migration, à partir de `code source/MeepleZone` : `dotnet ef migrations script --project Systeme/Donnee --output ../../docs/schema/schema.sql`. Sa version idempotente, [`schema-idempotent.sql`](schema-idempotent.sql), vérifie `historique_migration` avant chaque migration : elle s'applique à une base dans n'importe quel état, et se régénère de la même façon avec `--idempotent` et `--output ../../docs/schema/schema-idempotent.sql`.
 
 ## Contenu
 
@@ -83,7 +83,7 @@ erDiagram
 
     utilisateur {
         uuid id PK
-        text courriel UK "collation ICU"
+        text courriel UK "nullable, collation ICU"
         timestamptz courriel_verifie_le "nullable"
         text nom_affichage
         text role "membre, administrateur, systeme"
@@ -99,7 +99,7 @@ erDiagram
         uuid utilisateur_id FK
         text fournisseur "Google, Microsoft"
         text identifiant_compte_externe "sub chez Google, oid chez Microsoft"
-        text courriel "collation ICU"
+        text courriel "nullable, collation ICU"
         timestamptz derniere_connexion_le
         timestamptz cree_le
         timestamptz modifie_le
@@ -123,8 +123,8 @@ Représente une personne dans MeepleZone, indépendamment du fournisseur qu'elle
 | Colonne | Type | Contraintes | Description |
 |---|---|---|---|
 | `id` | `uuid` | `PRIMARY KEY` | Identifiant de l'utilisateur. |
-| `courriel` | `text` (collation ICU) | `NOT NULL`, `UNIQUE` | Courriel du compte : celui que MeepleZone utilise pour joindre la personne et pour la retrouver (recherche d'amis). Copié de la première connexion externe, il appartient ensuite à la personne, qui pourra le changer. Il est unique dans toute la table, sans égard à la casse (ADR 0004, règle 1). |
-| `courriel_verifie_le` | `timestamptz` | | Moment où le courriel du compte a été reconnu comme vérifié (UTC) : dès la première connexion si le fournisseur l'atteste, sinon par un code envoyé par MeepleZone. Vide tant qu'il ne l'est pas, et effacé quand le courriel change. La connexion ne dépend pas de cette valeur : elle autorise les communications par courriel et la recherche d'amis par courriel. |
+| `courriel` | `text` (collation ICU) | `UNIQUE`, `CHECK (courriel = btrim(courriel) AND courriel <> '')`¹ | Courriel du compte, **facultatif** : celui que MeepleZone utilise pour joindre la personne et pour la retrouver par courriel (recherche d'amis). Copié de la première connexion externe quand le fournisseur en communique un, il appartient ensuite à la personne, qui pourra le changer ou, s'il manquait, l'ajouter. Vide pour une personne dont le fournisseur n'en donne pas : la connexion et le code d'amitié fonctionnent sans lui. Quand il existe, il est unique dans toute la table, sans égard à la casse (ADR 0004, règles 1 et 5); plusieurs comptes sans courriel sont permis. Un courriel saisi par la personne n'est enregistré qu'après confirmation par un code (ADR 0004, règle 5). Un texte vide, fait seulement d'espaces, ou avec des espaces au début ou à la fin n'est pas accepté par la base : le code retire ces espaces avant d'enregistrer et traite un texte vide comme une absence. |
+| `courriel_verifie_le` | `timestamptz` | | Moment où le courriel du compte a été reconnu comme vérifié (UTC) : dès la première connexion si le fournisseur l'atteste, sinon par un code envoyé par MeepleZone. Vide tant qu'il ne l'est pas (et toujours vide sans courriel), et effacé quand le courriel change. La connexion ne dépend pas de cette valeur : elle autorise les communications par courriel et la recherche d'amis par courriel. |
 | `nom_affichage` | `text` | `NOT NULL` | Nom montré aux autres utilisateurs. Copié du fournisseur lors de la première connexion. |
 | `role` | `text` | `NOT NULL`, `DEFAULT 'membre'`, `CHECK (role IN ('membre', 'administrateur', 'systeme'))`¹ | Ce que la personne peut faire dans MeepleZone (voir ci-dessous). |
 | `photo_id` | `uuid` | `REFERENCES annexe(id) ON DELETE SET NULL` | Photo de profil. Vide tant qu'aucune photo n'est enregistrée. |
@@ -153,19 +153,19 @@ Chaque ligne est une façon de se connecter : un fournisseur et l'identifiant qu
 | `utilisateur_id` | `uuid` | `NOT NULL`, `REFERENCES utilisateur(id) ON DELETE CASCADE` | Utilisateur auquel appartient cette connexion. |
 | `fournisseur` | `text` | `NOT NULL` | Nom du fournisseur (`Google`, `Microsoft`). Un texte plutôt qu'une table de référence : l'ajout d'un fournisseur (ADR 0001) ne demande pas de modification du schéma. |
 | `identifiant_compte_externe` | `text` | `NOT NULL` | Identifiant stable du compte de la personne chez le fournisseur : le `sub` chez Google, l'`oid` chez Microsoft. Contrairement au courriel, il ne change pas. |
-| `courriel` | `text` (collation ICU) | `NOT NULL` | Courriel communiqué par ce fournisseur, conservé à titre d'information (il aide le soutien à retrouver un compte). Il se met à jour quand il change chez le fournisseur, sans effet sur le courriel du compte. |
+| `courriel` | `text` (collation ICU) | | Courriel communiqué par ce fournisseur, s'il en communique un, conservé à titre d'information (il aide le soutien à retrouver un compte). Il se met à jour quand il change chez le fournisseur, sans effet sur le courriel du compte. Vide quand le fournisseur n'en donne pas. |
 | `derniere_connexion_le` | `timestamptz` | `NOT NULL`, `DEFAULT now()` | Dernière fois que la personne s'est connectée avec ce fournisseur (UTC). Écrite à la connexion, pas à chaque requête. |
 | `cree_le` | `timestamptz` | `NOT NULL`, `DEFAULT now()` | Moment où la connexion a été associée au compte (UTC). |
 | `modifie_le` | `timestamptz` | `NOT NULL`, `DEFAULT now()` | Moment de la dernière modification (UTC), mis à jour par l'application. Une simple connexion (`derniere_connexion_le`) ne compte pas comme une modification. |
 
-Contrainte sur la table : `UNIQUE (fournisseur, identifiant_compte_externe)`.
+Contraintes sur la table : `UNIQUE (fournisseur, identifiant_compte_externe)` et `CHECK (courriel = btrim(courriel) AND courriel <> '')` : un courriel vide, fait d'espaces ou avec des espaces aux extrémités est refusé (l'absence de courriel s'écrit `NULL`).
 
 Règles :
 
 - Le couple (`fournisseur`, `identifiant_compte_externe`) est unique : une même connexion externe ne peut appartenir qu'à un seul utilisateur (ADR 0004, règle 2).
 - Un utilisateur possède une ou plusieurs connexions externes (relation un à plusieurs). La dernière connexion d'un compte ne peut pas être retirée; cette règle est appliquée par le code et non par la base.
 - Le courriel n'est pas unique dans cette table : une même personne peut avoir le même courriel chez deux fournisseurs. L'unicité entre comptes différents est garantie par `utilisateur.courriel` et par le code.
-- À la création du compte, `utilisateur.courriel` est celui de la première connexion. Ensuite il peut différer de ceux des connexions, car la personne peut changer le sien et les fournisseurs peuvent changer le leur.
+- À la création du compte, `utilisateur.courriel` est celui de la première connexion quand le fournisseur en communique un; sinon il reste vide et le compte est créé quand même (ADR 0004, règle 5). Ensuite il peut différer de ceux des connexions, car la personne peut changer le sien et les fournisseurs peuvent changer le leur.
 - Le dernier accès d'une personne, et le fournisseur utilisé, se lisent dans la connexion dont `derniere_connexion_le` est la plus récente. Aucune adresse IP ni information sur le navigateur n'est conservée.
 - Les connexions n'appartiennent qu'à l'utilisateur et aucune autre table n'en dépend : la suppression en cascade (`ON DELETE CASCADE`) est sûre ici. Le comportement des autres clés étrangères vers `utilisateur` est fixé par l'[ADR 0006](../adr/0006-suppression-de-compte.md) : `CASCADE` pour les données personnelles, `RESTRICT` pour `cree_par_id`.
 
@@ -454,11 +454,11 @@ Contraintes sur la table :
 Règles :
 
 - **Ce que voit la personne qui demande :** `en_attente` et `ignoree` s'affichent toutes deux comme « en attente » (elle ne peut pas savoir qu'on l'a ignorée); `rejetee` s'affiche comme « rejetée ». Elle voit le courriel ou le code qu'elle a saisi, jamais le nom ni la photo du compte correspondant avant l'acceptation : sans cela, la demande révélerait qui est inscrit.
-- **Ce que fait la personne qui reçoit :** accepter (la demande disparaît et l'amitié naît), rejeter (`rejetee`) ou ignorer (`ignoree`, pour la retirer de sa boîte sans le dire). Elle ne voit la demande qu'une fois son courriel vérifié.
+- **Ce que fait la personne qui reçoit :** accepter (la demande disparaît et l'amitié naît), rejeter (`rejetee`) ou ignorer (`ignoree`, pour la retirer de sa boîte sans le dire). Elle ne voit la demande qu'une fois son courriel vérifié : une personne sans courriel ne reçoit donc pas de demandes avant d'en avoir ajouté un et de l'avoir confirmé.
 - **Annuler :** la personne qui demande peut supprimer sa demande à tout moment, quel que soit l'état. La ligne disparaît.
 - **Limite :** une personne a au plus **5** demandes `en_attente` ou `ignoree` à la fois. Les demandes `rejetee` ne comptent pas. Le nombre est un paramètre de configuration, et la règle est appliquée par le code. Comme les demandes ne s'expirent pas (cela exigerait une tâche planifiée), annuler est le moyen de libérer une place.
 - **Demandes croisées :** si une personne demande l'amitié de quelqu'un qui lui a déjà fait une demande en attente, la demande existante est acceptée au lieu d'en créer une seconde.
-- **Demande par courriel :** si le courriel appartient à un compte existant, `destinataire_id` est rempli. Sinon `courriel_destinataire` est conservé; quand une personne s'inscrit avec ce courriel, le code remplace `courriel_destinataire` par `destinataire_id`.
+- **Demande par courriel :** si le courriel appartient à un compte existant, `destinataire_id` est rempli. Sinon `courriel_destinataire` est conservé; quand une personne s'inscrit avec ce courriel, ou l'ajoute à son compte après confirmation, le code remplace `courriel_destinataire` par `destinataire_id`.
 - L'envoi du courriel d'invitation à une personne sans compte dépend de la mise en place de l'envoi de courriels. Tant qu'il n'existe pas, la demande reste en attente avec la même apparence.
 - Le courriel d'une personne sans compte n'est conservé que tant que la demande existe : il disparaît à l'annulation, ou à la suppression du compte de la personne qui demande.
 
@@ -491,6 +491,7 @@ Règles :
 Comptes :
 
 - Changement du courriel du compte par la personne : saisie du nouveau courriel, code de vérification envoyé à cette adresse, puis remplacement. Ce parcours dépend de la mise en place de l'envoi de courriels.
+- Ajout d'un courriel par une personne dont le fournisseur n'en donne pas : même parcours que le changement (saisie, code, enregistrement), jamais d'enregistrement sans confirmation, pour qu'un courriel saisi à la main ne bloque pas l'inscription d'une autre personne (ADR 0004, règle 5). L'écran du profil rappelle que le courriel est nécessaire pour recevoir des demandes d'amitié et des communications. Aucun fournisseur actuel (Google, Microsoft) n'en a besoin.
 - Vérification du courriel par un code envoyé par l'application, pour les communications futures (colonne `utilisateur.courriel_verifie_le`).
 
 Catalogue :
@@ -525,5 +526,6 @@ Amitiés :
 | 0.2 | 13 octobre 2026 | Ajout du catalogue de jeux, de la collection et des amitiés; colonnes `utilisateur.code_amitie` et `utilisateur.visibilite_collection`. |
 | 0.3 | 14 octobre 2026 | Publication des onze tables en un seul document. `sujet_id` devient `identifiant_compte_externe`; `cree_par_id` est obligatoire (`ON DELETE RESTRICT`), avec le compte technique « Utilisateur supprimé » (ADR 0006); `modifie_le` est mis à jour par l'application, sans déclencheur; marqueur `¹` pour les contraintes aussi vérifiées dans le code. |
 | 0.4 | 17 octobre 2026 | `courriel_verifie_le` passe de `identite_externe` à `utilisateur` : la vérification porte sur le courriel du compte, qui appartient à la personne; le courriel d'une connexion externe devient une information. Reformulation de textes (suppression de compte, noms des clés étrangères). |
+| 0.5 | 20 octobre 2026 | `utilisateur.courriel` et `identite_externe.courriel` deviennent facultatifs (ADR 0004, règle 5) : la connexion ne dépend pas du courriel, et un compte peut être créé sans lui, avec l'ajout confirmé par code plus tard. Contrainte `CHECK (courriel = btrim(courriel) AND courriel <> '')` sur `utilisateur` et sur `identite_externe`; l'unicité ne s'applique qu'aux courriels présents. |
 
 Le numéro de version monte à chaque ajout ou modification importante du schéma. La version 1.0 correspondra au schéma complet du produit minimal viable.
