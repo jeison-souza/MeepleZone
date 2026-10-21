@@ -30,6 +30,21 @@ public class IdentiteExterneConfigurationTests : IClassFixture<ModeleDonneesFixt
         nomTable.Should().Be("identite_externe");
     }
 
+    [Theory]
+    [InlineData("ck_identite_externe_courriel", "courriel = btrim(courriel) AND courriel <> ''")]
+    public void IdentiteExterne_ContrainteCheck_EstDeclareeAvecSonSql(string nom, string sqlAttendu)
+    {
+        // Arrange
+        var type = _modele.TypeEntite<IdentiteExterne>();
+
+        // Act
+        var contrainte = type.GetCheckConstraints().SingleOrDefault(c => c.Name == nom);
+
+        // Assert
+        contrainte.Should().NotBeNull();
+        contrainte!.Sql.Should().Be(sqlAttendu);
+    }
+
     [Fact]
     public void IdentiteExterne_ClePrimaire_EstComposeeDeId()
     {
@@ -66,7 +81,7 @@ public class IdentiteExterneConfigurationTests : IClassFixture<ModeleDonneesFixt
     [InlineData(nameof(IdentiteExterne.UtilisateurId), false)]
     [InlineData(nameof(IdentiteExterne.Fournisseur), false)]
     [InlineData(nameof(IdentiteExterne.IdentifiantCompteExterne), false)]
-    [InlineData(nameof(IdentiteExterne.Courriel), false)]
+    [InlineData(nameof(IdentiteExterne.Courriel), true)]
     [InlineData(nameof(IdentiteExterne.DerniereConnexionLe), false)]
     [InlineData(nameof(IdentiteExterne.CreeLe), false)]
     [InlineData(nameof(IdentiteExterne.ModifieLe), false)]

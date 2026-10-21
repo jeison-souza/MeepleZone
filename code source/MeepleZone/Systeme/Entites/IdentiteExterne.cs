@@ -12,7 +12,7 @@ public class IdentiteExterne
 
     public string IdentifiantCompteExterne { get; set; } = string.Empty;
 
-    public string Courriel { get; set; } = string.Empty;
+    public string? Courriel { get; set; }
 
     public DateTimeOffset DerniereConnexionLe { get; set; }
 
