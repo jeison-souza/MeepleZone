@@ -7,7 +7,7 @@
 
 Selon l'[ADR 0001](0001-authentification.md), les utilisateurs se connectent uniquement par des fournisseurs d'identité externes (Google et Microsoft au départ, d'autres plus tard). Une même personne peut posséder un compte chez plusieurs de ces fournisseurs, et se connecter tantôt avec l'un, tantôt avec l'autre.
 
-Un utilisateur est identifié par le couple fournisseur + identifiant du compte chez ce fournisseur (`identifiant_compte_externe` : le `sub` chez Google, l'`oid` chez Microsoft). Sans traitement particulier, se connecter avec un second fournisseur crée donc un second compte, sans collection ni amis.
+Un utilisateur est identifié par le couple fournisseur + identifiant du compte chez ce fournisseur (`identifiant_compte_externe` : le `sub` chez Google, le `id` de Microsoft Graph chez Microsoft). Sans traitement particulier, se connecter avec un second fournisseur crée donc un second compte, sans collection ni amis.
 
 Il faut décider si ces comptes sont reliés et comment. Le courriel ne peut pas servir de preuve d'identité à lui seul : certains fournisseurs ne garantissent pas qu'il a été vérifié, et il peut être défini librement dans certains contextes (comptes d'organisation Microsoft). Un courriel usurpé permettrait de prendre le contrôle du compte d'une autre personne.
 
