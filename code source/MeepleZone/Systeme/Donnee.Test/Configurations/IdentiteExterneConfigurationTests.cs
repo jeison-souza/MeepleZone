@@ -60,7 +60,7 @@ public class IdentiteExterneConfigurationTests : IClassFixture<ModeleDonneesFixt
     }
 
     [Fact]
-    public void IdentiteExterne_FournisseurIdentifiantCompteExterne_EstUnique()
+    public void IdentiteExterne_FournisseurIdentifiantCompteExterne_PorteLeNomDeLaConvention()
     {
         // Arrange
         var type = _modele.TypeEntite<IdentiteExterne>();
@@ -72,8 +72,41 @@ public class IdentiteExterneConfigurationTests : IClassFixture<ModeleDonneesFixt
 
         // Assert
         index.Should().NotBeNull();
-        index!.IsUnique.Should().BeTrue();
         index.GetDatabaseName().Should().Be("ix_identite_externe_fournisseur_identifiant_compte_externe");
+    }
+
+    [Theory]
+    [InlineData(nameof(IdentiteExterne.UtilisateurId), "ix_identite_externe_utilisateur_id")]
+    [InlineData(nameof(IdentiteExterne.Courriel), "ix_identite_externe_courriel")]
+    public void IdentiteExterne_Index_PorteLeNomDeLaConvention(string nom, string nomAttendu)
+    {
+        // Arrange
+        var type = _modele.TypeEntite<IdentiteExterne>();
+        var propriete = _modele.Propriete<IdentiteExterne>(nom);
+
+        // Act
+        var index = type.FindIndex(propriete);
+
+        // Assert
+        index.Should().NotBeNull();
+        index!.GetDatabaseName().Should().Be(nomAttendu);
+    }
+
+    [Theory]
+    [InlineData("ix_identite_externe_utilisateur_id", false)]
+    [InlineData("ix_identite_externe_fournisseur_identifiant_compte_externe", true)]
+    [InlineData("ix_identite_externe_courriel", false)]
+    public void IdentiteExterne_Index_PorteLaBonneUnicite(string nomIndex, bool estUnique)
+    {
+        // Arrange
+        var type = _modele.TypeEntite<IdentiteExterne>();
+
+        // Act
+        var index = type.GetIndexes().SingleOrDefault(i => i.GetDatabaseName() == nomIndex);
+
+        // Assert
+        index.Should().NotBeNull();
+        index!.IsUnique.Should().Be(estUnique);
     }
 
     [Theory]
@@ -163,22 +196,6 @@ public class IdentiteExterneConfigurationTests : IClassFixture<ModeleDonneesFixt
         cle.DeleteBehavior.Should().Be(DeleteBehavior.Cascade);
         cle.GetConstraintName().Should().Be("fk_identite_externe_utilisateur_utilisateur_id");
         cle.PrincipalEntityType.ClrType.Should().Be(typeof(Utilisateur));
-    }
-
-    [Theory]
-    [InlineData(nameof(IdentiteExterne.UtilisateurId), "ix_identite_externe_utilisateur_id")]
-    public void IdentiteExterne_Index_PorteLeNomDeLaConvention(string nom, string nomAttendu)
-    {
-        // Arrange
-        var type = _modele.TypeEntite<IdentiteExterne>();
-        var propriete = _modele.Propriete<IdentiteExterne>(nom);
-
-        // Act
-        var index = type.FindIndex(propriete);
-
-        // Assert
-        index.Should().NotBeNull();
-        index!.GetDatabaseName().Should().Be(nomAttendu);
     }
 
     [Fact]

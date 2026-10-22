@@ -162,6 +162,21 @@ public class AnnexeConfigurationTests : IClassFixture<ModeleDonneesFixture>
     }
 
     [Theory]
+    [InlineData("ix_annexe_cree_par_id", false)]
+    public void Annexe_Index_PorteLaBonneUnicite(string nomIndex, bool estUnique)
+    {
+        // Arrange
+        var type = _modele.TypeEntite<Annexe>();
+
+        // Act
+        var index = type.GetIndexes().SingleOrDefault(i => i.GetDatabaseName() == nomIndex);
+
+        // Assert
+        index.Should().NotBeNull();
+        index!.IsUnique.Should().Be(estUnique);
+    }
+
+    [Theory]
     [MemberData(nameof(NomsDesProprietes))]
     public void Annexe_Propriete_NePossedePasDeCollation(string nom)
     {

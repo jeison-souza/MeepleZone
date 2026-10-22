@@ -24,6 +24,8 @@ internal class IdentiteExterneConfiguration : IEntityTypeConfiguration<IdentiteE
         builder.HasIndex(nameof(IdentiteExterne.Fournisseur), nameof(IdentiteExterne.IdentifiantCompteExterne))
             .IsUnique();
 
+        builder.HasIndex(nameof(IdentiteExterne.Courriel));
+
         builder.Property(u => u.UtilisateurId)
             .IsRequired();
 

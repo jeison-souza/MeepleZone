@@ -99,3 +99,11 @@ VALUES ('20261021010837_ModificationCourrielFacultatif', '10.0.13');
 
 COMMIT;
 
+START TRANSACTION;
+CREATE INDEX ix_identite_externe_courriel ON identite_externe (courriel);
+
+INSERT INTO historique_migration (migration_id, product_version)
+VALUES ('20261022134627_AjoutIndexCourrielIdentiteExterne', '10.0.13');
+
+COMMIT;
+
