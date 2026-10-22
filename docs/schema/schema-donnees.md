@@ -2,8 +2,8 @@
 
 | | |
 |---|---|
-| **Version** | 0.5 ([historique des versions](#historique-des-versions)) |
-| **Date** | 20 octobre 2026 |
+| **Version** | 0.6 ([historique des versions](#historique-des-versions)) |
+| **Date** | 22 octobre 2026 |
 | **Statut** | Complet pour le produit minimal viable; sujet à révision après la mise en œuvre de l'authentification par les fournisseurs d'identité et les premiers tests contre une base de données réelle |
 | **Portée** | Comptes, annexes, catalogue de jeux, collection et amitiés |
 
@@ -158,7 +158,7 @@ Chaque ligne est une façon de se connecter : un fournisseur et l'identifiant qu
 | `cree_le` | `timestamptz` | `NOT NULL`, `DEFAULT now()` | Moment où la connexion a été associée au compte (UTC). |
 | `modifie_le` | `timestamptz` | `NOT NULL`, `DEFAULT now()` | Moment de la dernière modification (UTC), mis à jour par l'application. Une simple connexion (`derniere_connexion_le`) ne compte pas comme une modification. |
 
-Contraintes sur la table : `UNIQUE (fournisseur, identifiant_compte_externe)` et `CHECK (courriel = btrim(courriel) AND courriel <> '')` : un courriel vide, fait d'espaces ou avec des espaces aux extrémités est refusé (l'absence de courriel s'écrit `NULL`).
+Contraintes sur la table : `UNIQUE (fournisseur, identifiant_compte_externe)` et `CHECK (courriel = btrim(courriel) AND courriel <> '')` : un courriel vide, fait d'espaces ou avec des espaces aux extrémités est refusé (l'absence de courriel s'écrit `NULL`). Un index non unique, `ix_identite_externe_courriel`, porte sur `courriel` : il sert à retrouver les connexions qui ont un courriel donné quand l'application cherche un compte probable à la première connexion d'une personne (ADR 0004, règle 1).
 
 Règles :
 
@@ -527,5 +527,6 @@ Amitiés :
 | 0.3 | 14 octobre 2026 | Publication des onze tables en un seul document. `sujet_id` devient `identifiant_compte_externe`; `cree_par_id` est obligatoire (`ON DELETE RESTRICT`), avec le compte technique « Utilisateur supprimé » (ADR 0006); `modifie_le` est mis à jour par l'application, sans déclencheur; marqueur `¹` pour les contraintes aussi vérifiées dans le code. |
 | 0.4 | 17 octobre 2026 | `courriel_verifie_le` passe de `identite_externe` à `utilisateur` : la vérification porte sur le courriel du compte, qui appartient à la personne; le courriel d'une connexion externe devient une information. Reformulation de textes (suppression de compte, noms des clés étrangères). |
 | 0.5 | 20 octobre 2026 | `utilisateur.courriel` et `identite_externe.courriel` deviennent facultatifs (ADR 0004, règle 5) : la connexion ne dépend pas du courriel, et un compte peut être créé sans lui, avec l'ajout confirmé par code plus tard. Contrainte `CHECK (courriel = btrim(courriel) AND courriel <> '')` sur `utilisateur` et sur `identite_externe`; l'unicité ne s'applique qu'aux courriels présents. |
+| 0.6 | 22 octobre 2026 | Index non unique `ix_identite_externe_courriel` sur `identite_externe.courriel`, pour la détection d'un compte probable à la première connexion (ADR 0004, règle 1). |
 
 Le numéro de version monte à chaque ajout ou modification importante du schéma. La version 1.0 correspondra au schéma complet du produit minimal viable.
