@@ -8,6 +8,7 @@
     <Project Path="Systeme/Donnee/MeepleZone.Systeme.Donnee.csproj" />
     <Project Path="Systeme/Donnee.Test/MeepleZone.Systeme.Donnee.Test.csproj" />
     <Project Path="Systeme/Entites/MeepleZone.Systeme.Entites.csproj" />
+    <Project Path="Systeme/Entites.Test/MeepleZone.Systeme.Entites.Test.csproj" />
   </Folder>
   <Folder Name="/Site/">
     <Project Path="Site/Site.Client/MeepleZone.Site.Client.csproj" />

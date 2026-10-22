@@ -16,5 +16,5 @@ public class Annexe
 
     public Guid CreeParId { get; set; }
 
-    public DateTimeOffset CreeLe { get; set; }
+    public DateTimeOffset CreeLe { get; private set; }
 }

@@ -20,7 +20,7 @@ public class Utilisateur
 
     public string VisibiliteCollection { get; set; } = "privee";
 
-    public DateTimeOffset CreeLe { get; set; }
+    public DateTimeOffset CreeLe { get; private set; }
 
-    public DateTimeOffset ModifieLe { get; set; }
+    public DateTimeOffset ModifieLe { get; private set; }
 }

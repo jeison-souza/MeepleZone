@@ -16,7 +16,7 @@ public class IdentiteExterne
 
     public DateTimeOffset DerniereConnexionLe { get; set; }
 
-    public DateTimeOffset CreeLe { get; set; }
+    public DateTimeOffset CreeLe { get; private set; }
 
-    public DateTimeOffset ModifieLe { get; set; }
+    public DateTimeOffset ModifieLe { get; private set; }
 }
