@@ -98,7 +98,7 @@ erDiagram
         uuid id PK
         uuid utilisateur_id FK
         text fournisseur "Google, Microsoft"
-        text identifiant_compte_externe "sub chez Google, oid chez Microsoft"
+        text identifiant_compte_externe "sub chez Google, id de l'utilisateur chez Microsoft"
         text courriel "nullable, collation ICU"
         timestamptz derniere_connexion_le
         timestamptz cree_le
@@ -152,7 +152,7 @@ Chaque ligne est une façon de se connecter : un fournisseur et l'identifiant qu
 | `id` | `uuid` | `PRIMARY KEY` | Identifiant de la connexion. |
 | `utilisateur_id` | `uuid` | `NOT NULL`, `REFERENCES utilisateur(id) ON DELETE CASCADE` | Utilisateur auquel appartient cette connexion. |
 | `fournisseur` | `text` | `NOT NULL` | Nom du fournisseur (`Google`, `Microsoft`). Un texte plutôt qu'une table de référence : l'ajout d'un fournisseur (ADR 0001) ne demande pas de modification du schéma. |
-| `identifiant_compte_externe` | `text` | `NOT NULL` | Identifiant stable du compte de la personne chez le fournisseur : le `sub` chez Google, l'`oid` chez Microsoft. Contrairement au courriel, il ne change pas. |
+| `identifiant_compte_externe` | `text` | `NOT NULL` | Identifiant stable du compte de la personne chez le fournisseur : le `sub` chez Google, le `id` de l'utilisateur chez Microsoft. Contrairement au courriel, il ne change pas. |
 | `courriel` | `text` (collation ICU) | | Courriel communiqué par ce fournisseur, s'il en communique un, conservé à titre d'information (il aide le soutien à retrouver un compte). Il se met à jour quand il change chez le fournisseur, sans effet sur le courriel du compte. Vide quand le fournisseur n'en donne pas. |
 | `derniere_connexion_le` | `timestamptz` | `NOT NULL`, `DEFAULT now()` | Dernière fois que la personne s'est connectée avec ce fournisseur (UTC). Écrite à la connexion, pas à chaque requête. |
 | `cree_le` | `timestamptz` | `NOT NULL`, `DEFAULT now()` | Moment où la connexion a été associée au compte (UTC). |
