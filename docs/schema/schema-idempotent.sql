@@ -194,3 +194,21 @@ BEGIN
 END $EF$;
 COMMIT;
 
+START TRANSACTION;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM historique_migration WHERE "migration_id" = '20261022134627_AjoutIndexCourrielIdentiteExterne') THEN
+    CREATE INDEX ix_identite_externe_courriel ON identite_externe (courriel);
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM historique_migration WHERE "migration_id" = '20261022134627_AjoutIndexCourrielIdentiteExterne') THEN
+    INSERT INTO historique_migration (migration_id, product_version)
+    VALUES ('20261022134627_AjoutIndexCourrielIdentiteExterne', '10.0.13');
+    END IF;
+END $EF$;
+COMMIT;
+

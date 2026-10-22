@@ -120,6 +120,9 @@ namespace MeepleZone.Systeme.Donnee.Migrations
                     b.HasKey("Id")
                         .HasName("pk_identite_externe");
 
+                    b.HasIndex("Courriel")
+                        .HasDatabaseName("ix_identite_externe_courriel");
+
                     b.HasIndex("UtilisateurId")
                         .HasDatabaseName("ix_identite_externe_utilisateur_id");
 
