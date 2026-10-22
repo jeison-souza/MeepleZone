@@ -62,21 +62,6 @@ public class UtilisateurConfigurationTests : IClassFixture<ModeleDonneesFixture>
     }
 
     [Theory]
-    [InlineData(nameof(Utilisateur.CodeAmitie))]
-    [InlineData(nameof(Utilisateur.Courriel))]
-    public void Utilisateur_Propriete_EstUnique(string nom)
-    {
-        // Arrange
-        var propriete = _modele.Propriete<Utilisateur>(nom);
-
-        // Act
-        var estUnique = propriete.IsUniqueIndex();
-
-        // Assert
-        estUnique.Should().BeTrue();
-    }
-
-    [Theory]
     [InlineData(nameof(Utilisateur.Id), false)]
     [InlineData(nameof(Utilisateur.Courriel), true)]
     [InlineData(nameof(Utilisateur.CodeAmitie), false)]
@@ -97,6 +82,29 @@ public class UtilisateurConfigurationTests : IClassFixture<ModeleDonneesFixture>
 
         // Assert
         accepteNull.Should().Be(peutEtreNulle);
+    }
+
+    [Theory]
+    [InlineData(nameof(Utilisateur.Id), false)]
+    [InlineData(nameof(Utilisateur.Courriel), true)]
+    [InlineData(nameof(Utilisateur.CodeAmitie), true)]
+    [InlineData(nameof(Utilisateur.NomAffichage), false)]
+    [InlineData(nameof(Utilisateur.Role), false)]
+    [InlineData(nameof(Utilisateur.VisibiliteCollection), false)]
+    [InlineData(nameof(Utilisateur.CreeLe), false)]
+    [InlineData(nameof(Utilisateur.ModifieLe), false)]
+    [InlineData(nameof(Utilisateur.CourrielVerifieLe), false)]
+    [InlineData(nameof(Utilisateur.PhotoId), false)]
+    public void Utilisateur_Propriete_PossedeUnIndexUnique(string nom, bool doitEtreUnique)
+    {
+        // Arrange
+        var propriete = _modele.Propriete<Utilisateur>(nom);
+
+        // Act
+        var estUnique = propriete.IsUniqueIndex();
+
+        // Assert
+        estUnique.Should().Be(doitEtreUnique);
     }
 
     [Theory]
@@ -176,6 +184,23 @@ public class UtilisateurConfigurationTests : IClassFixture<ModeleDonneesFixture>
         // Assert
         index.Should().NotBeNull();
         index!.GetDatabaseName().Should().Be(nomAttendu);
+    }
+
+    [Theory]
+    [InlineData("ix_utilisateur_code_amitie", true)]
+    [InlineData("ix_utilisateur_courriel", true)]
+    [InlineData("ix_utilisateur_photo_id", false)]
+    public void Utilisateur_Index_PorteLaBonneUnicite(string nomIndex, bool estUnique)
+    {
+        // Arrange
+        var type = _modele.TypeEntite<Utilisateur>();
+
+        // Act
+        var index = type.GetIndexes().SingleOrDefault(i => i.GetDatabaseName() == nomIndex);
+
+        // Assert
+        index.Should().NotBeNull();
+        index!.IsUnique.Should().Be(estUnique);
     }
 
     [Fact]
