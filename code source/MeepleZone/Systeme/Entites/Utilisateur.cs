@@ -1,8 +1,9 @@
+using MeepleZone.Systeme.Entites.Interfaces;
 using System;
 
 namespace MeepleZone.Systeme.Entites;
 
-public class Utilisateur
+public class Utilisateur : IModifieLe
 {
     public Guid Id { get; set; }
 
