@@ -1,18 +1,28 @@
 <Solution>
-  <Folder Name="/Solution Items/">
-    <File Path=".editorconfig" />
-    <File Path="Directory.Build.props" />
-    <File Path="dotnet-tools.json" />
-  </Folder>
-  <Folder Name="/Systeme/">
-    <Project Path="Systeme/Donnee/MeepleZone.Systeme.Donnee.csproj" />
-    <Project Path="Systeme/Donnee.Test/MeepleZone.Systeme.Donnee.Test.csproj" />
-    <Project Path="Systeme/Entites/MeepleZone.Systeme.Entites.csproj" />
-    <Project Path="Systeme/Entites.Test/MeepleZone.Systeme.Entites.Test.csproj" />
-  </Folder>
-  <Folder Name="/Site/">
-    <Project Path="Site/Site.Client/MeepleZone.Site.Client.csproj" />
-    <Project Path="Site/Site.Test/MeepleZone.Site.Test.csproj" />
-    <Project Path="Site/Site/MeepleZone.Site.csproj" />
-  </Folder>
+    <Folder Name="/Solution Items/">
+        <File Path=".editorconfig" />
+        <File Path="Directory.Build.props" />
+        <File Path="dotnet-tools.json" />
+    </Folder>
+    <Folder Name="/Systeme/" />
+    <Folder Name="/Systeme/Donnee/">
+        <Project Path="Systeme/Donnee/MeepleZone.Systeme.Donnee.csproj" />
+        <Project Path="Systeme/Donnee.Test/MeepleZone.Systeme.Donnee.Test.csproj" />
+    </Folder>
+    <Folder Name="/Systeme/Entites/">
+        <Project Path="Systeme/Entites/MeepleZone.Systeme.Entites.csproj" />
+        <Project Path="Systeme/Entites.Test/MeepleZone.Systeme.Entites.Test.csproj" />
+    </Folder>
+    <Folder Name="/Domaines/" />
+    <Folder Name="/Domaines/Compte/">
+        <Project Path="Domaines/Compte.Contrats/MeepleZone.Domaines.Compte.Contrats.csproj" />
+    </Folder>
+    <Folder Name="/Site/">
+        <Project Path="Site/Site.Client/MeepleZone.Site.Client.csproj" />
+        <Project Path="Site/Site.Test/MeepleZone.Site.Test.csproj" />
+        <Project Path="Site/Site/MeepleZone.Site.csproj" />
+    </Folder>
+    <Folder Name="/Systeme/Interfaces/">
+        <Project Path="Systeme/Interfaces/MeepleZone.Systeme.Interfaces.csproj" />
+    </Folder>
 </Solution>
