@@ -22,4 +22,7 @@
         <Project Path="Site/Site.Test/MeepleZone.Site.Test.csproj" />
         <Project Path="Site/Site/MeepleZone.Site.csproj" />
     </Folder>
+    <Folder Name="/Systeme/Interfaces/">
+        <Project Path="Systeme/Interfaces/MeepleZone.Systeme.Interfaces.csproj" />
+    </Folder>
 </Solution>
