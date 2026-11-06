@@ -1,8 +1,10 @@
-﻿using System;
+﻿using MeepleZone.Systeme.Entites.Attributs;
+using MeepleZone.Systeme.Entites.Interfaces;
+using System;
 
 namespace MeepleZone.Systeme.Entites;
 
-public class IdentiteExterne
+public class IdentiteExterne : IModifieLe
 {
     public Guid Id { get; set; }
 
@@ -14,6 +16,7 @@ public class IdentiteExterne
 
     public string? Courriel { get; set; }
 
+    [AttributTechnique]
     public DateTimeOffset DerniereConnexionLe { get; set; }
 
     public DateTimeOffset CreeLe { get; private set; }
