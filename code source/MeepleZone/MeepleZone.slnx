@@ -5,17 +5,22 @@
         <File Path="dotnet-tools.json" />
     </Folder>
     <Folder Name="/Systeme/" />
+    <Folder Name="/Systeme/BaseTest/">
+        <Project Path="Systeme/BaseTest/MeepleZone.Systeme.BaseTest.csproj" />
+    </Folder>
     <Folder Name="/Systeme/Donnee/">
-        <Project Path="Systeme/Donnee/MeepleZone.Systeme.Donnee.csproj" />
         <Project Path="Systeme/Donnee.Test/MeepleZone.Systeme.Donnee.Test.csproj" />
+        <Project Path="Systeme/Donnee/MeepleZone.Systeme.Donnee.csproj" />
     </Folder>
     <Folder Name="/Systeme/Entites/">
-        <Project Path="Systeme/Entites/MeepleZone.Systeme.Entites.csproj" />
         <Project Path="Systeme/Entites.Test/MeepleZone.Systeme.Entites.Test.csproj" />
+        <Project Path="Systeme/Entites/MeepleZone.Systeme.Entites.csproj" />
     </Folder>
     <Folder Name="/Domaines/" />
     <Folder Name="/Domaines/Compte/">
         <Project Path="Domaines/Compte.Contrats/MeepleZone.Domaines.Compte.Contrats.csproj" />
+        <Project Path="Domaines/Compte.Test/MeepleZone.Domaines.Compte.Test.csproj" />
+        <Project Path="Domaines/Compte/MeepleZone.Domaines.Compte.csproj" />
     </Folder>
     <Folder Name="/Site/">
         <Project Path="Site/Site.Client/MeepleZone.Site.Client.csproj" />
