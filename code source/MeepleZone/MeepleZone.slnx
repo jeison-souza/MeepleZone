@@ -5,6 +5,9 @@
         <File Path="dotnet-tools.json" />
     </Folder>
     <Folder Name="/Systeme/" />
+    <Folder Name="/Systeme/BaseTest/">
+        <Project Path="Systeme/BaseTest/MeepleZone.Systeme.BaseTest.csproj" />
+    </Folder>
     <Folder Name="/Systeme/Donnee/">
         <Project Path="Systeme/Donnee/MeepleZone.Systeme.Donnee.csproj" />
         <Project Path="Systeme/Donnee.Test/MeepleZone.Systeme.Donnee.Test.csproj" />
