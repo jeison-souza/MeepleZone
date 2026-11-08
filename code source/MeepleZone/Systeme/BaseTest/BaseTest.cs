@@ -34,6 +34,11 @@ public abstract class BaseTest<T> : IAsyncLifetime where T : class
     {
     }
 
+    public TFixture CreerFixture<TFixture>()
+    {
+        return Fixture.Create<TFixture>();
+    }
+
     public Fake<TMock> CreerFausse<TMock>(bool strict = true) where TMock : class
     {
         var fausse = strict ? new Fake<TMock>(x => x.Strict()) : new Fake<TMock>();

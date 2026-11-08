@@ -4,5 +4,8 @@
         <ProjectReference Include="..\..\Systeme\Interfaces\MeepleZone.Systeme.Interfaces.csproj" />
         <ProjectReference Include="..\Compte.Contrats\MeepleZone.Domaines.Compte.Contrats.csproj" />
     </ItemGroup>
+    <ItemGroup>
+      <PackageReference Include="Scrutor" Version="7.0.0" />
+    </ItemGroup>
 
 </Project>
