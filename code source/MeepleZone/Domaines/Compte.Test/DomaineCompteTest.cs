@@ -33,6 +33,6 @@ public class DomaineCompteTest : BaseTest<DomaineCompte>
         // Assert
         _gestionnaireGererConnexion.CallsTo(g => g.TraiterAsync(A<GererConnexionRequete>._))
             .MustHaveHappenedOnceExactly();
-        result.Should().Be(reponseAttendue);
+        result.Should().BeSameAs(reponseAttendue);
     }
 }
