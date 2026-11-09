@@ -12,6 +12,14 @@ public static class DbContextOptionsBuilderExtensions
         this DbContextOptionsBuilder<MeepleZoneContexte> options,
         string chaineConnexion)
     {
+        ((DbContextOptionsBuilder)options).UtiliserPostgreSql(chaineConnexion);
+        return options;
+    }
+
+    public static DbContextOptionsBuilder UtiliserPostgreSql(
+        this DbContextOptionsBuilder options,
+        string chaineConnexion)
+    {
         return options
             .UseNpgsql(chaineConnexion, o => o.MigrationsHistoryTable("historique_migration"))
             .UseSnakeCaseNamingConvention();
