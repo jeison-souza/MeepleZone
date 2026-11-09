@@ -8,7 +8,6 @@ public static class ServiceCollectionExtensions
     {
         services.Scan(scan => scan
             .FromAssemblyOf<DomaineCompte>()
-
             .AddClasses(classes => classes.InNamespaceOf<DomaineCompte>())
                 .AsImplementedInterfaces()
                 .WithScopedLifetime());

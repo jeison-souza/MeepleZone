@@ -4,7 +4,7 @@ using MeepleZone.Domaines.Compte.Contrats.Modeles;
 using MeepleZone.Domaines.Compte.Extensions;
 using MeepleZone.Domaines.Compte.Gestionnaires;
 using MeepleZone.Systeme.BaseTest;
-using MeepleZone.Systeme.Interfaces.Depots;
+using MeepleZone.Systeme.Depots;
 using MeepleZone.Systeme.Interfaces.Gestionnaires;
 using Microsoft.Extensions.DependencyInjection;
 using System;
