@@ -386,6 +386,41 @@ public class GestionnaireRequeteGererConnexionTest : BaseTest<GestionnaireRequet
         ValiderNombreAppels(trouverIdentite: 1, trouverUtilisateur: 0, mettreAJour: 0, verifierCourriel: 1, genererCode: 2, enregistrerNouveau: 2);
     }
 
+    [Fact]
+    public async Task TraiterAsync_QuandCourrielPrisEnParalleleEtNouvelEssaiTrouveIdentiteEnregistreeEnParallele_ActualiserConnexionDeLIdentiteExistanteEtRetournerConnecte()
+    {
+        // Arrange
+        var requete = Fixture.Create<GererConnexionRequete>() with { ForcerCreation = true };
+        var courrielNormalise = requete.Courriel!.ToLowerInvariant();
+        var identiteExterne = CreerFixture<IdentiteExterne>();
+        var utilisateurAttendu = CreerFixture<Utilisateur>();
+        _depotCompte
+            .CallsTo(x => x.TrouverIdentiteAsync(requete.Fournisseur, requete.IdentifiantCompteExterne))
+            .ReturnsNextFromSequence(Task.FromResult<IdentiteExterne?>(null), Task.FromResult<IdentiteExterne?>(identiteExterne));
+        ConfigurerVerificationCourriel(courrielNormalise, existe: false);
+        var comptes = ConfigurerEnregistrementsSuccessifs(
+            new[] { Fixture.Create<string>(), Fixture.Create<string>() },
+            ResultatEnregistrementCompte.CourrielDejaUtilise,
+            ResultatEnregistrementCompte.IdentiteDejaExistante);
+        _depotCompte
+            .CallsTo(x => x.TrouverUtilisateurAsync(identiteExterne.UtilisateurId))
+            .Returns(utilisateurAttendu);
+        _depotCompte
+            .CallsTo(x => x.MettreAJourConnexionAsync(identiteExterne))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        var result = await InstanceTest.TraiterAsync(requete);
+
+        // Assert
+        ValiderNombreAppels(trouverIdentite: 2, trouverUtilisateur: 1, mettreAJour: 1, verifierCourriel: 1, genererCode: 2, enregistrerNouveau: 2);
+        comptes.Should().HaveCount(2);
+        comptes[1].Utilisateur.Courriel.Should().BeNull();
+        result.Statut.Should().Be(StatutConnexion.Connecte);
+        result.Utilisateur.Should().BeEquivalentTo(utilisateurAttendu.VersDto());
+        identiteExterne.DerniereConnexionLe.Should().Be(FakeTimeProvider.GetUtcNow());
+    }
+
     private sealed class CompteEnregistre
     {
         public Utilisateur Utilisateur { get; set; } = null!;
