@@ -11,9 +11,9 @@
     <Folder Name="/Systeme/Depots/">
         <Project Path="Systeme/Depots/MeepleZone.Systeme.Depots.csproj" />
     </Folder>
-    <Folder Name="/Systeme/Donnee/">
-        <Project Path="Systeme/Donnee.Test/MeepleZone.Systeme.Donnee.Test.csproj" />
-        <Project Path="Systeme/Donnee/MeepleZone.Systeme.Donnee.csproj" />
+    <Folder Name="/Systeme/Donnees/">
+        <Project Path="Systeme/Donnees.Test/MeepleZone.Systeme.Donnees.Test.csproj" />
+        <Project Path="Systeme/Donnees/MeepleZone.Systeme.Donnees.csproj" />
     </Folder>
     <Folder Name="/Systeme/Entites/">
         <Project Path="Systeme/Entites.Test/MeepleZone.Systeme.Entites.Test.csproj" />
