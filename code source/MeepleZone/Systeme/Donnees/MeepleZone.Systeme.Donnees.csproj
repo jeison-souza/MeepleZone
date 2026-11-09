@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
+        <ProjectReference Include="..\Depots\MeepleZone.Systeme.Depots.csproj" />
         <ProjectReference Include="..\Entites\MeepleZone.Systeme.Entites.csproj" />
     </ItemGroup>
 
