@@ -1,4 +1,5 @@
-﻿using MeepleZone.Systeme.Entites;
+﻿using MeepleZone.Systeme.Depots.Enums;
+using MeepleZone.Systeme.Entites;
 using System;
 using System.Threading.Tasks;
 
@@ -14,7 +15,7 @@ public interface IDepotCompte
 
     Task<bool> VerifierExistenceCodeAmitieAsync(string code);
 
-    Task EnregistrerNouveauCompteAsync(Utilisateur utilisateur, IdentiteExterne identite);
+    Task<ResultatEnregistrementCompte> EnregistrerNouveauCompteAsync(Utilisateur utilisateur, IdentiteExterne identite);
 
     Task MettreAJourConnexionAsync(IdentiteExterne identite);
 }

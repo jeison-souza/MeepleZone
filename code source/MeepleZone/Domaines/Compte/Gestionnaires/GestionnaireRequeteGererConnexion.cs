@@ -2,6 +2,7 @@
 using MeepleZone.Domaines.Compte.Contrats.Modeles;
 using MeepleZone.Domaines.Compte.Extensions;
 using MeepleZone.Systeme.Depots;
+using MeepleZone.Systeme.Depots.Enums;
 using MeepleZone.Systeme.Entites;
 using MeepleZone.Systeme.Interfaces.Gestionnaires;
 using System;
@@ -21,32 +22,71 @@ public class GestionnaireRequeteGererConnexion(IDepotCompte depotCompte, IGenera
     public async Task<GererConnexionReponse> TraiterAsync(GererConnexionRequete requete)
     {
         var courrielNormalise = NormaliserTexte(requete.Courriel)?.ToLowerInvariant();
-        var identiteExterne = await _depotCompte.TrouverIdentiteAsync(requete.Fournisseur, requete.IdentifiantCompteExterne);
-        if (identiteExterne != null)
+        var reponseExistante = await TenterConnexionExistanteAsync(requete, courrielNormalise);
+        if (reponseExistante != null)
         {
-            return await ActualiserConnexionEtPreparerReponse(courrielNormalise, identiteExterne);
+            return reponseExistante;
         }
 
-        if (courrielNormalise == null)
+        string? courrielUtilisateur = null;
+        if (courrielNormalise != null)
         {
-            return await CreerUtilisateurEtPreparerReponse(null, courrielNormalise, requete);
+            var courrielExiste = await _depotCompte.VerifierExistenceCourrielAsync(courrielNormalise);
+            if (!courrielExiste)
+            {
+                courrielUtilisateur = courrielNormalise;
+            }
+            else if (!requete.ForcerCreation)
+            {
+                return new GererConnexionReponse(StatutConnexion.CompteProbable, null);
+            }
         }
 
-        var courrielExiste = await _depotCompte.VerifierExistenceCourrielAsync(courrielNormalise);
-        if (courrielExiste == false)
+        var compte = await ConstruireCompteAsync(requete, courrielUtilisateur, courrielNormalise);
+        var resultat = await _depotCompte.EnregistrerNouveauCompteAsync(compte.Utilisateur, compte.Identite);
+
+        // Un courriel pris entre la vérification et l'enregistrement : l'utilisateur a déjà demandé la création, un seul nouvel essai sans courriel.
+        if (resultat == ResultatEnregistrementCompte.CourrielDejaUtilise && requete.ForcerCreation && courrielUtilisateur != null)
         {
-            return await CreerUtilisateurEtPreparerReponse(courrielNormalise, courrielNormalise, requete);
+            compte = await ConstruireCompteAsync(requete, null, courrielNormalise);
+            resultat = await _depotCompte.EnregistrerNouveauCompteAsync(compte.Utilisateur, compte.Identite);
         }
 
-        if (requete.ForcerCreation)
+        switch (resultat)
         {
-            return await CreerUtilisateurEtPreparerReponse(null, courrielNormalise, requete);
-        }
+            case ResultatEnregistrementCompte.Enregistre:
+                return new GererConnexionReponse(StatutConnexion.Connecte, compte.Utilisateur.VersDto());
 
-        return new GererConnexionReponse(StatutConnexion.CompteProbable, null);
+            case ResultatEnregistrementCompte.IdentiteDejaExistante:
+                // Une autre connexion a créé la même identité entre-temps : reprendre le chemin du compte connu.
+                var reponseParallele = await TenterConnexionExistanteAsync(requete, courrielNormalise);
+                if (reponseParallele == null)
+                {
+                    throw new InvalidOperationException("Impossible de retrouver la connexion enregistrée en parallèle.");
+                }
+
+                return reponseParallele;
+
+            case ResultatEnregistrementCompte.CourrielDejaUtilise when !requete.ForcerCreation:
+                return new GererConnexionReponse(StatutConnexion.CompteProbable, null);
+
+            default:
+                throw new InvalidOperationException($"Résultat d'enregistrement inattendu : {resultat}.");
+        }
     }
 
-    private async Task<GererConnexionReponse> CreerUtilisateurEtPreparerReponse(string? courrielUtilisateur, string? courrielIdentite, GererConnexionRequete requete)
+    private async Task<GererConnexionReponse?> TenterConnexionExistanteAsync(GererConnexionRequete requete, string? courriel)
+    {
+        var identiteExterne = await _depotCompte.TrouverIdentiteAsync(requete.Fournisseur, requete.IdentifiantCompteExterne);
+        if (identiteExterne == null)
+        {
+            return null;
+        }
+
+        return await ActualiserConnexionEtPreparerReponse(courriel, identiteExterne);
+    }
+
+    private async Task<(Utilisateur Utilisateur, IdentiteExterne Identite)> ConstruireCompteAsync(GererConnexionRequete requete, string? courrielUtilisateur, string? courrielIdentite)
     {
         var code = await _generateurCodeAmitie.GenererAsync();
         var nomNormalise = NormaliserTexte(requete.NomAffichage);
@@ -73,9 +113,7 @@ public class GestionnaireRequeteGererConnexion(IDepotCompte depotCompte, IGenera
             UtilisateurId = utilisateur.Id,
         };
 
-        await _depotCompte.EnregistrerNouveauCompteAsync(utilisateur, identiteExterne);
-        var reponse = new GererConnexionReponse(StatutConnexion.Connecte, utilisateur.VersDto());
-        return reponse;
+        return (utilisateur, identiteExterne);
     }
 
     private async Task<GererConnexionReponse> ActualiserConnexionEtPreparerReponse(string? courriel, IdentiteExterne identiteExterne)
