@@ -16,4 +16,8 @@
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
     </ItemGroup>
 
+    <ItemGroup>
+        <PackageReference Include="Scrutor" Version="7.0.0" />
+    </ItemGroup>
+
 </Project>
