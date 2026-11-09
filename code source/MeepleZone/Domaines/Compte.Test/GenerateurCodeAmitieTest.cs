@@ -1,7 +1,7 @@
 ﻿using FakeItEasy;
 using FluentAssertions;
 using MeepleZone.Systeme.BaseTest;
-using MeepleZone.Systeme.Interfaces.Depots;
+using MeepleZone.Systeme.Depots;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;

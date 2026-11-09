@@ -1,5 +1,1 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-    <ItemGroup>
-        <ProjectReference Include="..\Entites\MeepleZone.Systeme.Entites.csproj" />
-    </ItemGroup>
-</Project>
+﻿<Project Sdk="Microsoft.NET.Sdk" />

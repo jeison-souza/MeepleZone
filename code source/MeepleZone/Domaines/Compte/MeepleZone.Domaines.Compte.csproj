@@ -1,5 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <ItemGroup>
+        <ProjectReference Include="..\..\Systeme\Depots\MeepleZone.Systeme.Depots.csproj" />
         <ProjectReference Include="..\..\Systeme\Entites\MeepleZone.Systeme.Entites.csproj" />
         <ProjectReference Include="..\..\Systeme\Interfaces\MeepleZone.Systeme.Interfaces.csproj" />
         <ProjectReference Include="..\Compte.Contrats\MeepleZone.Domaines.Compte.Contrats.csproj" />

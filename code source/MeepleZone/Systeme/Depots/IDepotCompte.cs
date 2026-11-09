@@ -2,7 +2,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace MeepleZone.Systeme.Interfaces.Depots;
+namespace MeepleZone.Systeme.Depots;
 
 public interface IDepotCompte
 {

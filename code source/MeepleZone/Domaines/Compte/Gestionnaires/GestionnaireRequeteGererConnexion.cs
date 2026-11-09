@@ -1,8 +1,8 @@
 ﻿using MeepleZone.Domaines.Compte.Contrats.Enums;
 using MeepleZone.Domaines.Compte.Contrats.Modeles;
 using MeepleZone.Domaines.Compte.Extensions;
+using MeepleZone.Systeme.Depots;
 using MeepleZone.Systeme.Entites;
-using MeepleZone.Systeme.Interfaces.Depots;
 using MeepleZone.Systeme.Interfaces.Gestionnaires;
 using System;
 using System.Threading.Tasks;
