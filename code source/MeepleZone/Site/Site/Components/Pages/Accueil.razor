@@ -29,14 +29,29 @@
                 Explorer le Catalogue
             </MudButton>
 
-            <MudButton Variant="Variant.Outlined"
-                       Color="Color.Inherit"
-                       Size="Size.Large"
-                       Href="/register"
-                       StartIcon="@Icons.Material.Filled.PersonAdd"
-                       Style="border-color: rgba(255,255,255,0.5);">
-                Créer un Compte
-            </MudButton>
+            @* Une personne connectée voit « Mon Profil »; sinon, le compte se crée à la première connexion. *@
+            <AuthorizeView>
+                <Authorized>
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Inherit"
+                               Size="Size.Large"
+                               Href="/profil"
+                               StartIcon="@Icons.Material.Filled.Person"
+                               Style="border-color: rgba(255,255,255,0.5);">
+                        Mon Profil
+                    </MudButton>
+                </Authorized>
+                <NotAuthorized>
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Inherit"
+                               Size="Size.Large"
+                               Href="/connexion-requise"
+                               StartIcon="@Icons.Material.Filled.PersonAdd"
+                               Style="border-color: rgba(255,255,255,0.5);">
+                        Créer un Compte
+                    </MudButton>
+                </NotAuthorized>
+            </AuthorizeView>
         </MudStack>
     </MudPaper>
 </MudContainer>
