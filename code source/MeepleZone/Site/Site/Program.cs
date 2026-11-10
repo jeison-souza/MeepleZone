@@ -1,4 +1,5 @@
 using MeepleZone.Site.Authentification;
+using MeepleZone.Site.Authentification.Extensions;
 using MeepleZone.Site.Components;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -41,6 +42,7 @@ builder.Services
     .AddMicrosoftAccount(options =>
     {
         builder.Configuration.GetSection("Authentication:Microsoft").Bind(options);
+        options.ConfigurerRevendications();
         options.Events.OnRemoteFailure = GestionEchecConnexion.Traiter;
         options.Events.OnAccessDenied = GestionEchecConnexion.TraiterRefus;
     });
