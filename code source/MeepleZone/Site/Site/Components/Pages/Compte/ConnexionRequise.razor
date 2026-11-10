@@ -21,6 +21,11 @@
                 Un problème est survenu pendant la connexion. Veuillez réessayer; si le problème persiste, essayez l'autre fournisseur.
             </MudAlert>
         }
+        else if (Etat == EtatConnexion.CompteProbable)
+        {
+            <p class="mz-connexion-phrase">Pour éviter un doublon, choisissez ce que vous souhaitez faire.</p>
+            <h2 class="mz-connexion-soustitre">Se connecter avec un autre fournisseur</h2>
+        }
         else
         {
             <p class="mz-connexion-phrase">Connectez-vous pour accéder à cette page.</p>
@@ -28,34 +33,36 @@
 
         @* Liens simples (navigation complète) : la connexion passe par une redirection vers le fournisseur. *@
         <div class="mz-connexion-boutons">
-            <a href="@LienGoogle" class="mz-fournisseur mz-fournisseur-google" data-enhance-nav="false">
-                <svg class="mz-fournisseur-icone" viewBox="0 0 48 48" aria-hidden="true">
-                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
-                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
-                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
-                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
-                </svg>
-                <span>Continuer avec Google</span>
-            </a>
-            <a href="@LienMicrosoft" class="mz-fournisseur mz-fournisseur-microsoft" data-enhance-nav="false">
-                <svg class="mz-fournisseur-icone" viewBox="0 0 21 21" aria-hidden="true">
-                    <rect x="1" y="1" width="9" height="9" fill="#F25022" />
-                    <rect x="11" y="1" width="9" height="9" fill="#7FBA00" />
-                    <rect x="1" y="11" width="9" height="9" fill="#00A4EF" />
-                    <rect x="11" y="11" width="9" height="9" fill="#FFB900" />
-                </svg>
-                <span>Continuer avec Microsoft</span>
-            </a>
+            @foreach (FournisseurConnexion fournisseur in FournisseursAffiches)
+            {
+                <a href="@LienFournisseur(fournisseur)" class="mz-fournisseur mz-fournisseur-@fournisseur.Nom.ToLowerInvariant()" data-enhance-nav="false">
+                    <IconeFournisseur Nom="@fournisseur.Nom" Class="mz-fournisseur-icone" />
+                    <span>Continuer avec @fournisseur.Libelle</span>
+                </a>
+            }
         </div>
 
-        <p class="mz-connexion-note">Aucun mot de passe à créer : la connexion passe par votre compte Google ou Microsoft.</p>
+        @if (Etat == EtatConnexion.CompteProbable)
+        {
+            if (FournisseurUtilise is not null)
+            {
+                <h2 class="mz-connexion-soustitre mz-connexion-soustitre-creation">Aucun compte à retrouver ?</h2>
+                <a href="@LienCreation(FournisseurUtilise)" class="mz-connexion-creation" data-enhance-nav="false">
+                    Créer un nouveau compte avec @FournisseurUtilise.Libelle
+                </a>
+            }
+        }
+        else
+        {
+            <p class="mz-connexion-note">Aucun mot de passe à créer : la connexion passe par votre compte Google ou Microsoft.</p>
+        }
 
         <MudLink Href="/" Class="mz-connexion-retour">Retour à l'accueil</MudLink>
     </MudPaper>
 </section>
 
 @code {
-    private enum EtatConnexion { Requise, Annulee, Erreur }
+    private enum EtatConnexion { Requise, Annulee, Erreur, CompteProbable }
 
     [SupplyParameterFromQuery(Name = "motif")]
     public string? Motif { get; set; }
@@ -64,17 +71,29 @@
     [SupplyParameterFromQuery(Name = "retour")]
     public string? Retour { get; set; }
 
-    private string LienGoogle => LienFournisseur("Google");
+    /// <summary>Fournisseur qui vient d'être utilisé; reconnu dans la liste fermée, jamais affiché tel que reçu.</summary>
+    [SupplyParameterFromQuery(Name = "fournisseur")]
+    public string? Fournisseur { get; set; }
 
-    private string LienMicrosoft => LienFournisseur("Microsoft");
+    private FournisseurConnexion? FournisseurUtilise => FournisseursConnexion.Trouver(Fournisseur);
 
-    private string LienFournisseur(string fournisseur) => $"/connexion/{fournisseur}?retour={Uri.EscapeDataString(UrlRetour.Valider(Retour))}";
+    // Avec un compte probable, le fournisseur déjà utilisé est écarté : il mènerait au même avis.
+    private IReadOnlyList<FournisseurConnexion> FournisseursAffiches =>
+        Etat == EtatConnexion.CompteProbable ? FournisseursConnexion.Autres(Fournisseur) : FournisseursConnexion.Tous;
+
+    private string LienFournisseur(FournisseurConnexion fournisseur) => $"/connexion/{fournisseur.Nom}?retour={RetourEncode}";
+
+    // « creation=true » est la seule valeur lue par le serveur pour forcer la création; ce n'est pas un contrôle de sécurité.
+    private string LienCreation(FournisseurConnexion fournisseur) => $"/connexion/{fournisseur.Nom}?creation=true&retour={RetourEncode}";
+
+    private string RetourEncode => Uri.EscapeDataString(UrlRetour.Valider(Retour));
 
     // Un motif inconnu retombe sur « connexion requise » : la page ne reflète jamais du texte venu de l'adresse.
     private EtatConnexion Etat => Motif?.ToLowerInvariant() switch
     {
         "annulee" => EtatConnexion.Annulee,
         "erreur" => EtatConnexion.Erreur,
+        "compte-probable" => EtatConnexion.CompteProbable,
         _ => EtatConnexion.Requise
     };
 
@@ -82,6 +101,7 @@
     {
         EtatConnexion.Annulee => "Connexion annulée",
         EtatConnexion.Erreur => "La connexion a échoué",
+        EtatConnexion.CompteProbable => "Un compte existe peut-être déjà",
         _ => "Connexion requise"
     };
 }

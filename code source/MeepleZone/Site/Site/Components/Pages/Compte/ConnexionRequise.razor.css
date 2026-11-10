@@ -85,7 +85,7 @@
     outline-offset: 2px;
 }
 
-.mz-fournisseur-icone {
+.mz-fournisseur ::deep .mz-fournisseur-icone {
     flex: none;
     width: 1.35rem;
     height: 1.35rem;
@@ -121,4 +121,32 @@
 
 .mz-connexion ::deep .mz-connexion-retour {
     font-size: .9rem;
+}
+.mz-connexion-soustitre {
+    margin: 0 0 .75rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--mz-deep);
+}
+
+.mz-connexion-soustitre-creation {
+    margin-top: 1.5rem;
+}
+
+/* Action secondaire : un simple lien, pour que l'autre fournisseur reste le chemin le plus visible. */
+.mz-connexion-creation {
+    margin-bottom: 1rem;
+    font-size: .95rem;
+    font-weight: 600;
+    color: var(--mz-deep);
+    text-decoration: underline;
+}
+
+.mz-connexion-creation:hover {
+    color: var(--mz-orange);
+}
+
+.mz-connexion-creation:focus-visible {
+    outline: 3px solid var(--mz-orange);
+    outline-offset: 2px;
 }
