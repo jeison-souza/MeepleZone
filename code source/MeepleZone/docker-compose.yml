@@ -7,6 +7,7 @@ services:
       Authentication__Microsoft__ClientSecret: ${MICROSOFT_CLIENT_SECRET:?Définir MICROSOFT_CLIENT_SECRET dans .env}
       Authentication__Google__ClientId: ${GOOGLE_CLIENT_ID:?Définir GOOGLE_CLIENT_ID dans .env}
       Authentication__Google__ClientSecret: ${GOOGLE_CLIENT_SECRET:?Définir GOOGLE_CLIENT_SECRET dans .env}
+      ConnectionStrings__MeepleZone: Host=${POSTGRES_HOST:?Définir POSTGRES_HOST dans .env};Database=${POSTGRES_DATABASE:?Définir POSTGRES_DATABASE dans .env};Username=${POSTGRES_USER:?Définir POSTGRES_USER dans .env};Password=${POSTGRES_PASSWORD:?Définir POSTGRES_PASSWORD dans .env};SSL Mode=VerifyFull
     extra_hosts:
       - "${POSTGRES_HOST:?Définir POSTGRES_HOST dans .env}:${POSTGRES_IP:?Définir POSTGRES_IP dans .env}"
     volumes:
