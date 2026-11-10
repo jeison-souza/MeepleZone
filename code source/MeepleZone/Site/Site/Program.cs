@@ -1,6 +1,8 @@
+using MeepleZone.Domaines.Compte.Extensions;
 using MeepleZone.Site.Authentification;
 using MeepleZone.Site.Authentification.Extensions;
 using MeepleZone.Site.Components;
+using MeepleZone.Systeme.Donnees.Extensions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
@@ -11,6 +13,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MudBlazor.Services;
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,6 +41,7 @@ builder.Services
         builder.Configuration.GetSection("Authentication:Google").Bind(options);
         options.Events.OnRemoteFailure = GestionEchecConnexion.Traiter;
         options.Events.OnAccessDenied = GestionEchecConnexion.TraiterRefus;
+        options.Events.OnCreatingTicket = GestionConnexionCompte.Traiter;
     })
     .AddMicrosoftAccount(options =>
     {
@@ -45,6 +49,7 @@ builder.Services
         options.ConfigurerRevendications();
         options.Events.OnRemoteFailure = GestionEchecConnexion.Traiter;
         options.Events.OnAccessDenied = GestionEchecConnexion.TraiterRefus;
+        options.Events.OnCreatingTicket = GestionConnexionCompte.Traiter;
     });
 
 builder.Services.AddOptions<GoogleOptions>(GoogleDefaults.AuthenticationScheme)
@@ -56,6 +61,10 @@ builder.Services.AddOptions<MicrosoftAccountOptions>(MicrosoftAccountDefaults.Au
     .Validate(o => !string.IsNullOrWhiteSpace(o.ClientId) && !string.IsNullOrWhiteSpace(o.ClientSecret),
               "Authentication:Microsoft : ClientId ou ClientSecret manquant.")
     .ValidateOnStart();
+
+builder.Services
+    .AjouterSystemeDonnees(builder.Configuration.GetConnectionString("MeepleZone") ?? throw new InvalidOperationException("ConnectionStrings:MeepleZone manquant."))
+    .AjouterDomaineCompte();
 
 var app = builder.Build();
 
