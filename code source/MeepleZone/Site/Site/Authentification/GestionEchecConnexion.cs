@@ -18,6 +18,13 @@ public static class GestionEchecConnexion
 
     public static Task Traiter(RemoteFailureContext context)
     {
+        if (context.Failure is CompteProbableException)
+        {
+            context.Response.Redirect("/connexion-requise?motif=compte-probable");
+            context.HandleResponse();
+            return Task.CompletedTask;
+        }
+
         var annulee = context.Failure is AuthenticationFailureException echec
             && CodesAnnulation.Any(code => echec.Message.StartsWith(code, StringComparison.Ordinal));
 
