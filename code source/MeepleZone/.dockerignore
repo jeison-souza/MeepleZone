@@ -2,11 +2,14 @@
 **/bin
 **/obj
 **/.vs
+**/.git
 **/*.user
 TestResults
 
 # Non nécessaires à l'image de production
 **/*.Test
+dotnet-tools.json
 Dockerfile
 docker-compose*.yml
 .dockerignore
+.env.example

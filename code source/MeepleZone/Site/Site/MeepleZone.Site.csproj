@@ -9,6 +9,9 @@
         <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="10.0.14" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Version="10.0.14" />
         <PackageReference Include="MudBlazor" Version="9.12.0" />
+        <ProjectReference Include="..\..\Domaines\Compte\MeepleZone.Domaines.Compte.csproj" />
+        <ProjectReference Include="..\..\Domaines\Compte.Contrats\MeepleZone.Domaines.Compte.Contrats.csproj" />
+        <ProjectReference Include="..\..\Systeme\Donnees\MeepleZone.Systeme.Donnees.csproj" />
         <ProjectReference Include="..\Site.Client\MeepleZone.Site.Client.csproj" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.14" />
     </ItemGroup>

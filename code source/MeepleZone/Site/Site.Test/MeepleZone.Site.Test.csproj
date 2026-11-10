@@ -13,6 +13,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\Systeme\BaseTest\MeepleZone.Systeme.BaseTest.csproj" />
         <ProjectReference Include="..\Site\MeepleZone.Site.csproj" />
     </ItemGroup>
 

@@ -56,6 +56,24 @@ public class GestionEchecConnexionTests
     }
 
     [Fact]
+    public async Task Traiter_AvecCompteProbable_RedirigeVersCompteProbableSansJournaliser()
+    {
+        // Arrange
+        var journal = new CollecteurJournal();
+        var http = CreerContexteHttp(journal);
+        var contexte = new RemoteFailureContext(http, SchemaGoogle, new GoogleOptions(), new CompteProbableException());
+
+        // Act
+        await GestionEchecConnexion.Traiter(contexte);
+
+        // Assert
+        http.Response.StatusCode.Should().Be(StatusCodes.Status302Found);
+        http.Response.Headers.Location.ToString().Should().Be("/connexion-requise?motif=compte-probable");
+        contexte.Result!.Handled.Should().BeTrue();
+        journal.Entrees.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task TraiterRefus_AvecRefusExplicite_RedirigeVersAnnulee()
     {
         // Arrange

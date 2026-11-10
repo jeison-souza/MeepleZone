@@ -2,13 +2,9 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
-# Copier les fichiers csproj et restaurer les dépendances
-COPY ["Site/Site/MeepleZone.Site.csproj", "Site/Site/"]
-COPY ["Site/Site.Client/MeepleZone.Site.Client.csproj", "Site/Site.Client/"]
-RUN dotnet restore "Site/Site/MeepleZone.Site.csproj"
-
-# Copier le reste du code
+# Copier le code et restaurer les dépendances
 COPY . .
+RUN dotnet restore "Site/Site/MeepleZone.Site.csproj"
 WORKDIR "/src/Site/Site"
 
 # --- Étape de publication (compile et publie en une seule passe) ---
