@@ -20,7 +20,7 @@ public static class GestionEchecConnexion
     {
         if (context.Failure is CompteProbableException)
         {
-            context.Response.Redirect("/connexion-requise?motif=compte-probable");
+            context.Response.Redirect(UrlCompteProbable(context));
             context.HandleResponse();
             return Task.CompletedTask;
         }
@@ -43,6 +43,28 @@ public static class GestionEchecConnexion
         // Sans cet appel, l'exception serait quand même levée après la redirection.
         context.HandleResponse();
         return Task.CompletedTask;
+    }
+
+    // Le fournisseur vient de la liste fermée (jamais d'un texte libre) et la page de retour est revalidée :
+    // aucune donnée de la personne (courriel, nom) ne voyage dans l'adresse.
+    private static string UrlCompteProbable(RemoteFailureContext context)
+    {
+        var url = "/connexion-requise?motif=compte-probable";
+        var fournisseur = FournisseursConnexion.Trouver(context.Scheme.Name);
+
+        if (fournisseur is not null)
+        {
+            url += $"&fournisseur={fournisseur.Nom}";
+        }
+
+        var retour = UrlRetour.Valider(context.Properties?.RedirectUri);
+
+        if (retour != UrlRetour.Defaut)
+        {
+            url += $"&retour={Uri.EscapeDataString(retour)}";
+        }
+
+        return url;
     }
 
     /// <summary>
