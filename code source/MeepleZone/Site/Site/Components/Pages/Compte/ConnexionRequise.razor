@@ -31,11 +31,11 @@
             <p class="mz-connexion-phrase">Connectez-vous pour accéder à cette page.</p>
         }
 
-        @* Liens simples (navigation complète) : la connexion passe par une redirection vers le fournisseur. *@
+        @* Liens simples (navigation complète) : la connexion passe par une redirection vers le fournisseur. target="_top" empêche le routeur Blazor d'intercepter le clic (data-enhance-nav n'agit pas en mode interactif). *@
         <div class="mz-connexion-boutons">
             @foreach (FournisseurConnexion fournisseur in FournisseursAffiches)
             {
-                <a href="@LienFournisseur(fournisseur)" class="mz-fournisseur mz-fournisseur-@fournisseur.Nom.ToLowerInvariant()" data-enhance-nav="false">
+                <a href="@LienFournisseur(fournisseur)" class="mz-fournisseur mz-fournisseur-@fournisseur.Nom.ToLowerInvariant()" target="_top">
                     <IconeFournisseur Nom="@fournisseur.Nom" Class="mz-fournisseur-icone" />
                     <span>Continuer avec @fournisseur.Libelle</span>
                 </a>
@@ -47,7 +47,7 @@
             if (FournisseurUtilise is not null)
             {
                 <h2 class="mz-connexion-soustitre mz-connexion-soustitre-creation">Aucun compte à retrouver ?</h2>
-                <a href="@LienCreation(FournisseurUtilise)" class="mz-connexion-creation" data-enhance-nav="false">
+                <a href="@LienCreation(FournisseurUtilise)" class="mz-connexion-creation" target="_top">
                     Créer un nouveau compte avec @FournisseurUtilise.Libelle
                 </a>
             }
