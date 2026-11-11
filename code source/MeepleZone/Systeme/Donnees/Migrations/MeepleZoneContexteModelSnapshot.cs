@@ -556,6 +556,65 @@ namespace MeepleZone.Systeme.Donnees.Migrations
                         });
                 });
 
+            modelBuilder.Entity("MeepleZone.Systeme.Entites.Possession", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Commentaire")
+                        .HasColumnType("text")
+                        .HasColumnName("commentaire");
+
+                    b.Property<DateTimeOffset>("CreeLe")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("cree_le")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<Guid>("JeuId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("jeu_id");
+
+                    b.Property<DateTimeOffset>("ModifieLe")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modifie_le")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<short?>("Note")
+                        .HasColumnType("smallint")
+                        .HasColumnName("note");
+
+                    b.Property<int>("PartiesJouees")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("parties_jouees");
+
+                    b.Property<Guid>("UtilisateurId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("utilisateur_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_possession");
+
+                    b.HasIndex("JeuId")
+                        .HasDatabaseName("ix_possession_jeu_id");
+
+                    b.HasIndex("UtilisateurId", "JeuId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_possession_utilisateur_id_jeu_id");
+
+                    b.ToTable("possession", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_possession_note", "note BETWEEN 1 AND 10");
+
+                            t.HasCheckConstraint("ck_possession_parties_jouees", "parties_jouees >= 0");
+                        });
+                });
+
             modelBuilder.Entity("MeepleZone.Systeme.Entites.Utilisateur", b =>
                 {
                     b.Property<Guid>("Id")
@@ -695,6 +754,23 @@ namespace MeepleZone.Systeme.Donnees.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_jeu_mecanique_mecanique_mecanique_id");
+                });
+
+            modelBuilder.Entity("MeepleZone.Systeme.Entites.Possession", b =>
+                {
+                    b.HasOne("MeepleZone.Systeme.Entites.Jeu", null)
+                        .WithMany()
+                        .HasForeignKey("JeuId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_possession_jeu_jeu_id");
+
+                    b.HasOne("MeepleZone.Systeme.Entites.Utilisateur", null)
+                        .WithMany()
+                        .HasForeignKey("UtilisateurId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_possession_utilisateur_utilisateur_id");
                 });
 
             modelBuilder.Entity("MeepleZone.Systeme.Entites.Utilisateur", b =>
