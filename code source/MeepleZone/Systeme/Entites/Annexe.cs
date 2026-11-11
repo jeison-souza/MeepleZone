@@ -8,7 +8,7 @@ public class Annexe
 
     public string NomFichier { get; set; } = string.Empty;
 
-    public byte[] Contenu { get; set; } = Array.Empty<byte>();
+    public byte[] Contenu { get; set; } = [];
 
     public string TypeMime { get; set; } = string.Empty;
 

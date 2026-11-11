@@ -7,14 +7,9 @@ using Xunit;
 
 namespace MeepleZone.Systeme.Donnees.Test.Configurations;
 
-public class UtilisateurConfigurationTests : IClassFixture<ModeleDonneesFixture>
+public class UtilisateurConfigurationTests(ModeleDonneesFixture modele) : IClassFixture<ModeleDonneesFixture>
 {
-    private readonly ModeleDonneesFixture _modele;
-
-    public UtilisateurConfigurationTests(ModeleDonneesFixture modele)
-    {
-        _modele = modele;
-    }
+    private readonly ModeleDonneesFixture _modele = modele;
 
     [Fact]
     public void Utilisateur_Table_PorteLeNomUtilisateur()
@@ -165,7 +160,7 @@ public class UtilisateurConfigurationTests : IClassFixture<ModeleDonneesFixture>
         cle.Should().NotBeNull();
         cle.DeleteBehavior.Should().Be(DeleteBehavior.SetNull);
         cle.GetConstraintName().Should().Be("fk_utilisateur_annexe_photo_id");
-        cle.PrincipalEntityType.ClrType.Should().Be(typeof(Annexe));
+        cle.PrincipalEntityType.ClrType.Should().Be<Annexe>();
     }
 
     [Theory]
@@ -217,7 +212,7 @@ public class UtilisateurConfigurationTests : IClassFixture<ModeleDonneesFixture>
     }
 
     [Theory]
-    [MemberData(nameof(NomsDesProprietesSauf), [new[] { nameof(Utilisateur.Courriel) }])]
+    [MemberData(nameof(TestsExtensions.NomsDesProprietesSauf), typeof(Utilisateur), new string[] { nameof(Utilisateur.Courriel) }, MemberType = typeof(TestsExtensions))]
     public void Utilisateur_Propriete_NePossedePasDeCollation(string nom)
     {
         // Arrange
@@ -231,7 +226,7 @@ public class UtilisateurConfigurationTests : IClassFixture<ModeleDonneesFixture>
     }
 
     [Theory]
-    [MemberData(nameof(NomsDesProprietes))]
+    [MemberData(nameof(TestsExtensions.NomsDesProprietes), typeof(Utilisateur), MemberType = typeof(TestsExtensions))]
     public void Utilisateur_Propriete_PorteLeNomDeColonneDuSchema(string nom)
     {
         // Arrange
@@ -266,29 +261,5 @@ public class UtilisateurConfigurationTests : IClassFixture<ModeleDonneesFixture>
 
         // Assert
         colonne.Should().Be(typeAttendu);
-    }
-
-    public static TheoryData<string> NomsDesProprietes()
-    {
-        return NomsDesProprietesSauf();
-    }
-
-    // Seules les propriétés simples (texte, nombre, date, Guid) sont des colonnes :
-    // une collection ou une propriété de navigation (relation) ne l'est pas.
-    public static TheoryData<string> NomsDesProprietesSauf(params string[] exceptes)
-    {
-        var donnees = new TheoryData<string>();
-
-        foreach (var propriete in typeof(Utilisateur).GetProperties())
-        {
-            var estSimple = propriete.PropertyType.IsValueType || propriete.PropertyType == typeof(string);
-
-            if (estSimple && !exceptes.Contains(propriete.Name))
-            {
-                donnees.Add(propriete.Name);
-            }
-        }
-
-        return donnees;
     }
 }

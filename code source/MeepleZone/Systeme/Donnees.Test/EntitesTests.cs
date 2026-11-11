@@ -6,14 +6,9 @@ using Xunit;
 
 namespace MeepleZone.Systeme.Donnees.Test;
 
-public class EntitesTests : IClassFixture<ModeleDonneesFixture>, IDisposable
+public class EntitesTests(ModeleDonneesFixture modele) : IClassFixture<ModeleDonneesFixture>, IDisposable
 {
-    private readonly ModeleDonneesFixture _modele;
-
-    public EntitesTests(ModeleDonneesFixture modele)
-    {
-        _modele = modele;
-    }
+    private readonly ModeleDonneesFixture _modele = modele;
 
     public void Dispose()
     {
