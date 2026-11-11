@@ -1,4 +1,4 @@
-@using System.Security.Claims
+@using MeepleZone.Site.Authentification.Extensions
 @implements IDisposable
 @inject NavigationManager Navigation
 
@@ -6,16 +6,16 @@
     <Authorized Context="authentification">
         <MudMenu AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight" AriaLabel="Menu de l'utilisateur">
             <ActivatorContent Context="menu">
-                @* Avatar provisoire : une image générique, en attendant la photo du fournisseur. Avec un ActivatorContent personnalisé,
+                @* Avatar à initiales (photo du fournisseur : plus tard). Avec un ActivatorContent personnalisé,
                    MudMenu ne branche pas le clic : le bouton appelle lui-même menu.ToggleAsync. *@
-                <button type="button" class="mz-avatar-bouton" aria-label="Ouvrir le menu de l'utilisateur" @onclick="menu.ToggleAsync"><MudAvatar Size="Size.Medium" Color="Color.Primary">
-                    <MudIcon Icon="@Icons.Material.Filled.Person" />
-                </MudAvatar></button>
+                <button type="button" class="mz-avatar-bouton" aria-label="Ouvrir le menu de l'utilisateur" @onclick="menu.ToggleAsync">
+                    <AvatarUtilisateur Nom="@authentification.User.NomAffichage()" Id="@authentification.User.Id()" />
+                </button>
             </ActivatorContent>
             <ChildContent>
                 <div class="mz-menu-identite">
-                    <span class="mz-menu-nom">@NomAffiche(authentification.User)</span>
-                    @if (Courriel(authentification.User) is { } courriel)
+                    <span class="mz-menu-nom">@(authentification.User.NomAffichage() ?? "Mon compte")</span>
+                    @if (authentification.User.Courriel() is { } courriel)
                     {
                         <span class="mz-menu-courriel">@courriel</span>
                     }
@@ -57,10 +57,6 @@
     {
         InvokeAsync(StateHasChanged);
     }
-
-    private static string NomAffiche(ClaimsPrincipal utilisateur) => utilisateur.Identity?.Name ?? "Mon compte";
-
-    private static string? Courriel(ClaimsPrincipal utilisateur) => utilisateur.FindFirst(ClaimTypes.Email)?.Value;
 
     public void Dispose()
     {
