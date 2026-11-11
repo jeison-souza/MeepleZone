@@ -81,6 +81,16 @@ public class MeepleZoneContexteTests(ModeleDonneesFixture modele) : IClassFixtur
     }
 
     [Fact]
+    public void Possessions_Ensemble_EstLieALEntitePossession()
+    {
+        // Arrange + Act : le type est lu dans le modèle, sans interroger la base
+        var type = _modele.Contexte.Possessions.EntityType;
+
+        // Assert
+        type.ClrType.Should().Be<Possession>();
+    }
+
+    [Fact]
     public void Modele_Collations_DoitPossederCollationCourriel()
     {
         // Arrange + Act : la collation est lue dans le modèle, sans interroger la base

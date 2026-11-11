@@ -21,6 +21,8 @@ public class MeepleZoneContexte(DbContextOptions<MeepleZoneContexte> options) : 
 
     public DbSet<JeuMecanique> JeuxMecaniques => Set<JeuMecanique>();
 
+    public DbSet<Possession> Possessions => Set<Possession>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasCollation(CollationCourriel, locale: "und-u-ks-level2", provider: "icu", deterministic: false);
