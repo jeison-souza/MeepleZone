@@ -62,6 +62,8 @@ builder.Services.AddOptions<MicrosoftAccountOptions>(MicrosoftAccountDefaults.Au
               "Authentication:Microsoft : ClientId ou ClientSecret manquant.")
     .ValidateOnStart();
 
+// À activer quand le domaine Collection sera implémenté (la page « Ma collection » en dépend) :
+// ajouter .AjouterDomaineCollection() à la chaîne ci-dessous.
 builder.Services
     .AjouterSystemeDonnees(builder.Configuration.GetConnectionString("MeepleZone") ?? throw new InvalidOperationException("ConnectionStrings:MeepleZone manquant."))
     .AjouterDomaineCompte();
