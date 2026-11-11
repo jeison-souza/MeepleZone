@@ -1,5 +1,5 @@
 @page "/profil"
-@using System.Security.Claims
+@using MeepleZone.Site.Authentification.Extensions
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize]
 
@@ -8,12 +8,10 @@
 <MudContainer MaxWidth="MaxWidth.Small" Class="my-8">
     <AuthorizeView Context="authentification">
         <MudPaper Elevation="2" Class="pa-6 d-flex flex-column align-center text-center">
-            <MudAvatar Size="Size.Large" Color="Color.Primary" Class="mb-3">
-                <MudIcon Icon="@Icons.Material.Filled.Person" />
-            </MudAvatar>
+            <AvatarUtilisateur Nom="@authentification.User.NomAffichage()" Id="@authentification.User.Id()" Size="Size.Large" Class="mb-3" />
             <MudText Typo="Typo.h4" HtmlTag="h1">Mon profil</MudText>
-            <MudText Typo="Typo.h6" Class="mt-2">@(authentification.User.Identity?.Name ?? "Mon compte")</MudText>
-            @if (authentification.User.FindFirst(ClaimTypes.Email)?.Value is { } courriel)
+            <MudText Typo="Typo.h6" Class="mt-2">@(authentification.User.NomAffichage() ?? "Mon compte")</MudText>
+            @if (authentification.User.Courriel() is { } courriel)
             {
                 <MudText Typo="Typo.body2" Class="mz-profil-courriel">@courriel</MudText>
             }

@@ -1,0 +1,40 @@
+@using MeepleZone.Site.Affichage
+@* Avatar du compte : initiales sur fond coloré d'après l'Id; icône générique quand le nom n'a aucune lettre exploitable.
+   Rien n'est enregistré : c'est de l'affichage (voir « Photo de profil » dans la conception de la connexion). *@
+@if (Initiales is { } initiales)
+{
+    <MudAvatar Size="Size" Class="@Class" Style="@Style">@initiales</MudAvatar>
+}
+else
+{
+    <MudAvatar Size="Size" Color="Color.Primary" Class="@Class">
+        <MudIcon Icon="@Icons.Material.Filled.Person" />
+    </MudAvatar>
+}
+
+@code {
+    // Teintes foncées : le texte blanc des initiales garde un bon contraste sur chacune.
+    private static readonly string[] Palette =
+    [
+        "#1F4E79", "#8B2E2E", "#2E6B3E", "#6A3D9A", "#A04A00", "#0F6B6B",
+        "#8A3B6E", "#4A5A28", "#3B4A9E", "#7A4B2A", "#324A5F", "#9C2F5B"
+    ];
+
+    [Parameter]
+    public string? Nom { get; set; }
+
+    [Parameter]
+    public Guid? Id { get; set; }
+
+    [Parameter]
+    public Size Size { get; set; } = Size.Medium;
+
+    [Parameter]
+    public string? Class { get; set; }
+
+    private string? Initiales => InitialesAvatar.Calculer(Nom);
+
+    private string Style => $"background-color: {Couleur}; color: #FFFFFF; font-weight: 600;";
+
+    private string Couleur => Palette[Id is { } id ? CouleurAvatar.Index(id, Palette.Length) : 0];
+}
