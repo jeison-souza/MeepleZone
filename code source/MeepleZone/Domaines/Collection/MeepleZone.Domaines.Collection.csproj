@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <ItemGroup>
+        <ProjectReference Include="..\Collection.Contrats\MeepleZone.Domaines.Collection.Contrats.csproj" />
+    </ItemGroup>
+
+</Project>
