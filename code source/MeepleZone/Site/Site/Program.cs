@@ -96,8 +96,8 @@ app.MapRazorComponents<App>()
 
 // (Endpoints)
 // L'adresse de retour passe toujours par UrlRetour : seul un chemin local du site est accepté.
-app.MapGet("/connexion/Google", (string? retour) => Results.Challenge(new AuthenticationProperties { RedirectUri = UrlRetour.Valider(retour) }, [GoogleDefaults.AuthenticationScheme]));
-app.MapGet("/connexion/Microsoft", (string? retour) => Results.Challenge(new AuthenticationProperties { RedirectUri = UrlRetour.Valider(retour) }, [MicrosoftAccountDefaults.AuthenticationScheme]));
+app.MapGet("/connexion/Google", (string? retour, string? creation) => Results.Challenge(ProprietesConnexion.Creer(retour, creation), [GoogleDefaults.AuthenticationScheme]));
+app.MapGet("/connexion/Microsoft", (string? retour, string? creation) => Results.Challenge(ProprietesConnexion.Creer(retour, creation), [MicrosoftAccountDefaults.AuthenticationScheme]));
 
 // Le paramètre de formulaire fait valider le jeton antiforgery par l'intergiciel : sans jeton, la requête est refusée (400).
 app.MapPost("/deconnexion", (IFormCollection _) => Results.SignOut(new AuthenticationProperties { RedirectUri = "/" }, [CookieAuthenticationDefaults.AuthenticationScheme]));

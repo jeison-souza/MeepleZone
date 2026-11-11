@@ -68,9 +68,41 @@ public class GestionEchecConnexionTests
 
         // Assert
         http.Response.StatusCode.Should().Be(StatusCodes.Status302Found);
-        http.Response.Headers.Location.ToString().Should().Be("/connexion-requise?motif=compte-probable");
+        http.Response.Headers.Location.ToString().Should().Be("/connexion-requise?motif=compte-probable&fournisseur=Google");
         contexte.Result!.Handled.Should().BeTrue();
         journal.Entrees.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Traiter_AvecCompteProbableEtPageDeRetour_ConserveLaPageDeRetourValidee()
+    {
+        // Arrange
+        var http = CreerContexteHttp(new CollecteurJournal());
+        var contexte = new RemoteFailureContext(http, SchemaGoogle, new GoogleOptions(), new CompteProbableException())
+        {
+            Properties = new AuthenticationProperties { RedirectUri = "/profil?onglet=2" }
+        };
+
+        // Act
+        await GestionEchecConnexion.Traiter(contexte);
+
+        // Assert
+        http.Response.Headers.Location.ToString().Should().Be("/connexion-requise?motif=compte-probable&fournisseur=Google&retour=%2Fprofil%3Fonglet%3D2");
+    }
+
+    [Fact]
+    public async Task Traiter_AvecCompteProbableEtFournisseurInconnu_OmetLeFournisseur()
+    {
+        // Arrange
+        var http = CreerContexteHttp(new CollecteurJournal());
+        var schemaInconnu = new AuthenticationScheme("<script>", "x", typeof(GoogleHandler));
+        var contexte = new RemoteFailureContext(http, schemaInconnu, new GoogleOptions(), new CompteProbableException());
+
+        // Act
+        await GestionEchecConnexion.Traiter(contexte);
+
+        // Assert
+        http.Response.Headers.Location.ToString().Should().Be("/connexion-requise?motif=compte-probable");
     }
 
     [Fact]

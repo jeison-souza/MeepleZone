@@ -1,0 +1,107 @@
+@page "/connexion-requise"
+
+<PageTitle>MeepleZone - @Titre</PageTitle>
+
+<section class="mz-connexion">
+    <MudPaper Elevation="2" Class="mz-connexion-carte">
+        <img src="images/logo.svg" alt="" class="mz-connexion-logo" />
+        <p class="mz-connexion-marque" aria-hidden="true"><span class="mz-connexion-marque-meeple">Meeple</span><span class="mz-connexion-marque-zone">Zone</span></p>
+
+        <h1 class="mz-connexion-titre">@Titre</h1>
+
+        @if (Etat == EtatConnexion.Annulee)
+        {
+            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mz-connexion-alerte">
+                La connexion a été annulée. Vous pouvez réessayer quand vous le souhaitez.
+            </MudAlert>
+        }
+        else if (Etat == EtatConnexion.Erreur)
+        {
+            <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="mz-connexion-alerte">
+                Un problème est survenu pendant la connexion. Veuillez réessayer; si le problème persiste, essayez l'autre fournisseur.
+            </MudAlert>
+        }
+        else if (Etat == EtatConnexion.CompteProbable)
+        {
+            <p class="mz-connexion-phrase">Pour éviter un doublon, choisissez ce que vous souhaitez faire.</p>
+            <h2 class="mz-connexion-soustitre">Se connecter avec un autre fournisseur</h2>
+        }
+        else
+        {
+            <p class="mz-connexion-phrase">Connectez-vous pour accéder à cette page.</p>
+        }
+
+        @* Liens simples (navigation complète) : la connexion passe par une redirection vers le fournisseur. target="_top" empêche le routeur Blazor d'intercepter le clic (data-enhance-nav n'agit pas en mode interactif). *@
+        <div class="mz-connexion-boutons">
+            @foreach (FournisseurConnexion fournisseur in FournisseursAffiches)
+            {
+                <a href="@LienFournisseur(fournisseur)" class="mz-fournisseur mz-fournisseur-@fournisseur.Nom.ToLowerInvariant()" target="_top">
+                    <IconeFournisseur Nom="@fournisseur.Nom" Class="mz-fournisseur-icone" />
+                    <span>Continuer avec @fournisseur.Libelle</span>
+                </a>
+            }
+        </div>
+
+        @if (Etat == EtatConnexion.CompteProbable)
+        {
+            if (FournisseurUtilise is not null)
+            {
+                <h2 class="mz-connexion-soustitre mz-connexion-soustitre-creation">Aucun compte à retrouver ?</h2>
+                <a href="@LienCreation(FournisseurUtilise)" class="mz-connexion-creation" target="_top">
+                    Créer un nouveau compte avec @FournisseurUtilise.Libelle
+                </a>
+            }
+        }
+        else
+        {
+            <p class="mz-connexion-note">Aucun mot de passe à créer : la connexion passe par votre compte Google ou Microsoft.</p>
+        }
+
+        <MudLink Href="/" Class="mz-connexion-retour">Retour à l'accueil</MudLink>
+    </MudPaper>
+</section>
+
+@code {
+    private enum EtatConnexion { Requise, Annulee, Erreur, CompteProbable }
+
+    [SupplyParameterFromQuery(Name = "motif")]
+    public string? Motif { get; set; }
+
+    /// <summary>Page où revenir après la connexion; validée avant tout usage (voir UrlRetour).</summary>
+    [SupplyParameterFromQuery(Name = "retour")]
+    public string? Retour { get; set; }
+
+    /// <summary>Fournisseur qui vient d'être utilisé; reconnu dans la liste fermée, jamais affiché tel que reçu.</summary>
+    [SupplyParameterFromQuery(Name = "fournisseur")]
+    public string? Fournisseur { get; set; }
+
+    private FournisseurConnexion? FournisseurUtilise => FournisseursConnexion.Trouver(Fournisseur);
+
+    // Avec un compte probable, le fournisseur déjà utilisé est écarté : il mènerait au même avis.
+    private IReadOnlyList<FournisseurConnexion> FournisseursAffiches =>
+        Etat == EtatConnexion.CompteProbable ? FournisseursConnexion.Autres(Fournisseur) : FournisseursConnexion.Tous;
+
+    private string LienFournisseur(FournisseurConnexion fournisseur) => $"/connexion/{fournisseur.Nom}?retour={RetourEncode}";
+
+    // « creation=true » est la seule valeur lue par le serveur pour forcer la création; ce n'est pas un contrôle de sécurité.
+    private string LienCreation(FournisseurConnexion fournisseur) => $"/connexion/{fournisseur.Nom}?creation=true&retour={RetourEncode}";
+
+    private string RetourEncode => Uri.EscapeDataString(UrlRetour.Valider(Retour));
+
+    // Un motif inconnu retombe sur « connexion requise » : la page ne reflète jamais du texte venu de l'adresse.
+    private EtatConnexion Etat => Motif?.ToLowerInvariant() switch
+    {
+        "annulee" => EtatConnexion.Annulee,
+        "erreur" => EtatConnexion.Erreur,
+        "compte-probable" => EtatConnexion.CompteProbable,
+        _ => EtatConnexion.Requise
+    };
+
+    private string Titre => Etat switch
+    {
+        EtatConnexion.Annulee => "Connexion annulée",
+        EtatConnexion.Erreur => "La connexion a échoué",
+        EtatConnexion.CompteProbable => "Un compte existe peut-être déjà",
+        _ => "Connexion requise"
+    };
+}
