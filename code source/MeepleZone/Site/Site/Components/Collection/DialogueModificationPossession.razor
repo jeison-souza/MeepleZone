@@ -1,0 +1,96 @@
+@using MeepleZone.Domaines.Collection
+@using MeepleZone.Domaines.Collection.Contrats.Enums
+@using MeepleZone.Domaines.Collection.Contrats.Modeles
+@using Microsoft.Extensions.Logging
+@inject IDomaineCollection Domaine
+@inject ILogger<DialogueModificationPossession> Journal
+
+@* Données personnelles d'un jeu de la collection : note, commentaire et parties jouées. *@
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">@Item.Nom</MudText>
+    </TitleContent>
+    <DialogContent>
+        @if (erreur is not null)
+        {
+            <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-4">@erreur</MudAlert>
+        }
+
+        <MudGrid Spacing="2">
+            <MudItem xs="12" sm="6">
+                <MudNumericField T="short?" @bind-Value="note" Label="Ma note (1 à 10)" Min="1" Max="10" Clearable="true" />
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudNumericField T="int" @bind-Value="partiesJouees" Label="Parties jouées" Min="0" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField T="string" @bind-Value="commentaire" Label="Commentaire" Lines="4" Sizing="InputSizing.Auto" />
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Annuler">Annuler</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="enCours" OnClick="EnregistrerAsync">Enregistrer</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private short? note;
+    private int partiesJouees;
+    private string? commentaire;
+    private string? erreur;
+    private bool enCours;
+
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public ItemCollectionDto Item { get; set; } = default!;
+
+    protected override void OnInitialized()
+    {
+        note = Item.Note;
+        partiesJouees = Item.PartiesJouees;
+        commentaire = Item.Commentaire;
+    }
+
+    private void Annuler()
+    {
+        MudDialog.Cancel();
+    }
+
+    private async Task EnregistrerAsync()
+    {
+        erreur = null;
+        enCours = true;
+        try
+        {
+            var requete = new ModifierPossessionRequete(
+                Item.PossessionId, note, string.IsNullOrWhiteSpace(commentaire) ? null : commentaire.Trim(), partiesJouees);
+
+            var reponse = await Domaine.ModifierPossessionAsync(requete);
+
+            switch (reponse.Statut)
+            {
+                case StatutModification.Modifie when reponse.Item is not null:
+                    MudDialog.Close(DialogResult.Ok(reponse.Item));
+                    break;
+                case StatutModification.Introuvable:
+                    erreur = "Ce jeu ne fait plus partie de votre collection.";
+                    break;
+                default:
+                    erreur = "Les données saisies ne sont pas valides. Vérifiez la note et le nombre de parties.";
+                    break;
+            }
+        }
+        catch (Exception exception)
+        {
+            Journal.LogError(exception, "Modification de la possession {PossessionId} impossible.", Item.PossessionId);
+            erreur = "Les modifications n'ont pas pu être enregistrées. Réessayez dans un instant.";
+        }
+        finally
+        {
+            enCours = false;
+        }
+    }
+}

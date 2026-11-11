@@ -1,0 +1,184 @@
+@using MeepleZone.Domaines.Collection
+@using MeepleZone.Domaines.Collection.Contrats.Enums
+@using MeepleZone.Domaines.Collection.Contrats.Modeles
+@using Microsoft.Extensions.Logging
+@inject IDomaineCollection Domaine
+@inject IDialogService DialogService
+@inject ILogger<DialogueAjoutJeu> Journal
+
+@* Recherche d'un jeu du catalogue à ajouter à la collection; à défaut, mène à la création d'un jeu. *@
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">Ajouter un jeu</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudTextField T="string" Value="texte" ValueChanged="SurChangementTexteAsync" Label="Rechercher dans le catalogue"
+                      Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
+                      Immediate="true" DebounceInterval="350" Clearable="true" AutoFocus="true" />
+
+        @if (erreur is not null)
+        {
+            <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mt-4">@erreur</MudAlert>
+        }
+
+        @if (enRecherche)
+        {
+            <MudProgressLinear Indeterminate="true" Class="mt-4" />
+        }
+        else if (texte is { Length: > 0 })
+        {
+            @if (resultats.Count == 0)
+            {
+                <MudText Typo="Typo.body2" Class="mt-4">Aucun jeu du catalogue ne correspond à « @texte ».</MudText>
+            }
+            else
+            {
+                <MudList T="JeuResumeDto" Class="mt-2" Dense="true">
+                    @foreach (var jeu in resultats)
+                    {
+                        <MudListItem T="JeuResumeDto" Class="mz-resultat-jeu">
+                            <div class="mz-resultat-jeu-ligne">
+                                <div class="mz-resultat-jeu-texte">
+                                    <MudText Typo="Typo.subtitle1">@jeu.Nom</MudText>
+                                    <MudText Typo="Typo.body2" Class="mz-resultat-jeu-detail">@Detail(jeu)</MudText>
+                                </div>
+                                @if (jeu.DejaPossede)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Icon="@Icons.Material.Filled.Check">Dans ma collection</MudChip>
+                                }
+                                else
+                                {
+                                    <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Primary"
+                                               Disabled="enCours" OnClick="() => AjouterAsync(jeu)">Ajouter</MudButton>
+                                }
+                            </div>
+                        </MudListItem>
+                    }
+                </MudList>
+
+                @if (total > resultats.Count)
+                {
+                    <MudText Typo="Typo.caption" Class="mt-2">@total résultats : précisez la recherche pour voir les autres.</MudText>
+                }
+            }
+        }
+
+        <MudDivider Class="my-4" />
+        <MudText Typo="Typo.body2" Class="mb-2">Le jeu ne figure pas dans le catalogue ?</MudText>
+        <MudButton Variant="Variant.Text" Color="Color.Primary" StartIcon="@Icons.Material.Filled.AddCircleOutline"
+                   OnClick="CreerAsync">Créer un jeu</MudButton>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Annuler">Annuler</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private const int TaillePage = 10;
+
+    private string? texte;
+    private IReadOnlyList<JeuResumeDto> resultats = [];
+    private int total;
+    private bool enRecherche;
+    private bool enCours;
+    private string? erreur;
+
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    private void Annuler()
+    {
+        MudDialog.Cancel();
+    }
+
+    private async Task SurChangementTexteAsync(string? valeur)
+    {
+        texte = valeur?.Trim();
+        erreur = null;
+
+        if (string.IsNullOrEmpty(texte))
+        {
+            resultats = [];
+            total = 0;
+            return;
+        }
+
+        enRecherche = true;
+        try
+        {
+            var reponse = await Domaine.RechercherJeuxAsync(new RechercherJeuxRequete(texte, 1, TaillePage));
+            resultats = reponse.Jeux;
+            total = reponse.Total;
+        }
+        catch (Exception exception)
+        {
+            Journal.LogError(exception, "Recherche dans le catalogue impossible.");
+            erreur = "La recherche a échoué. Réessayez dans un instant.";
+        }
+        finally
+        {
+            enRecherche = false;
+        }
+    }
+
+    private static string Detail(JeuResumeDto jeu)
+    {
+        var elements = new List<string>();
+        if (jeu.AnneePublication is { } annee)
+        {
+            elements.Add(annee.ToString());
+        }
+
+        if (!string.IsNullOrWhiteSpace(jeu.Editeur))
+        {
+            elements.Add(jeu.Editeur);
+        }
+
+        return elements.Count > 0 ? string.Join(" · ", elements) : "Année et éditeur inconnus";
+    }
+
+    private async Task AjouterAsync(JeuResumeDto jeu)
+    {
+        erreur = null;
+        enCours = true;
+        try
+        {
+            var reponse = await Domaine.AjouterJeuAsync(new AjouterJeuRequete(jeu.JeuId));
+
+            switch (reponse.Statut)
+            {
+                case StatutAjout.Ajoute when reponse.Item is not null:
+                    MudDialog.Close(DialogResult.Ok(reponse.Item));
+                    break;
+                case StatutAjout.DejaPossede:
+                    erreur = $"« {jeu.Nom} » fait déjà partie de votre collection.";
+                    break;
+                default:
+                    erreur = "Ce jeu n'existe plus dans le catalogue.";
+                    break;
+            }
+        }
+        catch (Exception exception)
+        {
+            Journal.LogError(exception, "Ajout du jeu {JeuId} impossible.", jeu.JeuId);
+            erreur = "Le jeu n'a pas pu être ajouté. Réessayez dans un instant.";
+        }
+        finally
+        {
+            enCours = false;
+        }
+    }
+
+    // Ouvre la création par-dessus ce dialogue; si le jeu est créé, il est déjà dans la collection : on ferme avec lui.
+    private async Task CreerAsync()
+    {
+        var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseOnEscapeKey = true };
+        var dialogue = await DialogService.ShowAsync<DialogueCreationJeu>("Créer un jeu", options);
+        var resultat = await dialogue.Result;
+
+        if (resultat is { Canceled: false, Data: ItemCollectionDto item })
+        {
+            MudDialog.Close(DialogResult.Ok(item));
+        }
+    }
+}

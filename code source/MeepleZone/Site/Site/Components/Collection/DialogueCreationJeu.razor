@@ -1,0 +1,197 @@
+@using MeepleZone.Domaines.Collection
+@using MeepleZone.Domaines.Collection.Contrats.Enums
+@using MeepleZone.Domaines.Collection.Contrats.Modeles
+@using Microsoft.Extensions.Logging
+@inject IDomaineCollection Domaine
+@inject ILogger<DialogueCreationJeu> Journal
+
+@* Création d'un jeu absent du catalogue; le jeu est ajouté à la collection de la personne dès sa création. *@
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">Créer un jeu</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudText Typo="Typo.body2" Class="mb-4">
+            Seul le nom est obligatoire. Le jeu sera visible de vous seul jusqu'à sa validation.
+        </MudText>
+
+        @if (erreurs.Count > 0)
+        {
+            <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-4">
+                @foreach (var erreur in erreurs)
+                {
+                    <div>@erreur</div>
+                }
+            </MudAlert>
+        }
+
+        <MudGrid Spacing="2">
+            <MudItem xs="12" sm="8">
+                <MudTextField T="string" @bind-Value="nom" Label="Nom" Required="true" MaxLength="255" Immediate="true" />
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudNumericField T="short?" @bind-Value="anneePublication" Label="Année de publication" HideSpinButtons="true" />
+            </MudItem>
+
+            <MudItem xs="12" sm="4">
+                <MudNumericField T="short?" @bind-Value="joueursMin" Label="Joueurs (min.)" Min="1" HideSpinButtons="true" />
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudNumericField T="short?" @bind-Value="joueursMax" Label="Joueurs (max.)" Min="1" HideSpinButtons="true" />
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudNumericField T="short?" @bind-Value="joueursMeilleur" Label="Meilleur nombre de joueurs" Min="1" HideSpinButtons="true" />
+            </MudItem>
+
+            <MudItem xs="12" sm="4">
+                <MudNumericField T="short?" @bind-Value="dureeMin" Label="Durée min. (minutes)" Min="1" HideSpinButtons="true" />
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudNumericField T="short?" @bind-Value="dureeMax" Label="Durée max. (minutes)" Min="1" HideSpinButtons="true" />
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudNumericField T="short?" @bind-Value="ageMin" Label="Âge minimal" Min="0" HideSpinButtons="true" />
+            </MudItem>
+
+            <MudItem xs="12" sm="6">
+                <MudNumericField T="decimal?" @bind-Value="complexite" Label="Complexité (1 à 5)" Min="1M" Max="5M" Step="0.5M" />
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudSelect T="Guid?" @bind-Value="modeJeuId" Label="Mode de jeu" Clearable="true">
+                    @foreach (var mode in modes)
+                    {
+                        <MudSelectItem T="Guid?" Value="@((Guid?)mode.ModeJeuId)">@mode.Nom</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudSelect T="Guid" Label="Mécaniques" MultiSelection="true"
+                           SelectedValues="mecaniquesChoisies" SelectedValuesChanged="SurChangementMecaniques"
+                           ToStringFunc="NomMecanique">
+                    @foreach (var mecanique in mecaniques)
+                    {
+                        <MudSelectItem T="Guid" Value="mecanique.MecaniqueId">@mecanique.Nom</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField T="string" @bind-Value="editeur" Label="Éditeur" />
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Annuler">Annuler</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="enCours" OnClick="CreerAsync">Créer et ajouter</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private string? nom;
+    private short? anneePublication;
+    private short? joueursMin;
+    private short? joueursMax;
+    private short? joueursMeilleur;
+    private short? dureeMin;
+    private short? dureeMax;
+    private short? ageMin;
+    private decimal? complexite;
+    private Guid? modeJeuId;
+    private string? editeur;
+    private IReadOnlyCollection<Guid> mecaniquesChoisies = [];
+
+    private IReadOnlyList<ModeJeuDto> modes = [];
+    private IReadOnlyList<MecaniqueDto> mecaniques = [];
+    private readonly List<string> erreurs = [];
+    private bool enCours;
+
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            modes = await Domaine.ListerModesJeuAsync();
+            mecaniques = await Domaine.ListerMecaniquesAsync();
+        }
+        catch (Exception exception)
+        {
+            Journal.LogError(exception, "Chargement des modes de jeu et des mécaniques impossible.");
+            erreurs.Add("Les listes de modes et de mécaniques n'ont pas pu être chargées. Le jeu peut quand même être créé sans elles.");
+        }
+    }
+
+    private string? NomMecanique(Guid identifiant)
+    {
+        return mecaniques.FirstOrDefault(m => m.MecaniqueId == identifiant)?.Nom;
+    }
+
+    private void SurChangementMecaniques(IEnumerable<Guid> valeurs)
+    {
+        mecaniquesChoisies = valeurs.ToList();
+    }
+
+    private void Annuler()
+    {
+        MudDialog.Cancel();
+    }
+
+    private async Task CreerAsync()
+    {
+        erreurs.Clear();
+        Valider();
+        if (erreurs.Count > 0)
+        {
+            return;
+        }
+
+        enCours = true;
+        try
+        {
+            var requete = new CreerJeuRequete(
+                nom!.Trim(), anneePublication, joueursMin, joueursMax, joueursMeilleur, dureeMin, dureeMax,
+                ageMin, complexite, modeJeuId, string.IsNullOrWhiteSpace(editeur) ? null : editeur.Trim(),
+                mecaniquesChoisies.ToList());
+
+            var reponse = await Domaine.CreerJeuAsync(requete);
+
+            if (reponse.Statut == StatutCreationJeu.Cree && reponse.Item is not null)
+            {
+                MudDialog.Close(DialogResult.Ok(reponse.Item));
+                return;
+            }
+
+            erreurs.Add("Les données du jeu ne sont pas valides. Vérifiez les champs et réessayez.");
+        }
+        catch (Exception exception)
+        {
+            Journal.LogError(exception, "Création du jeu impossible.");
+            erreurs.Add("Le jeu n'a pas pu être créé. Réessayez dans un instant.");
+        }
+        finally
+        {
+            enCours = false;
+        }
+    }
+
+    // Contrôles de saisie évidents; le domaine revalide tout (StatutCreationJeu.DonneesInvalides).
+    private void Valider()
+    {
+        if (string.IsNullOrWhiteSpace(nom))
+        {
+            erreurs.Add("Le nom est obligatoire.");
+        }
+
+        if (joueursMin > joueursMax)
+        {
+            erreurs.Add("Le nombre minimal de joueurs dépasse le maximal.");
+        }
+
+        if (dureeMin > dureeMax)
+        {
+            erreurs.Add("La durée minimale dépasse la durée maximale.");
+        }
+    }
+}
