@@ -18,7 +18,7 @@ namespace MeepleZone.Systeme.Donnees.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Npgsql:CollationDefinition:courriel_ci", "und-u-ks-level2,und-u-ks-level2,icu,False")
-                .HasAnnotation("ProductVersion", "10.0.13")
+                .HasAnnotation("ProductVersion", "10.0.14")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -136,6 +136,426 @@ namespace MeepleZone.Systeme.Donnees.Migrations
                         });
                 });
 
+            modelBuilder.Entity("MeepleZone.Systeme.Entites.Jeu", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<short?>("AgeMin")
+                        .HasColumnType("smallint")
+                        .HasColumnName("age_min");
+
+                    b.Property<short?>("AnneePublication")
+                        .HasColumnType("smallint")
+                        .HasColumnName("annee_publication");
+
+                    b.Property<int?>("BggId")
+                        .HasColumnType("integer")
+                        .HasColumnName("bgg_id");
+
+                    b.Property<decimal?>("Complexite")
+                        .HasPrecision(2, 1)
+                        .HasColumnType("numeric(2,1)")
+                        .HasColumnName("complexite");
+
+                    b.Property<Guid?>("CouvertureId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("couverture_id");
+
+                    b.Property<string>("CouvertureUrl")
+                        .HasColumnType("text")
+                        .HasColumnName("couverture_url");
+
+                    b.Property<DateTimeOffset>("CreeLe")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("cree_le")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<Guid>("CreeParId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("cree_par_id");
+
+                    b.Property<short?>("DureeMaxMinutes")
+                        .HasColumnType("smallint")
+                        .HasColumnName("duree_max_minutes");
+
+                    b.Property<short?>("DureeMinMinutes")
+                        .HasColumnType("smallint")
+                        .HasColumnName("duree_min_minutes");
+
+                    b.Property<string>("Editeur")
+                        .HasColumnType("text")
+                        .HasColumnName("editeur");
+
+                    b.Property<short?>("JoueursMax")
+                        .HasColumnType("smallint")
+                        .HasColumnName("joueurs_max");
+
+                    b.Property<short?>("JoueursMeilleur")
+                        .HasColumnType("smallint")
+                        .HasColumnName("joueurs_meilleur");
+
+                    b.Property<short?>("JoueursMin")
+                        .HasColumnType("smallint")
+                        .HasColumnName("joueurs_min");
+
+                    b.Property<Guid?>("ModeJeuId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("mode_jeu_id");
+
+                    b.Property<DateTimeOffset>("ModifieLe")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modifie_le")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Nom")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("nom");
+
+                    b.Property<string>("Statut")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("en_attente")
+                        .HasColumnName("statut");
+
+                    b.HasKey("Id")
+                        .HasName("pk_jeu");
+
+                    b.HasIndex("BggId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_jeu_bgg_id");
+
+                    b.HasIndex("CouvertureId")
+                        .HasDatabaseName("ix_jeu_couverture_id");
+
+                    b.HasIndex("CreeParId")
+                        .HasDatabaseName("ix_jeu_cree_par_id");
+
+                    b.HasIndex("ModeJeuId")
+                        .HasDatabaseName("ix_jeu_mode_jeu_id");
+
+                    b.ToTable("jeu", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_jeu_age_min", "age_min >= 0");
+
+                            t.HasCheckConstraint("ck_jeu_complexite", "complexite BETWEEN 1 AND 5");
+
+                            t.HasCheckConstraint("ck_jeu_couverture", "couverture_id IS NULL OR couverture_url IS NULL");
+
+                            t.HasCheckConstraint("ck_jeu_duree_max_minutes", "duree_max_minutes > 0");
+
+                            t.HasCheckConstraint("ck_jeu_duree_min_max", "duree_min_minutes IS NULL OR duree_max_minutes IS NULL OR duree_min_minutes <= duree_max_minutes");
+
+                            t.HasCheckConstraint("ck_jeu_duree_min_minutes", "duree_min_minutes > 0");
+
+                            t.HasCheckConstraint("ck_jeu_joueurs_max", "joueurs_max >= 1");
+
+                            t.HasCheckConstraint("ck_jeu_joueurs_meilleur", "joueurs_meilleur >= 1");
+
+                            t.HasCheckConstraint("ck_jeu_joueurs_meilleur_max", "joueurs_meilleur IS NULL OR joueurs_max IS NULL OR joueurs_meilleur <= joueurs_max");
+
+                            t.HasCheckConstraint("ck_jeu_joueurs_meilleur_min", "joueurs_meilleur IS NULL OR joueurs_min IS NULL OR joueurs_meilleur >= joueurs_min");
+
+                            t.HasCheckConstraint("ck_jeu_joueurs_min", "joueurs_min >= 1");
+
+                            t.HasCheckConstraint("ck_jeu_joueurs_min_max", "joueurs_min IS NULL OR joueurs_max IS NULL OR joueurs_min <= joueurs_max");
+
+                            t.HasCheckConstraint("ck_jeu_nom", "char_length(nom) BETWEEN 1 AND 255");
+
+                            t.HasCheckConstraint("ck_jeu_statut", "statut IN ('en_attente', 'valide', 'refuse')");
+                        });
+                });
+
+            modelBuilder.Entity("MeepleZone.Systeme.Entites.JeuMecanique", b =>
+                {
+                    b.Property<Guid>("JeuId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("jeu_id");
+
+                    b.Property<Guid>("MecaniqueId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("mecanique_id");
+
+                    b.HasKey("JeuId", "MecaniqueId")
+                        .HasName("pk_jeu_mecanique");
+
+                    b.HasIndex("MecaniqueId")
+                        .HasDatabaseName("ix_jeu_mecanique_mecanique_id");
+
+                    b.ToTable("jeu_mecanique", (string)null);
+                });
+
+            modelBuilder.Entity("MeepleZone.Systeme.Entites.Mecanique", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int?>("BggId")
+                        .HasColumnType("integer")
+                        .HasColumnName("bgg_id");
+
+                    b.Property<DateTimeOffset>("CreeLe")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("cree_le")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text")
+                        .HasColumnName("description");
+
+                    b.Property<string>("Nom")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("nom");
+
+                    b.HasKey("Id")
+                        .HasName("pk_mecanique");
+
+                    b.HasIndex("BggId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_mecanique_bgg_id");
+
+                    b.HasIndex("Nom")
+                        .IsUnique()
+                        .HasDatabaseName("ix_mecanique_nom");
+
+                    b.ToTable("mecanique", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("01a1c7e7-8000-7005-bec5-8cc0f7c0f4cf"),
+                            CreeLe = new DateTimeOffset(new DateTime(2026, 11, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Chaque joueur place des pions sur des cases d'action, qui ne peuvent souvent servir qu'une fois par tour.",
+                            Nom = "Pose d'ouvriers"
+                        },
+                        new
+                        {
+                            Id = new Guid("01a1c7e7-8000-7006-98b6-f2b0c15611b6"),
+                            CreeLe = new DateTimeOffset(new DateTime(2026, 11, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Chaque joueur part d'un petit paquet de cartes et en achète d'autres pour l'améliorer au fil de la partie.",
+                            Nom = "Construction de pioche"
+                        },
+                        new
+                        {
+                            Id = new Guid("01a1c7e7-8000-7007-99bf-876d55d7363c"),
+                            CreeLe = new DateTimeOffset(new DateTime(2026, 11, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Les joueurs assemblent des éléments qui se renforcent entre eux et produisent de plus en plus de ressources.",
+                            Nom = "Construction de moteur"
+                        },
+                        new
+                        {
+                            Id = new Guid("01a1c7e7-8000-7008-a934-b970b2133b80"),
+                            CreeLe = new DateTimeOffset(new DateTime(2026, 11, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Le défi consiste à choisir quelles cartes jouer, garder ou défausser parmi celles qu'on tient en main.",
+                            Nom = "Gestion de main"
+                        },
+                        new
+                        {
+                            Id = new Guid("01a1c7e7-8000-7009-ba51-046f870ca39c"),
+                            CreeLe = new DateTimeOffset(new DateTime(2026, 11, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Chaque joueur choisit une carte parmi plusieurs, puis passe le reste à son voisin.",
+                            Nom = "Draft de cartes"
+                        },
+                        new
+                        {
+                            Id = new Guid("01a1c7e7-8000-700a-8b25-b3cebeb27ba4"),
+                            CreeLe = new DateTimeOffset(new DateTime(2026, 11, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Le résultat des dés détermine les actions possibles ou le déroulement des événements.",
+                            Nom = "Lancer de dés"
+                        },
+                        new
+                        {
+                            Id = new Guid("01a1c7e7-8000-700b-b27f-b08614a1dfa7"),
+                            CreeLe = new DateTimeOffset(new DateTime(2026, 11, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Les joueurs posent des tuiles pour construire un paysage ou une structure, avec des règles d'adjacence.",
+                            Nom = "Placement de tuiles"
+                        },
+                        new
+                        {
+                            Id = new Guid("01a1c7e7-8000-700c-8f50-56c207831c05"),
+                            CreeLe = new DateTimeOffset(new DateTime(2026, 11, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Il faut avoir plus de présence que les adversaires dans une zone pour la contrôler et en tirer des points.",
+                            Nom = "Majorité de zones"
+                        },
+                        new
+                        {
+                            Id = new Guid("01a1c7e7-8000-700d-bb72-356f51a22f8c"),
+                            CreeLe = new DateTimeOffset(new DateTime(2026, 11, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Les joueurs réunissent des ensembles d'objets ou de cartes qui rapportent plus quand ils sont complets.",
+                            Nom = "Collection de séries"
+                        },
+                        new
+                        {
+                            Id = new Guid("01a1c7e7-8000-700e-9beb-e12f23687eb7"),
+                            CreeLe = new DateTimeOffset(new DateTime(2026, 11, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Les joueurs misent pour obtenir des objets, des actions ou l'ordre du tour.",
+                            Nom = "Enchères"
+                        },
+                        new
+                        {
+                            Id = new Guid("01a1c7e7-8000-700f-b915-be3362b46bd9"),
+                            CreeLe = new DateTimeOffset(new DateTime(2026, 11, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Les joueurs discutent, échangent des ressources ou concluent des ententes entre eux.",
+                            Nom = "Échanges et négociation"
+                        },
+                        new
+                        {
+                            Id = new Guid("01a1c7e7-8000-7010-b25d-e037b6e19408"),
+                            CreeLe = new DateTimeOffset(new DateTime(2026, 11, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Chaque joueur reçoit une identité secrète, et les camps s'affrontent sans se connaître.",
+                            Nom = "Rôles cachés"
+                        },
+                        new
+                        {
+                            Id = new Guid("01a1c7e7-8000-7011-89ad-524b7c0b520f"),
+                            CreeLe = new DateTimeOffset(new DateTime(2026, 11, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Il faut recouper des indices pour deviner une information cachée.",
+                            Nom = "Déduction"
+                        },
+                        new
+                        {
+                            Id = new Guid("01a1c7e7-8000-7012-9023-6a29bfaf8326"),
+                            CreeLe = new DateTimeOffset(new DateTime(2026, 11, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Les joueurs dissimulent ou inventent de l'information pour tromper les autres.",
+                            Nom = "Bluff"
+                        },
+                        new
+                        {
+                            Id = new Guid("01a1c7e7-8000-7013-929f-09f2c4e9a2c6"),
+                            CreeLe = new DateTimeOffset(new DateTime(2026, 11, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "On peut continuer à tenter sa chance pour gagner plus, au risque de tout perdre au tour.",
+                            Nom = "Pousser sa chance"
+                        },
+                        new
+                        {
+                            Id = new Guid("01a1c7e7-8000-7014-865c-fdf4c2f7d63a"),
+                            CreeLe = new DateTimeOffset(new DateTime(2026, 11, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Chaque joueur dispose de capacités ou de règles qui lui sont propres.",
+                            Nom = "Pouvoirs variables"
+                        },
+                        new
+                        {
+                            Id = new Guid("01a1c7e7-8000-7015-96d9-267515323aad"),
+                            CreeLe = new DateTimeOffset(new DateTime(2026, 11, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Le plateau est assemblé à partir d'éléments qui changent d'une partie à l'autre.",
+                            Nom = "Plateau modulaire"
+                        },
+                        new
+                        {
+                            Id = new Guid("01a1c7e7-8000-7016-82ae-e33f4a4219c2"),
+                            CreeLe = new DateTimeOffset(new DateTime(2026, 11, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Les pions se déplacent sur des cases, des zones ou des chemins selon des règles de mouvement.",
+                            Nom = "Déplacement sur le plateau"
+                        },
+                        new
+                        {
+                            Id = new Guid("01a1c7e7-8000-7017-99b9-6516d7a24420"),
+                            CreeLe = new DateTimeOffset(new DateTime(2026, 11, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Les joueurs relient des lieux par des routes, des voies ou des liens pour former un réseau.",
+                            Nom = "Construction de réseaux"
+                        },
+                        new
+                        {
+                            Id = new Guid("01a1c7e7-8000-7018-8b8c-451f0e5e4d58"),
+                            CreeLe = new DateTimeOffset(new DateTime(2026, 11, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Chaque tour, le joueur dispose d'un nombre limité de points à répartir entre plusieurs actions.",
+                            Nom = "Points d'action"
+                        },
+                        new
+                        {
+                            Id = new Guid("01a1c7e7-8000-7019-8c30-d2e6890d11a0"),
+                            CreeLe = new DateTimeOffset(new DateTime(2026, 11, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Il faut produire, échanger et dépenser des ressources de façon à atteindre ses objectifs.",
+                            Nom = "Gestion de ressources"
+                        },
+                        new
+                        {
+                            Id = new Guid("01a1c7e7-8000-701a-a45b-2f1506627cc3"),
+                            CreeLe = new DateTimeOffset(new DateTime(2026, 11, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Les joueurs choisissent leurs actions à l'avance, parfois en secret, puis les dévoilent et les exécutent.",
+                            Nom = "Programmation d'actions"
+                        },
+                        new
+                        {
+                            Id = new Guid("01a1c7e7-8000-701b-833a-1a0892bf63b4"),
+                            CreeLe = new DateTimeOffset(new DateTime(2026, 11, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Les parties s'enchaînent, et les choix de l'une modifient le jeu pour les suivantes.",
+                            Nom = "Campagne et évolution"
+                        });
+                });
+
+            modelBuilder.Entity("MeepleZone.Systeme.Entites.ModeJeu", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreeLe")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("cree_le")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text")
+                        .HasColumnName("description");
+
+                    b.Property<string>("Nom")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("nom");
+
+                    b.HasKey("Id")
+                        .HasName("pk_mode_jeu");
+
+                    b.HasIndex("Nom")
+                        .IsUnique()
+                        .HasDatabaseName("ix_mode_jeu_nom");
+
+                    b.ToTable("mode_jeu", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("01a1c7e7-8000-7001-adcc-71b334e95c80"),
+                            CreeLe = new DateTimeOffset(new DateTime(2026, 11, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Chaque joueur joue pour lui-même et cherche à gagner contre les autres.",
+                            Nom = "Compétitif"
+                        },
+                        new
+                        {
+                            Id = new Guid("01a1c7e7-8000-7002-9c8a-87833414cc9b"),
+                            CreeLe = new DateTimeOffset(new DateTime(2026, 11, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Tous les joueurs gagnent ou perdent ensemble contre le jeu.",
+                            Nom = "Coopératif"
+                        },
+                        new
+                        {
+                            Id = new Guid("01a1c7e7-8000-7003-9c80-f4cb84b0633c"),
+                            CreeLe = new DateTimeOffset(new DateTime(2026, 11, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Les joueurs coopèrent, mais chacun peut avoir un objectif personnel, ou l'un d'eux peut trahir les autres.",
+                            Nom = "Semi-coopératif"
+                        },
+                        new
+                        {
+                            Id = new Guid("01a1c7e7-8000-7004-bac3-3649459c0f35"),
+                            CreeLe = new DateTimeOffset(new DateTime(2026, 11, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Les joueurs sont répartis en équipes, et chaque équipe joue contre les autres.",
+                            Nom = "Par équipes"
+                        });
+                });
+
             modelBuilder.Entity("MeepleZone.Systeme.Entites.Utilisateur", b =>
                 {
                     b.Property<Guid>("Id")
@@ -236,6 +656,45 @@ namespace MeepleZone.Systeme.Donnees.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_identite_externe_utilisateur_utilisateur_id");
+                });
+
+            modelBuilder.Entity("MeepleZone.Systeme.Entites.Jeu", b =>
+                {
+                    b.HasOne("MeepleZone.Systeme.Entites.Annexe", null)
+                        .WithMany()
+                        .HasForeignKey("CouvertureId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_jeu_annexe_couverture_id");
+
+                    b.HasOne("MeepleZone.Systeme.Entites.Utilisateur", null)
+                        .WithMany()
+                        .HasForeignKey("CreeParId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_jeu_utilisateur_cree_par_id");
+
+                    b.HasOne("MeepleZone.Systeme.Entites.ModeJeu", null)
+                        .WithMany()
+                        .HasForeignKey("ModeJeuId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_jeu_mode_jeu_mode_jeu_id");
+                });
+
+            modelBuilder.Entity("MeepleZone.Systeme.Entites.JeuMecanique", b =>
+                {
+                    b.HasOne("MeepleZone.Systeme.Entites.Jeu", null)
+                        .WithMany()
+                        .HasForeignKey("JeuId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_jeu_mecanique_jeu_jeu_id");
+
+                    b.HasOne("MeepleZone.Systeme.Entites.Mecanique", null)
+                        .WithMany()
+                        .HasForeignKey("MecaniqueId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_jeu_mecanique_mecanique_mecanique_id");
                 });
 
             modelBuilder.Entity("MeepleZone.Systeme.Entites.Utilisateur", b =>
