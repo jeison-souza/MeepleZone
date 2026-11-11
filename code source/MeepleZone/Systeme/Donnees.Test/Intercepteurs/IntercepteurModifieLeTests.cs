@@ -9,16 +9,11 @@ using Xunit;
 
 namespace MeepleZone.Systeme.Donnees.Test.Intercepteurs;
 
-public class IntercepteurModifieLeTests : IClassFixture<ModeleDonneesFixture>, IDisposable
+public class IntercepteurModifieLeTests(ModeleDonneesFixture modele) : IClassFixture<ModeleDonneesFixture>, IDisposable
 {
-    private readonly ModeleDonneesFixture _modele;
+    private readonly ModeleDonneesFixture _modele = modele;
 
     private readonly Fixture _fixture = new();
-
-    public IntercepteurModifieLeTests(ModeleDonneesFixture modele)
-    {
-        _modele = modele;
-    }
 
     public void Dispose() => _modele.Contexte.ChangeTracker.Clear();
 

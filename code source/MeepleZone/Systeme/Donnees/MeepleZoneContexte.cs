@@ -3,20 +3,23 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MeepleZone.Systeme.Donnees;
 
-public class MeepleZoneContexte : DbContext
+public class MeepleZoneContexte(DbContextOptions<MeepleZoneContexte> options) : DbContext(options)
 {
     public const string CollationCourriel = "courriel_ci";
-
-    public MeepleZoneContexte(DbContextOptions<MeepleZoneContexte> options)
-        : base(options)
-    {
-    }
 
     public DbSet<Utilisateur> Utilisateurs => Set<Utilisateur>();
 
     public DbSet<IdentiteExterne> IdentitesExternes => Set<IdentiteExterne>();
 
     public DbSet<Annexe> Annexes => Set<Annexe>();
+
+    public DbSet<ModeJeu> ModesJeu => Set<ModeJeu>();
+
+    public DbSet<Mecanique> Mecaniques => Set<Mecanique>();
+
+    public DbSet<Jeu> Jeux => Set<Jeu>();
+
+    public DbSet<JeuMecanique> JeuxMecaniques => Set<JeuMecanique>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

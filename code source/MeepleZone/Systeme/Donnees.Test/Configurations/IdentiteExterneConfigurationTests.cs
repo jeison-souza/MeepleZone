@@ -8,14 +8,9 @@ using Xunit;
 
 namespace MeepleZone.Systeme.Donnees.Test.Configurations;
 
-public class IdentiteExterneConfigurationTests : IClassFixture<ModeleDonneesFixture>
+public class IdentiteExterneConfigurationTests(ModeleDonneesFixture modele) : IClassFixture<ModeleDonneesFixture>
 {
-    private readonly ModeleDonneesFixture _modele;
-
-    public IdentiteExterneConfigurationTests(ModeleDonneesFixture modele)
-    {
-        _modele = modele;
-    }
+    private readonly ModeleDonneesFixture _modele = modele;
 
     [Fact]
     public void IdentiteExterne_Table_PorteLeNomIdentiteExterne()
@@ -68,7 +63,7 @@ public class IdentiteExterneConfigurationTests : IClassFixture<ModeleDonneesFixt
         var identifiant = _modele.Propriete<IdentiteExterne>(nameof(IdentiteExterne.IdentifiantCompteExterne));
 
         // Act
-        var index = type.FindIndex(new[] { fournisseur, identifiant });
+        var index = type.FindIndex([fournisseur, identifiant]);
 
         // Assert
         index.Should().NotBeNull();
@@ -195,7 +190,7 @@ public class IdentiteExterneConfigurationTests : IClassFixture<ModeleDonneesFixt
         cle.Should().NotBeNull();
         cle.DeleteBehavior.Should().Be(DeleteBehavior.Cascade);
         cle.GetConstraintName().Should().Be("fk_identite_externe_utilisateur_utilisateur_id");
-        cle.PrincipalEntityType.ClrType.Should().Be(typeof(Utilisateur));
+        cle.PrincipalEntityType.ClrType.Should().Be<Utilisateur>();
     }
 
     [Fact]
@@ -212,7 +207,7 @@ public class IdentiteExterneConfigurationTests : IClassFixture<ModeleDonneesFixt
     }
 
     [Theory]
-    [MemberData(nameof(NomsDesProprietesSauf), [new[] { nameof(IdentiteExterne.Courriel) }])]
+    [MemberData(nameof(TestsExtensions.NomsDesProprietesSauf), typeof(IdentiteExterne), new string[] { nameof(IdentiteExterne.Courriel) }, MemberType = typeof(TestsExtensions))]
     public void IdentiteExterne_Propriete_NePossedePasDeCollation(string nom)
     {
         // Arrange
@@ -226,7 +221,7 @@ public class IdentiteExterneConfigurationTests : IClassFixture<ModeleDonneesFixt
     }
 
     [Theory]
-    [MemberData(nameof(NomsDesProprietes))]
+    [MemberData(nameof(TestsExtensions.NomsDesProprietes), typeof(IdentiteExterne), MemberType = typeof(TestsExtensions))]
     public void IdentiteExterne_Propriete_PorteLeNomDeColonneDuSchema(string nom)
     {
         // Arrange
@@ -259,29 +254,5 @@ public class IdentiteExterneConfigurationTests : IClassFixture<ModeleDonneesFixt
 
         // Assert
         colonne.Should().Be(typeAttendu);
-    }
-
-    public static TheoryData<string> NomsDesProprietes()
-    {
-        return NomsDesProprietesSauf();
-    }
-
-    // Seules les propriétés simples (texte, nombre, date, Guid) sont des colonnes :
-    // une collection ou une propriété de navigation (relation) ne l'est pas.
-    public static TheoryData<string> NomsDesProprietesSauf(params string[] exceptes)
-    {
-        var donnees = new TheoryData<string>();
-
-        foreach (var propriete in typeof(IdentiteExterne).GetProperties())
-        {
-            var estSimple = propriete.PropertyType.IsValueType || propriete.PropertyType == typeof(string);
-
-            if (estSimple && !exceptes.Contains(propriete.Name))
-            {
-                donnees.Add(propriete.Name);
-            }
-        }
-
-        return donnees;
     }
 }
