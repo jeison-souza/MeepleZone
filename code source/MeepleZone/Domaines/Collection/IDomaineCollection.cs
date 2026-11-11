@@ -16,5 +16,9 @@ public interface IDomaineCollection
 
     Task<IReadOnlyList<ModeJeuDto>> ListerModesJeuAsync();
 
+    Task<IReadOnlyList<MecaniqueDto>> ListerMecaniquesAsync();
+
+    Task<ModifierPossessionReponse> ModifierPossessionAsync(ModifierPossessionRequete requete);
+
     Task<RetirerJeuReponse> RetirerJeuAsync(RetirerJeuRequete requete);
 }

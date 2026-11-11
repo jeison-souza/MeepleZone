@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace MeepleZone.Domaines.Collection.Contrats.Modeles;
 
@@ -13,5 +14,6 @@ public sealed record CreerJeuRequete(
     short? AgeMin,
     decimal? Complexite,
     Guid? ModeJeuId,
-    string? Editeur
+    string? Editeur,
+    IReadOnlyList<Guid> MecaniqueIds
 );
