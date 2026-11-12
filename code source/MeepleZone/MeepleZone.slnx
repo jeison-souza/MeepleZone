@@ -31,6 +31,7 @@
     </Folder>
     <Folder Name="/Domaines/Collection/">
         <Project Path="Domaines/Collection.Contrats/MeepleZone.Domaines.Collection.Contrats.csproj" />
+        <Project Path="Domaines/Collection.Test/MeepleZone.Domaines.Collection.Test.csproj" />
         <Project Path="Domaines/Collection/MeepleZone.Domaines.Collection.csproj" />
     </Folder>
     <Folder Name="/Site/">
