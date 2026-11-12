@@ -6,10 +6,13 @@ using System.Threading.Tasks;
 namespace MeepleZone.Domaines.Collection;
 
 public class DomaineCollection(
+    IGestionnaireRequete<ListerCollectionReponse, ListerCollectionRequete> gestionnaireCollection,
     IGestionnaireRequete<IReadOnlyList<MecaniqueDto>, ListerMecaniquesRequete> gestionnaireMecaniques,
     IGestionnaireRequete<IReadOnlyList<ModeJeuDto>, ListerModesJeuRequete> gestionnaireModesJeu)
     : IDomaineCollection
 {
+    private readonly IGestionnaireRequete<ListerCollectionReponse, ListerCollectionRequete> _gestionnaireCollection = gestionnaireCollection;
+
     private readonly IGestionnaireRequete<IReadOnlyList<MecaniqueDto>, ListerMecaniquesRequete> _gestionnaireMecaniques = gestionnaireMecaniques;
 
     private readonly IGestionnaireRequete<IReadOnlyList<ModeJeuDto>, ListerModesJeuRequete> _gestionnaireModesJeu = gestionnaireModesJeu;
@@ -26,7 +29,7 @@ public class DomaineCollection(
 
     public Task<ListerCollectionReponse> ListerCollectionAsync(ListerCollectionRequete requete)
     {
-        throw new System.NotImplementedException();
+        return _gestionnaireCollection.TraiterAsync(requete);
     }
 
     public Task<IReadOnlyList<MecaniqueDto>> ListerMecaniquesAsync(ListerMecaniquesRequete requete)
