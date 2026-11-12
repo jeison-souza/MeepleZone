@@ -113,8 +113,8 @@
     {
         try
         {
-            modes = await Domaine.ListerModesJeuAsync();
-            mecaniques = await Domaine.ListerMecaniquesAsync();
+            modes = await Domaine.ListerModesJeuAsync(new ListerModesJeuRequete());
+            mecaniques = await Domaine.ListerMecaniquesAsync(new ListerMecaniquesRequete());
         }
         catch (Exception exception)
         {
