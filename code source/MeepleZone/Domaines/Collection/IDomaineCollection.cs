@@ -14,9 +14,9 @@ public interface IDomaineCollection
 
     Task<CreerJeuReponse> CreerJeuAsync(CreerJeuRequete requete);
 
-    Task<IReadOnlyList<ModeJeuDto>> ListerModesJeuAsync();
+    Task<IReadOnlyList<ModeJeuDto>> ListerModesJeuAsync(ListerModesJeuRequete requete);
 
-    Task<IReadOnlyList<MecaniqueDto>> ListerMecaniquesAsync();
+    Task<IReadOnlyList<MecaniqueDto>> ListerMecaniquesAsync(ListerMecaniquesRequete requete);
 
     Task<ModifierPossessionReponse> ModifierPossessionAsync(ModifierPossessionRequete requete);
 
