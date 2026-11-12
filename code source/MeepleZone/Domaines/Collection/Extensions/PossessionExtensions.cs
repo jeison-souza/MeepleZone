@@ -1,16 +1,19 @@
 using MeepleZone.Domaines.Collection.Contrats.Modeles;
-using MeepleZone.Systeme.Depots;
+using MeepleZone.Systeme.Entites;
+using System;
 
 namespace MeepleZone.Domaines.Collection.Extensions;
 
-public static class PossessionAvecJeuExtensions
+public static class PossessionExtensions
 {
-    extension(PossessionAvecJeu possessionAvecJeu)
+    extension(Possession possession)
     {
+        /// <summary>
+        /// Convertit une possession dont le jeu a été chargé par le dépôt.
+        /// </summary>
         public ItemCollectionDto VersDto()
         {
-            var possession = possessionAvecJeu.Possession;
-            var jeu = possessionAvecJeu.Jeu;
+            var jeu = possession.Jeu ?? throw new InvalidOperationException("Le jeu de la possession n'a pas été chargé.");
 
             return new ItemCollectionDto(
                 possession.Id,

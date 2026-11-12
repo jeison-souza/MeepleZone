@@ -5,6 +5,8 @@ using MeepleZone.Domaines.Collection.Contrats.Modeles;
 using MeepleZone.Domaines.Collection.Gestionnaires;
 using MeepleZone.Systeme.BaseTest;
 using MeepleZone.Systeme.Depots;
+using MeepleZone.Systeme.Depots.Modeles;
+using MeepleZone.Systeme.Entites;
 using MeepleZone.Systeme.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -34,11 +36,11 @@ public class GestionnaireRequeteListerCollectionTests : BaseTest<GestionnaireReq
         var requete = new ListerCollectionRequete(null, 1, 24);
         var utilisateurId = CreerFixture<Guid>();
         var total = CreerFixture<int>();
-        List<PossessionAvecJeu> possessions = [.. Fixture.CreateMany<PossessionAvecJeu>(3)];
+        List<Possession> possessions = [.. Fixture.CreateMany<Possession>(3)];
         _utilisateurCourant.CallsTo(x => x.Id).Returns(utilisateurId);
         _depotCollection
             .CallsTo(x => x.ListerPossessionsAsync(A<Guid>._, A<string?>._, A<int>._, A<int>._))
-            .Returns(new PageDePossessions(possessions, total));
+            .Returns(new PageDeResultats<Possession>(possessions, total));
 
         // Act
         var result = await InstanceTest.TraiterAsync(requete);
@@ -46,8 +48,8 @@ public class GestionnaireRequeteListerCollectionTests : BaseTest<GestionnaireReq
         // Assert
         result.Total.Should().Be(total);
         result.Items.Should().BeEquivalentTo(possessions.Select(p => new ItemCollectionDto(
-            p.Possession.Id,
-            p.Jeu.Id,
+            p.Id,
+            p.Jeu!.Id,
             p.Jeu.Nom,
             p.Jeu.AnneePublication,
             p.Jeu.JoueursMin,
@@ -56,11 +58,29 @@ public class GestionnaireRequeteListerCollectionTests : BaseTest<GestionnaireReq
             p.Jeu.DureeMaxMinutes,
             p.Jeu.CouvertureId,
             p.Jeu.CouvertureUrl,
-            p.Possession.Note,
-            p.Possession.PartiesJouees,
-            p.Possession.Commentaire,
+            p.Note,
+            p.PartiesJouees,
+            p.Commentaire,
             p.Jeu.Statut)),
             options => options.WithStrictOrdering());
+    }
+
+    [Fact]
+    public async Task TraiterAsync_JeuNonCharge_LeverInvalidOperationException()
+    {
+        // Arrange
+        var requete = new ListerCollectionRequete(null, 1, 24);
+        var possession = Fixture.Build<Possession>().Without(p => p.Jeu).Create();
+        _utilisateurCourant.CallsTo(x => x.Id).Returns(CreerFixture<Guid>());
+        _depotCollection
+            .CallsTo(x => x.ListerPossessionsAsync(A<Guid>._, A<string?>._, A<int>._, A<int>._))
+            .Returns(new PageDeResultats<Possession>([possession], 1));
+
+        // Act
+        var act = () => InstanceTest.TraiterAsync(requete);
+
+        // Assert
+        await act.Should().ThrowAsync<InvalidOperationException>();
     }
 
     [Fact]
@@ -72,7 +92,7 @@ public class GestionnaireRequeteListerCollectionTests : BaseTest<GestionnaireReq
         _utilisateurCourant.CallsTo(x => x.Id).Returns(utilisateurId);
         _depotCollection
             .CallsTo(x => x.ListerPossessionsAsync(utilisateurId, "catan", 48, 24))
-            .Returns(new PageDePossessions([], 0));
+            .Returns(new PageDeResultats<Possession>([], 0));
 
         // Act
         var result = await InstanceTest.TraiterAsync(requete);
@@ -85,16 +105,40 @@ public class GestionnaireRequeteListerCollectionTests : BaseTest<GestionnaireReq
         result.Total.Should().Be(0);
     }
 
+    [Theory]
+    [InlineData(null, null)]
+    [InlineData("", null)]
+    [InlineData("   ", null)]
+    [InlineData("  catan  ", "catan")]
+    public async Task TraiterAsync_RechercheAvecEspacesOuVide_NormaliserAvantLeDepot(string? recherche, string? attendue)
+    {
+        // Arrange
+        var requete = new ListerCollectionRequete(recherche, 1, 24);
+        var utilisateurId = CreerFixture<Guid>();
+        _utilisateurCourant.CallsTo(x => x.Id).Returns(utilisateurId);
+        _depotCollection
+            .CallsTo(x => x.ListerPossessionsAsync(utilisateurId, attendue, 0, 24))
+            .Returns(new PageDeResultats<Possession>([], 0));
+
+        // Act
+        await InstanceTest.TraiterAsync(requete);
+
+        // Assert
+        _depotCollection
+            .CallsTo(x => x.ListerPossessionsAsync(utilisateurId, attendue, 0, 24))
+            .MustHaveHappenedOnceExactly();
+    }
+
     [Fact]
     public async Task TraiterAsync_TaillePageMaximale_Accepter()
     {
         // Arrange
-        var requete = new ListerCollectionRequete(null, 1, GestionnaireRequeteListerCollection.TaillePageMaximale);
+        var requete = new ListerCollectionRequete(null, 1, Pagination.TaillePageMaximale);
         var utilisateurId = CreerFixture<Guid>();
         _utilisateurCourant.CallsTo(x => x.Id).Returns(utilisateurId);
         _depotCollection
             .CallsTo(x => x.ListerPossessionsAsync(utilisateurId, null, 0, 50))
-            .Returns(new PageDePossessions([], 0));
+            .Returns(new PageDeResultats<Possession>([], 0));
 
         // Act
         var result = await InstanceTest.TraiterAsync(requete);
@@ -106,10 +150,10 @@ public class GestionnaireRequeteListerCollectionTests : BaseTest<GestionnaireReq
     [Theory]
     [InlineData(0, 24)]
     [InlineData(-1, 24)]
-    [InlineData(GestionnaireRequeteListerCollection.PageMaximale + 1, 24)]
+    [InlineData(Pagination.PageMaximale + 1, 24)]
     [InlineData(1, 0)]
     [InlineData(1, -5)]
-    [InlineData(1, GestionnaireRequeteListerCollection.TaillePageMaximale + 1)]
+    [InlineData(1, Pagination.TaillePageMaximale + 1)]
     public async Task TraiterAsync_PageOuTaillePageHorsLimites_LeverArgumentOutOfRangeException(int page, int taillePage)
     {
         // Arrange

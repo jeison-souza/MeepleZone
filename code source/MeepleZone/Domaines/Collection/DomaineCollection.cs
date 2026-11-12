@@ -8,9 +8,12 @@ namespace MeepleZone.Domaines.Collection;
 public class DomaineCollection(
     IGestionnaireRequete<ListerCollectionReponse, ListerCollectionRequete> gestionnaireCollection,
     IGestionnaireRequete<IReadOnlyList<MecaniqueDto>, ListerMecaniquesRequete> gestionnaireMecaniques,
-    IGestionnaireRequete<IReadOnlyList<ModeJeuDto>, ListerModesJeuRequete> gestionnaireModesJeu)
+    IGestionnaireRequete<IReadOnlyList<ModeJeuDto>, ListerModesJeuRequete> gestionnaireModesJeu,
+    IGestionnaireRequete<RechercherJeuxReponse, RechercherJeuxRequete> gestionnaireRechercherJeux)
     : IDomaineCollection
 {
+    private readonly IGestionnaireRequete<RechercherJeuxReponse, RechercherJeuxRequete> _gestionnaireRechercherJeux = gestionnaireRechercherJeux;
+
     private readonly IGestionnaireRequete<ListerCollectionReponse, ListerCollectionRequete> _gestionnaireCollection = gestionnaireCollection;
 
     private readonly IGestionnaireRequete<IReadOnlyList<MecaniqueDto>, ListerMecaniquesRequete> _gestionnaireMecaniques = gestionnaireMecaniques;
@@ -49,7 +52,7 @@ public class DomaineCollection(
 
     public Task<RechercherJeuxReponse> RechercherJeuxAsync(RechercherJeuxRequete requete)
     {
-        throw new System.NotImplementedException();
+        return _gestionnaireRechercherJeux.TraiterAsync(requete);
     }
 
     public Task<RetirerJeuReponse> RetirerJeuAsync(RetirerJeuRequete requete)

@@ -276,3 +276,11 @@ VALUES ('20261111201700_CreationTablePossession', '10.0.14');
 
 COMMIT;
 
+START TRANSACTION;
+CREATE EXTENSION IF NOT EXISTS unaccent;
+
+INSERT INTO historique_migration (migration_id, product_version)
+VALUES ('20261112052729_CreationExtensionUnaccent', '10.0.14');
+
+COMMIT;
+

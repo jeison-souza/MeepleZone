@@ -11,6 +11,8 @@ public class Possession : IModifieLe
 
     public Guid JeuId { get; set; }
 
+    public Jeu? Jeu { get; set; }
+
     public short? Note { get; set; }
 
     public string? Commentaire { get; set; }

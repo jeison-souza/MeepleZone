@@ -17,12 +17,15 @@ public class DomaineCollectionTest : BaseTest<DomaineCollection>
 
     private Fake<IGestionnaireRequete<IReadOnlyList<ModeJeuDto>, ListerModesJeuRequete>> _gestionnaireModesJeu = null!;
 
+    private Fake<IGestionnaireRequete<RechercherJeuxReponse, RechercherJeuxRequete>> _gestionnaireRechercherJeux = null!;
+
     public override void InitialiserDependence()
     {
         base.InitialiserDependence();
         _gestionnaireCollection = CreerFausse<IGestionnaireRequete<ListerCollectionReponse, ListerCollectionRequete>>();
         _gestionnaireMecaniques = CreerFausse<IGestionnaireRequete<IReadOnlyList<MecaniqueDto>, ListerMecaniquesRequete>>();
         _gestionnaireModesJeu = CreerFausse<IGestionnaireRequete<IReadOnlyList<ModeJeuDto>, ListerModesJeuRequete>>();
+        _gestionnaireRechercherJeux = CreerFausse<IGestionnaireRequete<RechercherJeuxReponse, RechercherJeuxRequete>>();
     }
 
     [Fact]
@@ -75,6 +78,24 @@ public class DomaineCollectionTest : BaseTest<DomaineCollection>
 
         // Assert
         _gestionnaireModesJeu.CallsTo(g => g.TraiterAsync(A<ListerModesJeuRequete>._))
+            .MustHaveHappenedOnceExactly();
+        result.Should().BeSameAs(reponseAttendue);
+    }
+
+    [Fact]
+    public async Task RechercherJeuxAsync_EnToutTemps_DeleguerAuGestionnaireEtRetournerSaReponse()
+    {
+        // Arrange
+        var requete = CreerFixture<RechercherJeuxRequete>();
+        var reponseAttendue = CreerFixture<RechercherJeuxReponse>();
+        _gestionnaireRechercherJeux.CallsTo(g => g.TraiterAsync(requete))
+            .Returns(reponseAttendue);
+
+        // Act
+        var result = await InstanceTest.RechercherJeuxAsync(requete);
+
+        // Assert
+        _gestionnaireRechercherJeux.CallsTo(g => g.TraiterAsync(A<RechercherJeuxRequete>._))
             .MustHaveHappenedOnceExactly();
         result.Should().BeSameAs(reponseAttendue);
     }
