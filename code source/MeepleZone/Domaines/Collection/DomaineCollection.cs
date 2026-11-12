@@ -1,11 +1,19 @@
 ﻿using MeepleZone.Domaines.Collection.Contrats.Modeles;
+using MeepleZone.Systeme.Interfaces.Gestionnaires;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace MeepleZone.Domaines.Collection;
 
-public class DomaineCollection : IDomaineCollection
+public class DomaineCollection(
+    IGestionnaireRequete<IReadOnlyList<MecaniqueDto>, ListerMecaniquesRequete> gestionnaireMecaniques,
+    IGestionnaireRequete<IReadOnlyList<ModeJeuDto>, ListerModesJeuRequete> gestionnaireModesJeu)
+    : IDomaineCollection
 {
+    private readonly IGestionnaireRequete<IReadOnlyList<MecaniqueDto>, ListerMecaniquesRequete> _gestionnaireMecaniques = gestionnaireMecaniques;
+
+    private readonly IGestionnaireRequete<IReadOnlyList<ModeJeuDto>, ListerModesJeuRequete> _gestionnaireModesJeu = gestionnaireModesJeu;
+
     public Task<AjouterJeuReponse> AjouterJeuAsync(AjouterJeuRequete requete)
     {
         throw new System.NotImplementedException();
@@ -23,12 +31,12 @@ public class DomaineCollection : IDomaineCollection
 
     public Task<IReadOnlyList<MecaniqueDto>> ListerMecaniquesAsync(ListerMecaniquesRequete requete)
     {
-        throw new System.NotImplementedException();
+        return _gestionnaireMecaniques.TraiterAsync(requete);
     }
 
     public Task<IReadOnlyList<ModeJeuDto>> ListerModesJeuAsync(ListerModesJeuRequete requete)
     {
-        throw new System.NotImplementedException();
+        return _gestionnaireModesJeu.TraiterAsync(requete);
     }
 
     public Task<ModifierPossessionReponse> ModifierPossessionAsync(ModifierPossessionRequete requete)
