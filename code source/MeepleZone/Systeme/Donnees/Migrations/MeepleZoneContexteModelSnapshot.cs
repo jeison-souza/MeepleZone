@@ -21,6 +21,7 @@ namespace MeepleZone.Systeme.Donnees.Migrations
                 .HasAnnotation("ProductVersion", "10.0.14")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
+            NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "unaccent");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("MeepleZone.Systeme.Entites.Annexe", b =>
@@ -758,7 +759,7 @@ namespace MeepleZone.Systeme.Donnees.Migrations
 
             modelBuilder.Entity("MeepleZone.Systeme.Entites.Possession", b =>
                 {
-                    b.HasOne("MeepleZone.Systeme.Entites.Jeu", null)
+                    b.HasOne("MeepleZone.Systeme.Entites.Jeu", "Jeu")
                         .WithMany()
                         .HasForeignKey("JeuId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -771,6 +772,8 @@ namespace MeepleZone.Systeme.Donnees.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_possession_utilisateur_utilisateur_id");
+
+                    b.Navigation("Jeu");
                 });
 
             modelBuilder.Entity("MeepleZone.Systeme.Entites.Utilisateur", b =>

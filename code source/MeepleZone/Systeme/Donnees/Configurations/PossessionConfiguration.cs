@@ -22,7 +22,7 @@ internal class PossessionConfiguration : IEntityTypeConfiguration<Possession>
             .HasConstraintName("fk_possession_utilisateur_utilisateur_id")
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasOne<Jeu>()
+        builder.HasOne(p => p.Jeu)
             .WithMany()
             .HasForeignKey(p => p.JeuId)
             .HasConstraintName("fk_possession_jeu_jeu_id")

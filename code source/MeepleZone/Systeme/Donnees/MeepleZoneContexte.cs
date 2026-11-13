@@ -26,6 +26,7 @@ public class MeepleZoneContexte(DbContextOptions<MeepleZoneContexte> options) : 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasCollation(CollationCourriel, locale: "und-u-ks-level2", provider: "icu", deterministic: false);
+        modelBuilder.HasPostgresExtension("unaccent");
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(MeepleZoneContexte).Assembly);
     }
 }

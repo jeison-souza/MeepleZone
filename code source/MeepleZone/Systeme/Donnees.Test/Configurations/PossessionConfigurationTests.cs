@@ -138,6 +138,23 @@ public class PossessionConfigurationTests(ModeleDonneesFixture modele) : IClassF
     }
 
     [Fact]
+    public void Possession_NavigationJeu_EstLieeALaCleEtrangereJeuId()
+    {
+        // Arrange
+        var type = _modele.TypeEntite<Possession>();
+        var jeuId = _modele.Propriete<Possession>(nameof(Possession.JeuId));
+
+        // Act
+        var navigation = type.FindNavigation(nameof(Possession.Jeu));
+
+        // Assert
+        navigation.Should().NotBeNull();
+        navigation!.ForeignKey.Properties.Should().ContainSingle().Which.Should().Be(jeuId);
+        navigation.IsOnDependent.Should().BeTrue();
+        navigation.Inverse.Should().BeNull();
+    }
+
+    [Fact]
     public void Possession_UtilisateurIdJeuId_PorteLeNomDeLaConvention()
     {
         // Arrange
