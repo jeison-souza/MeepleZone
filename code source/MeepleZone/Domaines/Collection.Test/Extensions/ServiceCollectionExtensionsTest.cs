@@ -48,6 +48,8 @@ public class ServiceCollectionExtensionsTest : BaseTest<ServiceCollection>
         portee.ServiceProvider.GetRequiredService<IDomaineCollection>().Should().BeOfType<DomaineCollection>();
         portee.ServiceProvider.GetRequiredService<IGestionnaireRequete<ListerCollectionReponse, ListerCollectionRequete>>().Should().BeOfType<GestionnaireRequeteListerCollection>();
         portee.ServiceProvider.GetRequiredService<IGestionnaireRequete<RechercherJeuxReponse, RechercherJeuxRequete>>().Should().BeOfType<GestionnaireRequeteRechercherJeux>();
+        portee.ServiceProvider.GetRequiredService<IGestionnaireRequete<ModifierPossessionReponse, ModifierPossessionRequete>>().Should().BeOfType<GestionnaireRequeteModifierPossession>();
+        portee.ServiceProvider.GetRequiredService<IGestionnaireRequete<RetirerJeuReponse, RetirerJeuRequete>>().Should().BeOfType<GestionnaireRequeteRetirerJeu>();
         portee.ServiceProvider.GetRequiredService<IGestionnaireRequete<IReadOnlyList<MecaniqueDto>, ListerMecaniquesRequete>>().Should().BeOfType<GestionnaireRequeteListerMecaniques>();
         portee.ServiceProvider.GetRequiredService<IGestionnaireRequete<IReadOnlyList<ModeJeuDto>, ListerModesJeuRequete>>().Should().BeOfType<GestionnaireRequeteListerModesJeu>();
     }

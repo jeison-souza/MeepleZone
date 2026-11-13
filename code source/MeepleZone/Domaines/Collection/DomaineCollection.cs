@@ -9,7 +9,9 @@ public class DomaineCollection(
     IGestionnaireRequete<ListerCollectionReponse, ListerCollectionRequete> gestionnaireCollection,
     IGestionnaireRequete<IReadOnlyList<MecaniqueDto>, ListerMecaniquesRequete> gestionnaireMecaniques,
     IGestionnaireRequete<IReadOnlyList<ModeJeuDto>, ListerModesJeuRequete> gestionnaireModesJeu,
-    IGestionnaireRequete<RechercherJeuxReponse, RechercherJeuxRequete> gestionnaireRechercherJeux)
+    IGestionnaireRequete<RechercherJeuxReponse, RechercherJeuxRequete> gestionnaireRechercherJeux,
+    IGestionnaireRequete<ModifierPossessionReponse, ModifierPossessionRequete> gestionnaireModifierPossession,
+    IGestionnaireRequete<RetirerJeuReponse, RetirerJeuRequete> gestionnaireRetirerJeu)
     : IDomaineCollection
 {
     private readonly IGestionnaireRequete<RechercherJeuxReponse, RechercherJeuxRequete> _gestionnaireRechercherJeux = gestionnaireRechercherJeux;
@@ -19,6 +21,10 @@ public class DomaineCollection(
     private readonly IGestionnaireRequete<IReadOnlyList<MecaniqueDto>, ListerMecaniquesRequete> _gestionnaireMecaniques = gestionnaireMecaniques;
 
     private readonly IGestionnaireRequete<IReadOnlyList<ModeJeuDto>, ListerModesJeuRequete> _gestionnaireModesJeu = gestionnaireModesJeu;
+
+    private readonly IGestionnaireRequete<ModifierPossessionReponse, ModifierPossessionRequete> _gestionnaireModifierPossession = gestionnaireModifierPossession;
+
+    private readonly IGestionnaireRequete<RetirerJeuReponse, RetirerJeuRequete> _gestionnaireRetirerJeu = gestionnaireRetirerJeu;
 
     public Task<AjouterJeuReponse> AjouterJeuAsync(AjouterJeuRequete requete)
     {
@@ -47,7 +53,7 @@ public class DomaineCollection(
 
     public Task<ModifierPossessionReponse> ModifierPossessionAsync(ModifierPossessionRequete requete)
     {
-        throw new System.NotImplementedException();
+        return _gestionnaireModifierPossession.TraiterAsync(requete);
     }
 
     public Task<RechercherJeuxReponse> RechercherJeuxAsync(RechercherJeuxRequete requete)
@@ -57,6 +63,6 @@ public class DomaineCollection(
 
     public Task<RetirerJeuReponse> RetirerJeuAsync(RetirerJeuRequete requete)
     {
-        throw new System.NotImplementedException();
+        return _gestionnaireRetirerJeu.TraiterAsync(requete);
     }
 }

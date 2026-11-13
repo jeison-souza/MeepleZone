@@ -42,6 +42,28 @@ public class DepotCollection(IDbContextFactory<MeepleZoneContexte> fabrique) : I
         return new PageDeResultats<Possession>(items, total);
     }
 
+    public async Task<Possession?> ModifierPossessionAsync(Guid utilisateurId, Guid possessionId, short? note, string? commentaire, int partiesJouees)
+    {
+        await using var contexte = await _fabrique.CreateDbContextAsync();
+
+        var possession = await contexte.Possessions
+            .Include(p => p.Jeu)
+            .SingleOrDefaultAsync(p => p.UtilisateurId == utilisateurId &&
+                                       p.Id == possessionId);
+
+        if (possession == null)
+        {
+            return null;
+        }
+
+        possession.Note = note;
+        possession.Commentaire = commentaire;
+        possession.PartiesJouees = partiesJouees;
+
+        await contexte.SaveChangesAsync();
+        return possession;
+    }
+
     public async Task<PageDeResultats<ResultatRechercheJeu>> RechercherJeuxAsync(Guid utilisateurId, string texte, int saut, int prendre)
     {
         await using var contexte = await _fabrique.CreateDbContextAsync();
@@ -66,5 +88,15 @@ public class DepotCollection(IDbContextFactory<MeepleZoneContexte> fabrique) : I
             .ToListAsync();
 
         return new PageDeResultats<ResultatRechercheJeu>([.. items.Select(x => new ResultatRechercheJeu(x.Jeu, x.DejaPossede))], total);
+    }
+
+    public async Task<bool> RetirerPossessionAsync(Guid utilisateurId, Guid possessionId)
+    {
+        await using var contexte = await _fabrique.CreateDbContextAsync();
+
+        return 0 < await contexte.Possessions
+            .Where(p => p.UtilisateurId == utilisateurId &&
+                        p.Id == possessionId)
+            .ExecuteDeleteAsync();
     }
 }
