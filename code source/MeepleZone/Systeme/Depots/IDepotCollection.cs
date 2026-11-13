@@ -1,3 +1,4 @@
+using MeepleZone.Systeme.Depots.Enums;
 using MeepleZone.Systeme.Depots.Modeles;
 using MeepleZone.Systeme.Entites;
 using System;
@@ -14,4 +15,8 @@ public interface IDepotCollection
     Task<Possession?> ModifierPossessionAsync(Guid utilisateurId, Guid possessionId, short? note, string? commentaire, int partiesJouees);
 
     Task<bool> RetirerPossessionAsync(Guid utilisateurId, Guid possessionId);
+
+    Task<Jeu?> TrouverJeuVisibleAsync(Guid utilisateurId, Guid jeuId);
+
+    Task<ResultatAjoutPossession> AjouterPossessionAsync(Possession possession);
 }

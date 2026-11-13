@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 namespace MeepleZone.Domaines.Collection;
 
 public class DomaineCollection(
+    IGestionnaireRequete<AjouterJeuReponse, AjouterJeuRequete> gestionnaireAjouterJeu,
     IGestionnaireRequete<ListerCollectionReponse, ListerCollectionRequete> gestionnaireCollection,
     IGestionnaireRequete<IReadOnlyList<MecaniqueDto>, ListerMecaniquesRequete> gestionnaireMecaniques,
     IGestionnaireRequete<IReadOnlyList<ModeJeuDto>, ListerModesJeuRequete> gestionnaireModesJeu,
@@ -14,6 +15,8 @@ public class DomaineCollection(
     IGestionnaireRequete<RetirerJeuReponse, RetirerJeuRequete> gestionnaireRetirerJeu)
     : IDomaineCollection
 {
+    private readonly IGestionnaireRequete<AjouterJeuReponse, AjouterJeuRequete> _gestionnaireAjouterJeu = gestionnaireAjouterJeu;
+
     private readonly IGestionnaireRequete<RechercherJeuxReponse, RechercherJeuxRequete> _gestionnaireRechercherJeux = gestionnaireRechercherJeux;
 
     private readonly IGestionnaireRequete<ListerCollectionReponse, ListerCollectionRequete> _gestionnaireCollection = gestionnaireCollection;
@@ -28,7 +31,7 @@ public class DomaineCollection(
 
     public Task<AjouterJeuReponse> AjouterJeuAsync(AjouterJeuRequete requete)
     {
-        throw new System.NotImplementedException();
+        return _gestionnaireAjouterJeu.TraiterAsync(requete);
     }
 
     public Task<CreerJeuReponse> CreerJeuAsync(CreerJeuRequete requete)

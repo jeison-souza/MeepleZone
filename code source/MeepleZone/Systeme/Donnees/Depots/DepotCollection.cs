@@ -1,7 +1,9 @@
 using MeepleZone.Systeme.Depots;
+using MeepleZone.Systeme.Depots.Enums;
 using MeepleZone.Systeme.Depots.Modeles;
 using MeepleZone.Systeme.Entites;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,6 +15,10 @@ public class DepotCollection(IDbContextFactory<MeepleZoneContexte> fabrique) : I
     private const string StatutValide = "valide";
 
     private const string StatutEnAttente = "en_attente";
+
+    private const string IndexPossessionUnique = "ix_possession_utilisateur_id_jeu_id";
+
+    private const string CleEtrangerePossessionJeu = "fk_possession_jeu_jeu_id";
 
     private readonly IDbContextFactory<MeepleZoneContexte> _fabrique = fabrique;
 
@@ -98,5 +104,36 @@ public class DepotCollection(IDbContextFactory<MeepleZoneContexte> fabrique) : I
             .Where(p => p.UtilisateurId == utilisateurId &&
                         p.Id == possessionId)
             .ExecuteDeleteAsync();
+    }
+
+    public async Task<Jeu?> TrouverJeuVisibleAsync(Guid utilisateurId, Guid jeuId)
+    {
+        await using var contexte = await _fabrique.CreateDbContextAsync();
+
+        return await contexte.Jeux
+            .AsNoTracking()
+            .Where(j => j.Id == jeuId &&
+                        (j.Statut == StatutValide || (j.Statut == StatutEnAttente && j.CreeParId == utilisateurId)))
+            .SingleOrDefaultAsync();
+    }
+
+    public async Task<ResultatAjoutPossession> AjouterPossessionAsync(Possession possession)
+    {
+        await using var contexte = await _fabrique.CreateDbContextAsync();
+
+        try
+        {
+            contexte.Possessions.Add(possession);
+            await contexte.SaveChangesAsync();
+            return ResultatAjoutPossession.Ajoutee;
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation, ConstraintName: IndexPossessionUnique })
+        {
+            return ResultatAjoutPossession.DejaPossedee;
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.ForeignKeyViolation, ConstraintName: CleEtrangerePossessionJeu })
+        {
+            return ResultatAjoutPossession.JeuInexistant;
+        }
     }
 }

@@ -11,6 +11,8 @@ namespace MeepleZone.Domaines.Collection.Test;
 
 public class DomaineCollectionTest : BaseTest<DomaineCollection>
 {
+    private Fake<IGestionnaireRequete<AjouterJeuReponse, AjouterJeuRequete>> _gestionnaireAjouterJeu = null!;
+
     private Fake<IGestionnaireRequete<ListerCollectionReponse, ListerCollectionRequete>> _gestionnaireCollection = null!;
 
     private Fake<IGestionnaireRequete<IReadOnlyList<MecaniqueDto>, ListerMecaniquesRequete>> _gestionnaireMecaniques = null!;
@@ -26,12 +28,31 @@ public class DomaineCollectionTest : BaseTest<DomaineCollection>
     public override void InitialiserDependence()
     {
         base.InitialiserDependence();
+        _gestionnaireAjouterJeu = CreerFausse<IGestionnaireRequete<AjouterJeuReponse, AjouterJeuRequete>>();
         _gestionnaireCollection = CreerFausse<IGestionnaireRequete<ListerCollectionReponse, ListerCollectionRequete>>();
         _gestionnaireMecaniques = CreerFausse<IGestionnaireRequete<IReadOnlyList<MecaniqueDto>, ListerMecaniquesRequete>>();
         _gestionnaireModesJeu = CreerFausse<IGestionnaireRequete<IReadOnlyList<ModeJeuDto>, ListerModesJeuRequete>>();
         _gestionnaireRechercherJeux = CreerFausse<IGestionnaireRequete<RechercherJeuxReponse, RechercherJeuxRequete>>();
         _gestionnaireModifierPossession = CreerFausse<IGestionnaireRequete<ModifierPossessionReponse, ModifierPossessionRequete>>();
         _gestionnaireRetirerJeu = CreerFausse<IGestionnaireRequete<RetirerJeuReponse, RetirerJeuRequete>>();
+    }
+
+    [Fact]
+    public async Task AjouterJeuAsync_EnToutTemps_DeleguerAuGestionnaireEtRetournerSaReponse()
+    {
+        // Arrange
+        var requete = CreerFixture<AjouterJeuRequete>();
+        var reponseAttendue = CreerFixture<AjouterJeuReponse>();
+        _gestionnaireAjouterJeu.CallsTo(g => g.TraiterAsync(requete))
+            .Returns(reponseAttendue);
+
+        // Act
+        var result = await InstanceTest.AjouterJeuAsync(requete);
+
+        // Assert
+        _gestionnaireAjouterJeu.CallsTo(g => g.TraiterAsync(A<AjouterJeuRequete>._))
+            .MustHaveHappenedOnceExactly();
+        result.Should().BeSameAs(reponseAttendue);
     }
 
     [Fact]
