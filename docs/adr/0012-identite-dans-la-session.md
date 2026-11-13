@@ -1,6 +1,6 @@
 # ADR 0012 : Identité de la session et extraction des revendications du fournisseur
 
-- **Statut :** accepté
+- **Statut :** accepté, amendé le 2026-11-12 (personne connectée dans les domaines)
 - **Date :** 2026-11-10
 
 ## Contexte
@@ -47,6 +47,7 @@ Contraintes :
 - **Compte probable : option A.** Quand le domaine répond « compte probable », une exception sans données (`CompteProbableException`) est levée; le traitement des échecs la reconnaît, ne la consigne pas comme une erreur et redirige vers `/connexion-requise?motif=compte-probable`. L'adresse ne contient aucune donnée de la personne : seulement le motif, le fournisseur (pris dans la liste fermée de l'application) et une page de retour revalidée.
 - **Marqueur de création forcée.** L'écran de choix permet de créer un nouveau compte; le défi de connexion reprend alors avec un marqueur dans `AuthenticationProperties.Items` (clé `ForcerCreation`, valeur exacte `true`; toute autre valeur est ignorée). `OnCreatingTicket` le lit et le transmet au domaine. Le marqueur n'est pas un contrôle de sécurité : l'authentification reste chez le fournisseur, et le forçage ne contourne que la détection de compte probable ([ADR 0004](0004-liaison-comptes-fournisseurs.md), règle 1).
 - **Affichage.** Le menu et le profil lisent seulement le cookie. La photo n'est pas conservée : l'interface dessine les initiales du nom.
+- **Personne connectée dans les domaines (amendement du 2026-11-12).** Un domaine qui agit pour la personne connectée (la collection) ne reçoit jamais son identifiant dans les requêtes : il dépend de l'interface `IUtilisateurCourant` (`Systeme/Interfaces`), qui expose le GUID interne (`Id`) et lève une exception quand personne n'est authentifié. Le site l'implémente à partir de la revendication `NameIdentifier` du cookie, avec une durée de vie par étendue. Une requête ne peut donc pas viser une autre personne, et le domaine ne connaît ni ASP.NET Core ni les revendications. Une possession qui n'appartient pas à la personne est traitée comme introuvable, sans révéler qu'elle existe.
 
 ## Conséquences
 
@@ -58,12 +59,14 @@ Contraintes :
 - Aucun courriel ne provient d'un nom de connexion : l'unicité et la détection de compte probable comparent de vrais courriels.
 - Le domaine `Compte` ne connaît pas ASP.NET Core; l'extraction, la construction de l'identité et le branchement sont des classes du site, testées séparément (le gestionnaire sans base de données, l'extraction et la configuration Microsoft sur des données de la forme du service).
 - Un seul chemin de connexion pour les deux fournisseurs; un troisième fournisseur ne demande que son enregistrement et, au besoin, sa configuration de revendications.
+- Aucune requête de collection ne porte d'identifiant de personne : un client ne peut pas agir au nom d'une autre personne, et les tests du domaine remplacent la personne connectée par un faux `IUtilisateurCourant`.
 
 ### Négatives
 
 - Le nom et le rôle du cookie ne changent pas avant la connexion suivante : un changement de rôle ou de nom n'est pas pris en compte pendant la durée de vie du cookie. Si le besoin se présente (rôle d'administration, changement de nom), il faudra relire le compte ou invalider le cookie.
 - Le travail du domaine et de la base de données se fait pendant le retour du fournisseur : la connexion est plus lente (surtout la première, à cause de la première connexion à la base), et une base indisponible fait échouer la connexion.
 - Une exception sert à signaler un cas attendu (compte probable). Elle est limitée à ce cas et traitée à un seul endroit.
+- `IUtilisateurCourant` échoue hors d'un contexte authentifié : les opérations de la collection ne s'appellent que depuis des pages protégées. L'identifiant vient du cookie, donc un compte supprimé n'est vu qu'à la connexion suivante, comme le nom et le rôle.
 - La configuration Microsoft remplace les actions par défaut : une revendication ajoutée par une version future de la bibliothèque ne sera pas lue sans intervention.
 - Le `userPrincipalName` ignoré peut être la seule adresse connue d'un compte d'organisation : la personne se retrouve alors sans courriel de compte, et doit en ajouter un depuis son profil pour recevoir des communications ([ADR 0004](0004-liaison-comptes-fournisseurs.md), règle 5).
 - L'abandon du forçage en cours de route n'est pas géré : si la personne ferme la fenêtre après avoir choisi de créer un compte, elle revient simplement à l'écran de choix à la connexion suivante.

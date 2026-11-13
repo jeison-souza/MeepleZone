@@ -1,6 +1,6 @@
 # ADR 0013 : Contexte de données de courte durée et enregistrement des services par balayage
 
-- **Statut :** accepté
+- **Statut :** accepté, amendé le 2026-11-12 (suppression par `ExecuteDelete`, domaine Collection)
 - **Date :** 2026-11-10
 
 ## Contexte
@@ -35,9 +35,9 @@ Contraintes :
 
 ## Décision
 
-- **Contexte de données : option B.** Les dépôts reçoivent un `IDbContextFactory<MeepleZoneContexte>`. Chaque méthode crée son contexte, l'utilise et le libère (`await using`). Les lectures utilisent `AsNoTracking`. L'enregistrement d'un compte se fait dans un seul contexte et un seul appel à `SaveChanges` (voir [ADR 0011](0011-concurrence-et-contrats-de-depot.md)). Les mises à jour passent par `Update` suivi de `SaveChanges`, jamais par `ExecuteUpdate` ni `ExecuteDelete`, qui ne passent pas par l'intercepteur de `modifie_le`.
+- **Contexte de données : option B.** Les dépôts reçoivent un `IDbContextFactory<MeepleZoneContexte>`. Chaque méthode crée son contexte, l'utilise et le libère (`await using`). Les lectures utilisent `AsNoTracking`. L'enregistrement d'un compte se fait dans un seul contexte et un seul appel à `SaveChanges` (voir [ADR 0011](0011-concurrence-et-contrats-de-depot.md)). Les mises à jour passent par une entité suivie par le contexte de l'appel (lue dans ce même contexte) ou par `Update`, suivi de `SaveChanges`, jamais par `ExecuteUpdate`, qui ne passe pas par l'intercepteur de `modifie_le`. **Amendement du 2026-11-12 :** `ExecuteDelete` est permis pour supprimer, car une suppression n'a aucune date à mettre à jour; il évite de lire la ligne avant de l'effacer (retrait d'un jeu de la collection, filtré par identifiant et par utilisateur).
 - **Intercepteur et horloge.** La fabrique est configurée avec la surcharge qui reçoit le fournisseur de services, pour créer l'intercepteur avec le `TimeProvider` du conteneur. Le `TimeProvider` réel est enregistré seulement s'il n'y en a pas déjà un (`TryAddSingleton`), ce qui laisse les tests en imposer un.
-- **Enregistrement : option B.** Chaque projet expose une méthode d'extension (`AjouterSystemeDonnees(chaineConnexion)`, `AjouterDomaineCompte()`), appelée au démarrage du site. Elle balaie l'assemblage avec Scrutor, restreint à l'espace de noms d'une classe repère (`DepotCompte` pour les dépôts, `DomaineCompte` pour le domaine, sous-espaces de noms compris), associe chaque classe à ses interfaces et les enregistre avec une durée de vie par étendue. Le filtre exclut le contexte, ses configurations et l'intercepteur, qui s'enregistrent autrement.
+- **Enregistrement : option B.** Chaque projet expose une méthode d'extension (`AjouterSystemeDonnees(chaineConnexion)`, `AjouterDomaineCompte()`, `AjouterDomaineCollection()`), appelée au démarrage du site. Elle balaie l'assemblage avec Scrutor, restreint à l'espace de noms d'une classe repère (`DepotCompte` pour les dépôts, `DomaineCompte` pour le domaine, sous-espaces de noms compris), associe chaque classe à ses interfaces et les enregistre avec une durée de vie par étendue. Le filtre exclut le contexte, ses configurations et l'intercepteur, qui s'enregistrent autrement.
 - **Test de l'enregistrement.** Un test du conteneur résout la façade du domaine en n'enregistrant que le `TimeProvider` et un faux dépôt : il ne doit enregistrer ni gestionnaire ni générateur factice, qui cacheraient un balayage défaillant.
 
 ## Conséquences
