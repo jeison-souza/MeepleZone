@@ -250,3 +250,29 @@ VALUES ('20261111190649_CreationTablesCatalogue', '10.0.14');
 
 COMMIT;
 
+START TRANSACTION;
+CREATE TABLE possession (
+    id uuid NOT NULL,
+    utilisateur_id uuid NOT NULL,
+    jeu_id uuid NOT NULL,
+    note smallint,
+    commentaire text,
+    parties_jouees integer NOT NULL DEFAULT 0,
+    cree_le timestamp with time zone NOT NULL DEFAULT (now()),
+    modifie_le timestamp with time zone NOT NULL DEFAULT (now()),
+    CONSTRAINT pk_possession PRIMARY KEY (id),
+    CONSTRAINT ck_possession_note CHECK (note BETWEEN 1 AND 10),
+    CONSTRAINT ck_possession_parties_jouees CHECK (parties_jouees >= 0),
+    CONSTRAINT fk_possession_jeu_jeu_id FOREIGN KEY (jeu_id) REFERENCES jeu (id) ON DELETE RESTRICT,
+    CONSTRAINT fk_possession_utilisateur_utilisateur_id FOREIGN KEY (utilisateur_id) REFERENCES utilisateur (id) ON DELETE CASCADE
+);
+
+CREATE INDEX ix_possession_jeu_id ON possession (jeu_id);
+
+CREATE UNIQUE INDEX ix_possession_utilisateur_id_jeu_id ON possession (utilisateur_id, jeu_id);
+
+INSERT INTO historique_migration (migration_id, product_version)
+VALUES ('20261111201700_CreationTablePossession', '10.0.14');
+
+COMMIT;
+
