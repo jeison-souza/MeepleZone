@@ -1,0 +1,82 @@
+@using MeepleZone.Domaines.Collection.Contrats.Modeles
+@using MeepleZone.Site.Affichage
+
+@* Carte d'un jeu de la collection : composant d'affichage, sans accès aux données. *@
+<MudCard Class="mz-carte-jeu" Elevation="2">
+    <div class="mz-carte-jeu-couverture">
+        @* Seule l'adresse externe est affichée : le service des images téléversées (CouvertureId) n'existe pas encore. *@
+        @if (!string.IsNullOrWhiteSpace(Item.CouvertureUrl))
+        {
+            <img src="@Item.CouvertureUrl" alt="Couverture de @Item.Nom" loading="lazy" />
+        }
+        else
+        {
+            <MudIcon Icon="@Icons.Material.Filled.Casino" Size="Size.Large" Class="mz-carte-jeu-icone" />
+        }
+    </div>
+
+    <MudCardContent Class="mz-carte-jeu-contenu">
+        <MudText Typo="Typo.h6" HtmlTag="h2" Class="mz-carte-jeu-nom">@Item.Nom</MudText>
+        @if (Item.AnneePublication is { } annee)
+        {
+            <MudText Typo="Typo.body2" Class="mz-carte-jeu-annee">@annee</MudText>
+        }
+
+        <div class="mz-carte-jeu-infos">
+            @if (FormatageJeu.Joueurs(Item.JoueursMin, Item.JoueursMax) is { } joueurs)
+            {
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Icon="@Icons.Material.Filled.Group">@joueurs</MudChip>
+            }
+            @if (FormatageJeu.Duree(Item.DureeMinMinutes, Item.DureeMaxMinutes) is { } duree)
+            {
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Icon="@Icons.Material.Filled.Schedule">@duree</MudChip>
+            }
+        </div>
+
+        <div class="mz-carte-jeu-perso">
+            @if (Item.Note is { } note)
+            {
+                <span class="mz-carte-jeu-note" title="Ma note">
+                    <MudIcon Icon="@Icons.Material.Filled.Star" Size="Size.Small" />@note / 10
+                </span>
+            }
+            <span class="mz-carte-jeu-parties">@LibelleParties</span>
+        </div>
+
+        @if (Item.StatutJeu == StatutEnAttente)
+        {
+            <MudChip T="string" Size="Size.Small" Color="Color.Warning" Class="mt-2">En attente de validation</MudChip>
+        }
+        else if (Item.StatutJeu == StatutRefuse)
+        {
+            <MudChip T="string" Size="Size.Small" Color="Color.Error" Class="mt-2">Jeu refusé</MudChip>
+        }
+    </MudCardContent>
+
+    <MudCardActions Class="mz-carte-jeu-actions">
+        <MudButton Size="Size.Small" StartIcon="@Icons.Material.Filled.Edit" OnClick="() => OnModifier.InvokeAsync(Item)">Modifier</MudButton>
+        <MudButton Size="Size.Small" Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete" OnClick="() => OnRetirer.InvokeAsync(Item)">Retirer</MudButton>
+    </MudCardActions>
+</MudCard>
+
+@code {
+    // Valeurs de ItemCollectionDto.StatutJeu (colonne jeu.statut du schéma).
+    private const string StatutEnAttente = "en_attente";
+    private const string StatutRefuse = "refuse";
+
+    [Parameter, EditorRequired]
+    public ItemCollectionDto Item { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback<ItemCollectionDto> OnModifier { get; set; }
+
+    [Parameter]
+    public EventCallback<ItemCollectionDto> OnRetirer { get; set; }
+
+    private string LibelleParties => Item.PartiesJouees switch
+    {
+        0 => "Aucune partie jouée",
+        1 => "1 partie jouée",
+        _ => $"{Item.PartiesJouees} parties jouées"
+    };
+}

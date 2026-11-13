@@ -1,8 +1,10 @@
+using MeepleZone.Domaines.Collection.Extensions;
 using MeepleZone.Domaines.Compte.Extensions;
 using MeepleZone.Site.Authentification;
 using MeepleZone.Site.Authentification.Extensions;
 using MeepleZone.Site.Components;
 using MeepleZone.Systeme.Donnees.Extensions;
+using MeepleZone.Systeme.Interfaces;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
@@ -62,9 +64,13 @@ builder.Services.AddOptions<MicrosoftAccountOptions>(MicrosoftAccountDefaults.Au
               "Authentication:Microsoft : ClientId ou ClientSecret manquant.")
     .ValidateOnStart();
 
+// Identité de la session, requise par les gestionnaires du domaine Collection.
+builder.Services.AddScoped<IUtilisateurCourant, UtilisateurCourant>();
+
 builder.Services
     .AjouterSystemeDonnees(builder.Configuration.GetConnectionString("MeepleZone") ?? throw new InvalidOperationException("ConnectionStrings:MeepleZone manquant."))
-    .AjouterDomaineCompte();
+    .AjouterDomaineCompte()
+    .AjouterDomaineCollection();
 
 var app = builder.Build();
 

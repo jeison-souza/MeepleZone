@@ -1,0 +1,204 @@
+@page "/ma-collection"
+@using MeepleZone.Domaines.Collection
+@using MeepleZone.Domaines.Collection.Contrats.Enums
+@using MeepleZone.Domaines.Collection.Contrats.Modeles
+@using MeepleZone.Site.Components.Collection
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.Extensions.Logging
+@attribute [Authorize]
+@inject IDomaineCollection Domaine
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject ILogger<MaCollection> Journal
+
+<PageTitle>MeepleZone - Ma collection</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="my-8">
+    <div class="mz-collection-entete">
+        <div>
+            <MudText Typo="Typo.h4" HtmlTag="h1">Ma collection</MudText>
+            @if (!chargementInitial && !echec)
+            {
+                <MudText Typo="Typo.body2" Class="mz-collection-compteur">@LibelleTotal</MudText>
+            }
+        </div>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="OuvrirAjoutAsync">Ajouter un jeu</MudButton>
+    </div>
+
+    <MudTextField T="string" Value="recherche" ValueChanged="SurChangementRechercheAsync" Label="Rechercher par nom"
+                  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
+                  Immediate="true" DebounceInterval="350" Clearable="true" Class="mt-4 mb-6" />
+
+    @if (echec)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined">
+            La collection n'a pas pu être chargée.
+            <MudButton Size="Size.Small" Class="ml-2" OnClick="ChargerAsync">Réessayer</MudButton>
+        </MudAlert>
+    }
+    else if (chargementInitial)
+    {
+        <MudProgressLinear Indeterminate="true" />
+    }
+    else if (items.Count == 0 && string.IsNullOrEmpty(recherche))
+    {
+        <MudPaper Elevation="0" Outlined="true" Class="mz-collection-vide">
+            <MudIcon Icon="@Icons.Material.Filled.Casino" Size="Size.Large" />
+            <MudText Typo="Typo.h6" HtmlTag="h2">Votre collection est vide</MudText>
+            <MudText Typo="Typo.body2">Ajoutez votre premier jeu pour commencer à bâtir votre ludothèque.</MudText>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
+                       OnClick="OuvrirAjoutAsync">Ajouter un jeu</MudButton>
+        </MudPaper>
+    }
+    else if (items.Count == 0)
+    {
+        <MudText Typo="Typo.body1">Aucun jeu de votre collection ne correspond à « @recherche ».</MudText>
+    }
+    else
+    {
+        <div class="mz-grille-jeux">
+            @foreach (var item in items)
+            {
+                <CarteJeu @key="item.PossessionId" Item="item" OnModifier="ModifierAsync" OnRetirer="RetirerAsync" />
+            }
+        </div>
+
+        @if (NombrePages > 1)
+        {
+            <div class="mz-collection-pagination">
+                <MudPagination Count="NombrePages" Selected="page" SelectedChanged="ChangerPageAsync" />
+            </div>
+        }
+    }
+</MudContainer>
+
+@code {
+    private const int TaillePage = 24;
+
+    private IReadOnlyList<ItemCollectionDto> items = [];
+    private int total;
+    private int page = 1;
+    private string? recherche;
+    private bool chargementInitial = true;
+    private bool echec;
+
+    private int NombrePages => (int)Math.Ceiling(total / (double)TaillePage);
+
+    private string LibelleTotal => total switch
+    {
+        0 => "Aucun jeu",
+        1 => "1 jeu",
+        _ => $"{total} jeux"
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ChargerAsync();
+    }
+
+    private async Task ChargerAsync()
+    {
+        try
+        {
+            var reponse = await Domaine.ListerCollectionAsync(
+                new ListerCollectionRequete(string.IsNullOrWhiteSpace(recherche) ? null : recherche.Trim(), page, TaillePage));
+
+            // Dernière page vidée par un retrait : on recule d'une page plutôt que d'afficher du vide.
+            if (reponse.Items.Count == 0 && page > 1)
+            {
+                page--;
+                await ChargerAsync();
+                return;
+            }
+
+            items = reponse.Items;
+            total = reponse.Total;
+            echec = false;
+        }
+        catch (Exception exception)
+        {
+            Journal.LogError(exception, "Chargement de la collection impossible.");
+            echec = true;
+        }
+        finally
+        {
+            chargementInitial = false;
+        }
+    }
+
+    private async Task SurChangementRechercheAsync(string? valeur)
+    {
+        recherche = valeur;
+        page = 1;
+        await ChargerAsync();
+    }
+
+    private async Task ChangerPageAsync(int nouvellePage)
+    {
+        page = nouvellePage;
+        await ChargerAsync();
+    }
+
+    private async Task OuvrirAjoutAsync()
+    {
+        var options = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, CloseOnEscapeKey = true };
+        var dialogue = await DialogService.ShowAsync<DialogueAjoutJeu>("Ajouter un jeu", options);
+        var resultat = await dialogue.Result;
+
+        if (resultat is { Canceled: false, Data: ItemCollectionDto item })
+        {
+            Snackbar.Add($"« {item.Nom} » a été ajouté à votre collection.", Severity.Success);
+            await ChargerAsync();
+        }
+    }
+
+    private async Task ModifierAsync(ItemCollectionDto item)
+    {
+        var parametres = new DialogParameters<DialogueModificationPossession> { { d => d.Item, item } };
+        var options = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, CloseOnEscapeKey = true };
+        var dialogue = await DialogService.ShowAsync<DialogueModificationPossession>(item.Nom, parametres, options);
+        var resultat = await dialogue.Result;
+
+        if (resultat is { Canceled: false })
+        {
+            Snackbar.Add("Les modifications ont été enregistrées.", Severity.Success);
+            await ChargerAsync();
+        }
+    }
+
+    private async Task RetirerAsync(ItemCollectionDto item)
+    {
+        var confirme = await DialogService.ShowMessageBoxAsync(
+            title: "Retirer ce jeu ?",
+            message: $"« {item.Nom} » sera retiré de votre collection, avec votre note et votre commentaire. Le jeu reste dans le catalogue.",
+            yesText: "Retirer",
+            cancelText: "Annuler");
+
+        if (confirme != true)
+        {
+            return;
+        }
+
+        try
+        {
+            var reponse = await Domaine.RetirerJeuAsync(new RetirerJeuRequete(item.PossessionId));
+
+            if (reponse.Statut == StatutRetrait.Retire)
+            {
+                Snackbar.Add($"« {item.Nom} » a été retiré de votre collection.", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("Ce jeu ne faisait déjà plus partie de votre collection.", Severity.Info);
+            }
+
+            await ChargerAsync();
+        }
+        catch (Exception exception)
+        {
+            Journal.LogError(exception, "Retrait de la possession {PossessionId} impossible.", item.PossessionId);
+            Snackbar.Add("Le jeu n'a pas pu être retiré. Réessayez dans un instant.", Severity.Error);
+        }
+    }
+}
