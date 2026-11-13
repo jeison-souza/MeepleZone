@@ -3,7 +3,7 @@ title: "Projet approuvé : le volet social entre dans le MVP"
 date: 2026-10-06
 draft: false
 tags: ["Jalon 1", "Fondation", "MoSCoW"]
-categories: ["Documentation"]
+categories: ["Documentation", "Carnet de route"]
 ---
 
 ## 1. Projet approuvé

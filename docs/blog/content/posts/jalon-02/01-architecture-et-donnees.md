@@ -3,7 +3,7 @@ title: "Jalon 2 : une base choisie, un schéma, et un menu qui ne s'ouvrait pas"
 date: 2026-11-10
 draft: false
 tags: ["Jalon 2", "Architecture", "PostgreSQL", "Schéma de données", "Intelligence artificielle"]
-categories: ["Documentation"]
+categories: ["Livrable", "Documentation"]
 ---
 
 ## 1. La décision principale : PostgreSQL
