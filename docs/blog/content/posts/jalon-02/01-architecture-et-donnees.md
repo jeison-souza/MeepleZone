@@ -82,7 +82,7 @@ La veille, un problème de la même famille : annuler la connexion chez Google p
 
 ## 4. Ce que le schéma révèle du domaine
 
-Le [schéma de données](https://github.com/jeison-souza/MeepleZone/blob/main/docs/schema/schema-donnees.md), onze tables, a surtout obligé à trancher des questions de vocabulaire. Quelques-unes en disent plus sur le domaine que sur la base.
+Le [schéma de données](https://github.com/jeison-souza/MeepleZone/blob/main/docs/schema/schema-donnees.md), dix tables, a surtout obligé à trancher des questions de vocabulaire. Quelques-unes en disent plus sur le domaine que sur la base.
 
 - **Une personne n'est pas un compte chez un fournisseur.** `utilisateur` et `identite_externe` sont deux tables. Les collections et les amitiés se rattachent à la personne, jamais à Google ou à Microsoft : quelqu'un qui se connecte tantôt avec l'un, tantôt avec l'autre reste le même utilisateur.
 - **Le courriel est facultatif.** L'hypothèse de départ était qu'un compte a toujours un courriel. Elle est tombée : un fournisseur peut ne pas en communiquer, et la connexion ne doit pas en dépendre. Le courriel sert à joindre la personne et à la retrouver pour une demande d'amitié, il n'identifie pas la connexion. Le compte sans courriel est donc permis, avec un ajout confirmé par code plus tard (ADR 0004).
@@ -93,8 +93,10 @@ Le [schéma de données](https://github.com/jeison-souza/MeepleZone/blob/main/do
 
 ## 5. Ce qui reste incertain
 
-- Les migrations existent pour trois des onze tables (`utilisateur`, `identite_externe` et `annexe`), validées contre la base de développement; le reste du schéma n'a pas encore été confronté à une base réelle.
+- Les migrations existent pour trois des dix tables (`utilisateur`, `identite_externe` et `annexe`), validées contre la base de développement; le reste du schéma n'a pas encore été confronté à une base réelle.
 - La modification du profil et l'enregistrement de la photo restent à faire.
 - La mise en production de la connexion (adresses de retour, en-têtes du proxy) reste à faire.
 - Le déploiement continu n'est pas encore en place.
 - Le placement du volet social dans les jalons sera réévalué à la fin de ce jalon.
+
+> **Correction du 13 novembre 2026.** Une version antérieure de ce texte comptait onze tables : le schéma en compte dix. Le chiffre est corrigé plus haut. Depuis la rédaction, les migrations couvrent aussi le catalogue de jeux et la table `possession` : huit tables sur dix ont été confrontées à une base de développement réelle. Restent `demande_amitie` et `amitie`.
