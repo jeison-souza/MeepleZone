@@ -5,6 +5,7 @@ using MeepleZone.Systeme.Entites;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -19,6 +20,10 @@ public class DepotCollection(IDbContextFactory<MeepleZoneContexte> fabrique) : I
     private const string IndexPossessionUnique = "ix_possession_utilisateur_id_jeu_id";
 
     private const string CleEtrangerePossessionJeu = "fk_possession_jeu_jeu_id";
+
+    private const string CleEtrangereJeuModeJeu = "fk_jeu_mode_jeu_mode_jeu_id";
+
+    private const string CleEtrangereJeuMecaniqueMecanique = "fk_jeu_mecanique_mecanique_mecanique_id";
 
     private readonly IDbContextFactory<MeepleZoneContexte> _fabrique = fabrique;
 
@@ -134,6 +139,24 @@ public class DepotCollection(IDbContextFactory<MeepleZoneContexte> fabrique) : I
         catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.ForeignKeyViolation, ConstraintName: CleEtrangerePossessionJeu })
         {
             return ResultatAjoutPossession.JeuInexistant;
+        }
+    }
+
+    public async Task<ResultatCreationJeu> CreerJeuAsync(Jeu jeu, IReadOnlyList<Guid> mecaniqueIds, Possession possession)
+    {
+        await using var contexte = await _fabrique.CreateDbContextAsync();
+
+        try
+        {
+            contexte.Jeux.Add(jeu);
+            contexte.JeuxMecaniques.AddRange(mecaniqueIds.Select(id => new JeuMecanique { JeuId = jeu.Id, MecaniqueId = id }));
+            contexte.Possessions.Add(possession);
+            await contexte.SaveChangesAsync();
+            return ResultatCreationJeu.Cree;
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.ForeignKeyViolation, ConstraintName: CleEtrangereJeuModeJeu or CleEtrangereJeuMecaniqueMecanique })
+        {
+            return ResultatCreationJeu.ReferenceInvalide;
         }
     }
 }

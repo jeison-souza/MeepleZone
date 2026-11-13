@@ -13,6 +13,8 @@ public class DomaineCollectionTest : BaseTest<DomaineCollection>
 {
     private Fake<IGestionnaireRequete<AjouterJeuReponse, AjouterJeuRequete>> _gestionnaireAjouterJeu = null!;
 
+    private Fake<IGestionnaireRequete<CreerJeuReponse, CreerJeuRequete>> _gestionnaireCreerJeu = null!;
+
     private Fake<IGestionnaireRequete<ListerCollectionReponse, ListerCollectionRequete>> _gestionnaireCollection = null!;
 
     private Fake<IGestionnaireRequete<IReadOnlyList<MecaniqueDto>, ListerMecaniquesRequete>> _gestionnaireMecaniques = null!;
@@ -29,6 +31,7 @@ public class DomaineCollectionTest : BaseTest<DomaineCollection>
     {
         base.InitialiserDependence();
         _gestionnaireAjouterJeu = CreerFausse<IGestionnaireRequete<AjouterJeuReponse, AjouterJeuRequete>>();
+        _gestionnaireCreerJeu = CreerFausse<IGestionnaireRequete<CreerJeuReponse, CreerJeuRequete>>();
         _gestionnaireCollection = CreerFausse<IGestionnaireRequete<ListerCollectionReponse, ListerCollectionRequete>>();
         _gestionnaireMecaniques = CreerFausse<IGestionnaireRequete<IReadOnlyList<MecaniqueDto>, ListerMecaniquesRequete>>();
         _gestionnaireModesJeu = CreerFausse<IGestionnaireRequete<IReadOnlyList<ModeJeuDto>, ListerModesJeuRequete>>();
@@ -51,6 +54,24 @@ public class DomaineCollectionTest : BaseTest<DomaineCollection>
 
         // Assert
         _gestionnaireAjouterJeu.CallsTo(g => g.TraiterAsync(A<AjouterJeuRequete>._))
+            .MustHaveHappenedOnceExactly();
+        result.Should().BeSameAs(reponseAttendue);
+    }
+
+    [Fact]
+    public async Task CreerJeuAsync_EnToutTemps_DeleguerAuGestionnaireEtRetournerSaReponse()
+    {
+        // Arrange
+        var requete = CreerFixture<CreerJeuRequete>();
+        var reponseAttendue = CreerFixture<CreerJeuReponse>();
+        _gestionnaireCreerJeu.CallsTo(g => g.TraiterAsync(requete))
+            .Returns(reponseAttendue);
+
+        // Act
+        var result = await InstanceTest.CreerJeuAsync(requete);
+
+        // Assert
+        _gestionnaireCreerJeu.CallsTo(g => g.TraiterAsync(A<CreerJeuRequete>._))
             .MustHaveHappenedOnceExactly();
         result.Should().BeSameAs(reponseAttendue);
     }

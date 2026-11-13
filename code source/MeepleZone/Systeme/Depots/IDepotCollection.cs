@@ -2,6 +2,7 @@ using MeepleZone.Systeme.Depots.Enums;
 using MeepleZone.Systeme.Depots.Modeles;
 using MeepleZone.Systeme.Entites;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace MeepleZone.Systeme.Depots;
@@ -19,4 +20,10 @@ public interface IDepotCollection
     Task<Jeu?> TrouverJeuVisibleAsync(Guid utilisateurId, Guid jeuId);
 
     Task<ResultatAjoutPossession> AjouterPossessionAsync(Possession possession);
+
+    /// <summary>
+    /// Enregistre en une seule fois le jeu, ses mécaniques et la possession de son créateur.
+    /// Les propriétés <see cref="Possession.Jeu"/> et de navigation doivent rester vides.
+    /// </summary>
+    Task<ResultatCreationJeu> CreerJeuAsync(Jeu jeu, IReadOnlyList<Guid> mecaniqueIds, Possession possession);
 }
