@@ -8,10 +8,15 @@ services:
       Authentication__Google__ClientId: ${GOOGLE_CLIENT_ID:?Définir GOOGLE_CLIENT_ID dans .env}
       Authentication__Google__ClientSecret: ${GOOGLE_CLIENT_SECRET:?Définir GOOGLE_CLIENT_SECRET dans .env}
       ConnectionStrings__MeepleZone: Host=${POSTGRES_HOST:?Définir POSTGRES_HOST dans .env};Database=${POSTGRES_DATABASE:?Définir POSTGRES_DATABASE dans .env};Username=${POSTGRES_USER:?Définir POSTGRES_USER dans .env};Password=${POSTGRES_PASSWORD:?Définir POSTGRES_PASSWORD dans .env};SSL Mode=VerifyFull
+      # Proxy inverse de confiance (en-têtes X-Forwarded-*) et dossier des clés de protection des données (cookies, antiforgery).
+      EnTetesTransmis__Proxys__0: ${PROXY_IP:?Définir PROXY_IP dans .env}
+      ProtectionDonnees__Repertoire: /cles
     extra_hosts:
       - "${POSTGRES_HOST:?Définir POSTGRES_HOST dans .env}:${POSTGRES_IP:?Définir POSTGRES_IP dans .env}"
     volumes:
       - ${DOCKERDIR:?Définir DOCKERDIR dans .env}/MeepleZone/App:/app
+      # Doit survivre aux redémarrages : sans ce dossier, chaque redémarrage déconnecte tout le monde.
+      - ${DOCKERDIR:?Définir DOCKERDIR dans .env}/MeepleZone/Cles:/cles
     working_dir: /app
     command: ["dotnet", "MeepleZone.Site.dll"]
     security_opt:
