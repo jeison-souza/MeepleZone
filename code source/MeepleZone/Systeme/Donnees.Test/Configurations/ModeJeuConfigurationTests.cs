@@ -176,7 +176,7 @@ public class ModeJeuConfigurationTests(ModeleDonneesFixture modele) : IClassFixt
     }
 
     [Fact]
-    public void ModeJeu_DonneesInitiales_ONtDesIdentifiantsFixesUniquesDeVersion7()
+    public void ModeJeu_DonneesInitiales_OntDesIdentifiantsFixesUniquesDeVersion7()
     {
         // Arrange
         var type = _modele.TypeEntite<ModeJeu>();
@@ -190,7 +190,7 @@ public class ModeJeuConfigurationTests(ModeleDonneesFixture modele) : IClassFixt
     }
 
     [Fact]
-    public void ModeJeu_DonneesInitiales_ONtUneDescriptionEtUneDateDeCreation()
+    public void ModeJeu_DonneesInitiales_OntUneDescriptionEtUneDateDeCreation()
     {
         // Arrange
         var type = _modele.TypeEntite<ModeJeu>();
