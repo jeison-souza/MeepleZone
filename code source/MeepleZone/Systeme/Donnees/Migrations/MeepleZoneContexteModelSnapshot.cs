@@ -696,6 +696,30 @@ namespace MeepleZone.Systeme.Donnees.Migrations
 
                             t.HasCheckConstraint("ck_utilisateur_visibilite_collection", "visibilite_collection IN ('privee', 'amis')");
                         });
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("01a1c7e7-8000-7101-8000-000000000001"),
+                            CodeAmitie = "SYSTEME2",
+                            Courriel = "systeme@meeplezone.ca",
+                            CreeLe = new DateTimeOffset(new DateTime(2026, 11, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            ModifieLe = new DateTimeOffset(new DateTime(2026, 11, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            NomAffichage = "Système",
+                            Role = "systeme",
+                            VisibiliteCollection = "privee"
+                        },
+                        new
+                        {
+                            Id = new Guid("01a1c7e7-8000-7102-8000-000000000002"),
+                            CodeAmitie = "EFFACE22",
+                            Courriel = "utilisateur-supprime@meeplezone.ca",
+                            CreeLe = new DateTimeOffset(new DateTime(2026, 11, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            ModifieLe = new DateTimeOffset(new DateTime(2026, 11, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            NomAffichage = "Utilisateur supprimé",
+                            Role = "systeme",
+                            VisibiliteCollection = "privee"
+                        });
                 });
 
             modelBuilder.Entity("MeepleZone.Systeme.Entites.Annexe", b =>

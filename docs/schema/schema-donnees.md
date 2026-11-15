@@ -2,8 +2,8 @@
 
 | | |
 |---|---|
-| **Version** | 0.8 ([historique des versions](#historique-des-versions)) |
-| **Date** | 11 novembre 2026 |
+| **Version** | 0.9 ([historique des versions](#historique-des-versions)) |
+| **Date** | 14 novembre 2026 |
 | **Statut** | Complet pour le produit minimal viable; sujet à révision après la mise en œuvre de l'authentification par les fournisseurs d'identité et les premiers tests contre une base de données réelle |
 | **Portée** | Comptes, annexes, catalogue de jeux, collection et amitiés |
 
@@ -137,9 +137,18 @@ Rôles :
 
 - `membre` : l'utilisateur ordinaire, valeur par défaut.
 - `administrateur` : peut aussi faire ce que fait un membre, plus les actions d'administration (par exemple valider un jeu créé par quelqu'un d'autre).
-- `systeme` : compte technique qui ne se connecte jamais, utilisé pour les actions automatiques. Il n'a aucune connexion externe (`identite_externe`) et son courriel est une adresse réservée qui ne reçoit rien; ces exceptions aux règles des connexions sont appliquées par le code. Il est créé par les données initiales.
+- `systeme` : compte technique qui ne se connecte jamais, utilisé pour les actions automatiques. Il n'a aucune connexion externe (`identite_externe`) et son courriel est une adresse réservée qui ne reçoit rien (aucune boîte n'existe à cette adresse); ces exceptions aux règles des connexions sont appliquées par le code. Il est créé par les données initiales.
 - Un seul rôle par utilisateur. Si des rôles qui s'additionnent deviennent nécessaires (par exemple modérateur et administrateur), la colonne sera remplacée par une table de rôles.
 - Le rôle ne se modifie jamais à partir d'une saisie de l'utilisateur. Le premier administrateur est promu par une mise à jour manuelle dans la base de données, après sa première connexion.
+
+Les données initiales créent deux comptes techniques, avec des identifiants fixes de version 7, la visibilité de collection `privee` et un code d'amitié fictif qui respecte le format du champ :
+
+| Compte | Courriel | Code d'amitié |
+|---|---|---|
+| Système | `systeme@meeplezone.ca` | `SYSTEME2` |
+| Utilisateur supprimé | `utilisateur-supprime@meeplezone.ca` | `EFFACE22` |
+
+Ces comptes ne se connectent pas, n'ont pas d'amis et ne sont jamais supprimés par le parcours de suppression de compte; ces règles sont appliquées par le code.
 
 Quand une personne supprime son compte, sa ligne est supprimée et ses données personnelles disparaissent avec elle. Le contenu partagé qu'elle a créé (jeux, couvertures) est conservé et rattaché au compte technique « Utilisateur supprimé » (voir l'[ADR 0006](../adr/0006-suppression-de-compte.md)).
 
@@ -530,5 +539,6 @@ Amitiés :
 | 0.6 | 22 octobre 2026 | Index non unique `ix_identite_externe_courriel` sur `identite_externe.courriel`, pour la détection d'un compte probable à la première connexion (ADR 0004, règle 1). |
 | 0.7 | 11 novembre 2026 | Migration du catalogue : `mode_jeu`, `mecanique`, `jeu` et `jeu_mecanique`, avec les quatre modes de jeu et les 23 mécaniques initiales (identifiants fixes de version 7). Le schéma compte dix tables, et non onze comme l'indiquait la version 0.3. |
 | 0.8 | 11 novembre 2026 | Migration de `possession` (collection de chaque utilisateur), avec ses contraintes `CHECK`, ses clés étrangères et l'unicité du couple (`utilisateur_id`, `jeu_id`). |
+| 0.9 | 14 novembre 2026 | Données initiales de `utilisateur` : les comptes techniques « Système » et « Utilisateur supprimé » (rôle `systeme`, identifiants fixes de version 7, codes d'amitié fictifs `SYSTEME2` et `EFFACE22`). |
 
 Le numéro de version monte à chaque ajout ou modification importante du schéma. La version 1.0 correspondra au schéma complet du produit minimal viable.

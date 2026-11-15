@@ -188,7 +188,7 @@ public class MecaniqueConfigurationTests(ModeleDonneesFixture modele) : IClassFi
     }
 
     [Fact]
-    public void Mecanique_DonneesInitiales_ONtDesIdentifiantsFixesUniquesDeVersion7()
+    public void Mecanique_DonneesInitiales_OntDesIdentifiantsFixesUniquesDeVersion7()
     {
         // Arrange
         var type = _modele.TypeEntite<Mecanique>();
@@ -202,7 +202,7 @@ public class MecaniqueConfigurationTests(ModeleDonneesFixture modele) : IClassFi
     }
 
     [Fact]
-    public void Mecanique_DonneesInitiales_ONtUneDescriptionEtUneDateDeCreation()
+    public void Mecanique_DonneesInitiales_OntUneDescriptionEtUneDateDeCreation()
     {
         // Arrange
         var type = _modele.TypeEntite<Mecanique>();

@@ -2,7 +2,9 @@
 using MeepleZone.Systeme.Donnees.Test.Extensions;
 using MeepleZone.Systeme.Entites;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Xunit;
 
 namespace MeepleZone.Systeme.Donnees.Test.Configurations;
@@ -238,6 +240,57 @@ public class UtilisateurConfigurationTests(ModeleDonneesFixture modele) : IClass
 
         // Assert
         colonne.Should().Be(valeurAttendue);
+    }
+
+    [Fact]
+    public void Utilisateur_DonneesInitiales_ContiennentLesDeuxUtilisateursInitiaux()
+    {
+        // Arrange
+        var type = _modele.TypeEntite<Utilisateur>();
+        var nomsAttendus = new[] { "Système", "Utilisateur supprimé" };
+
+        // Act
+        var lignes = type.GetSeedData().ToList();
+
+        // Assert
+        lignes.Select(l => (string)l[nameof(Utilisateur.NomAffichage)]!).Should().BeEquivalentTo(nomsAttendus);
+    }
+
+    [Fact]
+    public void Utilisateur_DonneesInitiales_OntDesIdentifiantsFixesUniquesDeVersion7()
+    {
+        // Arrange
+        var type = _modele.TypeEntite<Utilisateur>();
+
+        // Act
+        var identifiants = type.GetSeedData().Select(l => (Guid)l[nameof(Utilisateur.Id)]!).ToList();
+
+        // Assert
+        identifiants.Should().OnlyHaveUniqueItems();
+        identifiants.Should().OnlyContain(i => i.Version == 7);
+    }
+
+    [Fact]
+    public void Utilisateur_DonneesInitiales_OntDesDonneesValides()
+    {
+        // Arrange
+        var type = _modele.TypeEntite<Utilisateur>();
+
+        // Act
+        var lignes = type.GetSeedData().ToList();
+
+        // Assert
+        lignes.Should().OnlyContain(l => !string.IsNullOrWhiteSpace((string?)l[nameof(Utilisateur.NomAffichage)]));
+        lignes.Should().OnlyContain(l => (DateTimeOffset)l[nameof(Utilisateur.CreeLe)]! != default);
+        lignes.Should().OnlyContain(l => (DateTimeOffset)l[nameof(Utilisateur.ModifieLe)]! == (DateTimeOffset)l[nameof(Utilisateur.CreeLe)]!);
+        lignes.Should().OnlyContain(l => (string?)l[nameof(Utilisateur.Role)]! == "systeme");
+        lignes.Should().OnlyContain(l => (string?)l[nameof(Utilisateur.VisibiliteCollection)]! == "privee");
+        lignes.Should().OnlyContain(l => Regex.IsMatch((string?)l[nameof(Utilisateur.CodeAmitie)]!, "^[A-HJ-NP-Z2-9]{8}$"));
+        lignes.Should().OnlyContain(l => ((string?)l[nameof(Utilisateur.Courriel)]!).EndsWith("@meeplezone.ca"));
+        lignes.Should().OnlyHaveUniqueItems(l => (Guid)l[nameof(Utilisateur.Id)]!);
+        lignes.Should().OnlyHaveUniqueItems(l => (string?)l[nameof(Utilisateur.NomAffichage)]!);
+        lignes.Should().OnlyHaveUniqueItems(l => (string?)l[nameof(Utilisateur.CodeAmitie)]!);
+        lignes.Should().OnlyHaveUniqueItems(l => (string?)l[nameof(Utilisateur.Courriel)]!);
     }
 
     [Theory]

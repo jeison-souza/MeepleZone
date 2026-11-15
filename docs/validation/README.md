@@ -13,6 +13,7 @@ Les tests unitaires du projet n'utilisent pas de base de données ([ADR 0008](..
 | [`05-possession-ecritures.sql`](05-possession-ecritures.sql) | Modification et retrait d'une possession : le filtre par identifiant et utilisateur ne touche rien chez un autre utilisateur ; limites de la note, des parties jouées et du commentaire | 19 |
 | [`06-ajout-jeu.sql`](06-ajout-jeu.sql) | Ajout d'un jeu à la collection : visibilité du jeu, et noms des violations d'unicité et de clé étrangère que le dépôt traduit en résultat | 12 |
 | [`07-creation-jeu.sql`](07-creation-jeu.sql) | Création d'un jeu : chaque règle du domaine correspond à la contrainte `CHECK` attendue, noms des clés étrangères traduites, atomicité de la création du jeu, de ses mécaniques et de la possession | 30 |
+| [`08-comptes-techniques.sql`](08-comptes-techniques.sql) | Comptes techniques « Système » et « Utilisateur supprimé » : contenu des données initiales, codes d'amitié et courriels réservés, format du code d'amitié, rôles, rattachement du contenu partagé à la suppression d'un compte | 18 |
 
 ## Exécution
 
@@ -24,7 +25,7 @@ Chaque script fonctionne dans une transaction qui se termine par un `ROLLBACK` :
 
 ## Dernière exécution
 
-Les 145 cas ont été exécutés les 11 et 12 novembre 2026 contre la base de développement, après l'application des migrations du catalogue, de `possession` et de `unaccent`. Tous sont conformes. Une première exécution a échoué sur un problème de droits : les tables du catalogue et de `possession` avaient été créées avec un compte d'administration, ce qui les rendait inaccessibles au compte de l'application. Le script a révélé l'erreur, qui a été corrigée (propriétaire et privilèges) avant que le site ne s'en serve.
+Les 163 cas ont été exécutés du 11 au 14 novembre 2026 contre la base de développement, après l'application des migrations du catalogue, de `possession`, de `unaccent` et des comptes techniques. Tous sont conformes. Une première exécution a échoué sur un problème de droits : les tables du catalogue et de `possession` avaient été créées avec un compte d'administration, ce qui les rendait inaccessibles au compte de l'application. Le script a révélé l'erreur, qui a été corrigée (propriétaire et privilèges) avant que le site ne s'en serve.
 
 ## Ce que ces scripts ne prouvent pas
 
