@@ -3,6 +3,7 @@ using MeepleZone.Domaines.Compte.Extensions;
 using MeepleZone.Site.Authentification;
 using MeepleZone.Site.Authentification.Extensions;
 using MeepleZone.Site.Components;
+using MeepleZone.Site.Extensions;
 using MeepleZone.Systeme.Donnees.Extensions;
 using MeepleZone.Systeme.Interfaces;
 using Microsoft.AspNetCore.Authentication;
@@ -21,6 +22,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddMudServices();
+
+// Production : proxy inverse (en-têtes transmis) et clés de protection des données conservées entre les redémarrages.
+builder.Services
+    .ConfigurerEnTetesTransmis(builder.Configuration)
+    .ConfigurerProtectionDonnees(builder.Configuration);
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
@@ -73,6 +79,9 @@ builder.Services
     .AjouterDomaineCollection();
 
 var app = builder.Build();
+
+// Doit venir en premier : le schéma (https) et l'adresse doivent être corrigés avant HSTS, la redirection HTTPS et l'authentification.
+app.UseForwardedHeaders();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
