@@ -494,3 +494,24 @@ BEGIN
 END $EF$;
 COMMIT;
 
+START TRANSACTION;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM historique_migration WHERE "migration_id" = '20261115030458_AjoutComptesTechniques') THEN
+    INSERT INTO utilisateur (id, code_amitie, courriel, courriel_verifie_le, cree_le, modifie_le, nom_affichage, photo_id, role, visibilite_collection)
+    VALUES ('01a1c7e7-8000-7101-8000-000000000001', 'SYSTEME2', 'systeme@meeplezone.ca', NULL, TIMESTAMPTZ '2026-11-11T00:00:00+00:00', TIMESTAMPTZ '2026-11-11T00:00:00+00:00', 'Système', NULL, 'systeme', 'privee');
+    INSERT INTO utilisateur (id, code_amitie, courriel, courriel_verifie_le, cree_le, modifie_le, nom_affichage, photo_id, role, visibilite_collection)
+    VALUES ('01a1c7e7-8000-7102-8000-000000000002', 'EFFACE22', 'utilisateur-supprime@meeplezone.ca', NULL, TIMESTAMPTZ '2026-11-11T00:00:00+00:00', TIMESTAMPTZ '2026-11-11T00:00:00+00:00', 'Utilisateur supprimé', NULL, 'systeme', 'privee');
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM historique_migration WHERE "migration_id" = '20261115030458_AjoutComptesTechniques') THEN
+    INSERT INTO historique_migration (migration_id, product_version)
+    VALUES ('20261115030458_AjoutComptesTechniques', '10.0.14');
+    END IF;
+END $EF$;
+COMMIT;
+

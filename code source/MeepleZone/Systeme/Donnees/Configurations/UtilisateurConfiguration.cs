@@ -1,6 +1,8 @@
 ﻿using MeepleZone.Systeme.Entites;
+using MeepleZone.Systeme.Entites.Constantes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System;
 
 namespace MeepleZone.Systeme.Donnees.Configurations;
 
@@ -54,5 +56,11 @@ internal class UtilisateurConfiguration : IEntityTypeConfiguration<Utilisateur>
         builder.Property(u => u.ModifieLe)
             .IsRequired()
             .HasDefaultValueSql("now()");
+
+        // Objets anonymes : CreeLe a un set privé, que HasData ne peut pas atteindre depuis l'entité.
+        builder.HasData(
+            new { Id = ComptesTechniques.SystemeId, NomAffichage = "Système", Courriel = "systeme@meeplezone.ca", Role = "systeme", CodeAmitie = "SYSTEME2", VisibiliteCollection = "privee", CreeLe = DonneesInitiales.CreeLe, ModifieLe = DonneesInitiales.CreeLe },
+            new { Id = ComptesTechniques.UtilisateurSupprimeId, NomAffichage = "Utilisateur supprimé", Courriel = "utilisateur-supprime@meeplezone.ca", Role = "systeme", CodeAmitie = "EFFACE22", VisibiliteCollection = "privee", CreeLe = DonneesInitiales.CreeLe, ModifieLe = DonneesInitiales.CreeLe }
+        );
     }
 }

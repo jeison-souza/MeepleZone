@@ -284,3 +284,14 @@ VALUES ('20261112052729_CreationExtensionUnaccent', '10.0.14');
 
 COMMIT;
 
+START TRANSACTION;
+INSERT INTO utilisateur (id, code_amitie, courriel, courriel_verifie_le, cree_le, modifie_le, nom_affichage, photo_id, role, visibilite_collection)
+VALUES ('01a1c7e7-8000-7101-8000-000000000001', 'SYSTEME2', 'systeme@meeplezone.ca', NULL, TIMESTAMPTZ '2026-11-11T00:00:00+00:00', TIMESTAMPTZ '2026-11-11T00:00:00+00:00', 'Système', NULL, 'systeme', 'privee');
+INSERT INTO utilisateur (id, code_amitie, courriel, courriel_verifie_le, cree_le, modifie_le, nom_affichage, photo_id, role, visibilite_collection)
+VALUES ('01a1c7e7-8000-7102-8000-000000000002', 'EFFACE22', 'utilisateur-supprime@meeplezone.ca', NULL, TIMESTAMPTZ '2026-11-11T00:00:00+00:00', TIMESTAMPTZ '2026-11-11T00:00:00+00:00', 'Utilisateur supprimé', NULL, 'systeme', 'privee');
+
+INSERT INTO historique_migration (migration_id, product_version)
+VALUES ('20261115030458_AjoutComptesTechniques', '10.0.14');
+
+COMMIT;
+
