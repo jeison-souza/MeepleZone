@@ -1,3 +1,4 @@
+@using MeepleZone.Domaines.Compte.Contrats.Modeles
 @using MeepleZone.Site.Authentification.Liaison
 @using Microsoft.Extensions.Logging
 @inject IFournisseursLies Fournisseurs
@@ -31,10 +32,10 @@
             @foreach (var lie in lies)
             {
                 <div class="mz-fournisseur-ligne">
-                    <IconeFournisseur Nom="@lie.Nom" Class="mz-fournisseur-icone" />
+                    <IconeFournisseur Nom="@lie.Fournisseur" Class="mz-fournisseur-icone" />
                     <div class="mz-fournisseur-texte">
-                        <MudText Typo="Typo.subtitle1">@(lie.Courriel ?? lie.Nom)</MudText>
-                        <MudText Typo="Typo.body2">@lie.Nom · associé le @lie.DateLiaison.ToLocalTime().ToString("d MMMM yyyy", Culture)</MudText>
+                        <MudText Typo="Typo.subtitle1">@(lie.Courriel ?? lie.Fournisseur)</MudText>
+                        <MudText Typo="Typo.body2">@lie.Fournisseur · associé le @lie.CreeLe.ToLocalTime().ToString("d MMMM yyyy", Culture)</MudText>
                     </div>
                 </div>
             }
@@ -51,7 +52,7 @@
 @code {
     private static readonly System.Globalization.CultureInfo Culture = new("fr-CA");
 
-    private IReadOnlyList<FournisseurLie>? lies;
+    private IReadOnlyList<ConnexionDto>? lies;
     private string? erreur;
 
     /// <summary>Issue d'une tentative de liaison, lue dans l'adresse (« ?liaison=reussie »).</summary>

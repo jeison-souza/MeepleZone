@@ -1,3 +1,6 @@
+using MeepleZone.Domaines.Compte.Contrats.Enums;
+using System;
+
 namespace MeepleZone.Site.Authentification.Liaison;
 
 /// <summary>Issue d'une tentative de liaison, transmise au profil par le paramètre d'adresse « liaison ».</summary>
@@ -12,6 +15,18 @@ public enum ResultatLiaison
 public static class ResultatLiaisonExtensions
 {
     public const string Parametre = "liaison";
+
+    /// <summary>Issue d'affichage correspondant au statut retourné par le domaine.</summary>
+    public static ResultatLiaison De(StatutLiaison statut)
+    {
+        return statut switch
+        {
+            StatutLiaison.Liee => ResultatLiaison.Reussie,
+            StatutLiaison.DejaLieeAuMemeCompte => ResultatLiaison.DejaLiee,
+            StatutLiaison.DejaUtiliseeParAutreCompte => ResultatLiaison.DejaUtilisee,
+            _ => throw new ArgumentOutOfRangeException(nameof(statut), statut, "Statut de liaison inattendu."),
+        };
+    }
 
     /// <summary>Valeur du paramètre d'adresse pour cette issue.</summary>
     public static string Valeur(this ResultatLiaison resultat)

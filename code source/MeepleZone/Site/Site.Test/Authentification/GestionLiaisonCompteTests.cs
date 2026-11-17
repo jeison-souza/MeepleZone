@@ -1,5 +1,7 @@
 using FakeItEasy;
 using FluentAssertions;
+using MeepleZone.Domaines.Compte.Contrats.Enums;
+using MeepleZone.Domaines.Compte.Contrats.Modeles;
 using MeepleZone.Site.Authentification;
 using MeepleZone.Site.Authentification.Liaison;
 using Microsoft.AspNetCore.Authentication;
@@ -88,15 +90,16 @@ public class GestionLiaisonCompteTests
     }
 
     [Theory]
-    [InlineData(ResultatLiaison.Reussie, "/profil?liaison=reussie&fournisseur=Google")]
-    [InlineData(ResultatLiaison.DejaLiee, "/profil?liaison=deja-liee&fournisseur=Google")]
-    [InlineData(ResultatLiaison.DejaUtilisee, "/profil?liaison=deja-utilisee&fournisseur=Google")]
-    public async Task Traiter_UtilisateurConnecte_LieEtRevientAuProfilSansCreerDeCookie(ResultatLiaison issue, string attendu)
+    [InlineData(StatutLiaison.Liee, "/profil?liaison=reussie&fournisseur=Google")]
+    [InlineData(StatutLiaison.DejaLieeAuMemeCompte, "/profil?liaison=deja-liee&fournisseur=Google")]
+    [InlineData(StatutLiaison.DejaUtiliseeParAutreCompte, "/profil?liaison=deja-utilisee&fournisseur=Google")]
+    public async Task Traiter_UtilisateurConnecte_LieEtRevientAuProfilSansCreerDeCookie(StatutLiaison statut, string attendu)
     {
         // Arrange
         var utilisateur = CreerPrincipal(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString());
         var liaison = A.Fake<ILiaisonFournisseur>();
-        A.CallTo(() => liaison.LierAsync("Google", "id-externe", "externe@exemple.ca")).Returns(issue);
+        A.CallTo(() => liaison.LierAsync(new LierFournisseurRequete("Google", "id-externe", "externe@exemple.ca")))
+            .Returns(new LierFournisseurReponse(statut));
         var http = CreerContexteHttp(liaison, CreerServiceAuthentification(utilisateur));
         var contexte = CreerContexte(http, GestionLiaisonCompte.CreerProprietes());
 
@@ -133,7 +136,7 @@ public class GestionLiaisonCompteTests
         // Arrange
         var utilisateur = CreerPrincipal(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString());
         var liaison = A.Fake<ILiaisonFournisseur>();
-        A.CallTo(() => liaison.LierAsync(A<string>._, A<string>._, A<string?>._)).Throws<InvalidOperationException>();
+        A.CallTo(() => liaison.LierAsync(A<LierFournisseurRequete>._)).Throws<InvalidOperationException>();
         var http = CreerContexteHttp(liaison, CreerServiceAuthentification(utilisateur));
         var contexte = CreerContexte(http, GestionLiaisonCompte.CreerProprietes());
 

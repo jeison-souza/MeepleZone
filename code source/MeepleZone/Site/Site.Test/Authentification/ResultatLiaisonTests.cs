@@ -1,4 +1,5 @@
 using FluentAssertions;
+using MeepleZone.Domaines.Compte.Contrats.Enums;
 using MeepleZone.Site.Authentification.Liaison;
 using System.Threading.Tasks;
 using Xunit;
@@ -73,6 +74,19 @@ public class ResultatLiaisonTests
         var liste = await source.ListerAsync();
 
         // Assert
-        liste.Should().HaveCount(2).And.OnlyContain(l => l.Nom == "Google");
+        liste.Should().HaveCount(2).And.OnlyContain(l => l.Fournisseur == "Google");
+    }
+
+    [Theory]
+    [InlineData(StatutLiaison.Liee, ResultatLiaison.Reussie)]
+    [InlineData(StatutLiaison.DejaLieeAuMemeCompte, ResultatLiaison.DejaLiee)]
+    [InlineData(StatutLiaison.DejaUtiliseeParAutreCompte, ResultatLiaison.DejaUtilisee)]
+    public void De_TraduitLeStatutDuDomaine(StatutLiaison statut, ResultatLiaison attendu)
+    {
+        // Act
+        var resultat = ResultatLiaisonExtensions.De(statut);
+
+        // Assert
+        resultat.Should().Be(attendu);
     }
 }

@@ -1,3 +1,4 @@
+using MeepleZone.Domaines.Compte.Contrats.Modeles;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.DependencyInjection;
@@ -80,7 +81,9 @@ public static class GestionLiaisonCompte
             var requete = new ExtracteurRevendications().Extraire(fournisseur, context.Principal!, false);
             var liaison = context.HttpContext.RequestServices.GetRequiredService<ILiaisonFournisseur>();
 
-            resultat = await liaison.LierAsync(requete.Fournisseur, requete.IdentifiantCompteExterne, requete.Courriel);
+            var reponse = await liaison.LierAsync(new LierFournisseurRequete(requete.Fournisseur, requete.IdentifiantCompteExterne, requete.Courriel));
+
+            resultat = ResultatLiaisonExtensions.De(reponse.Statut);
         }
         catch (Exception exception)
         {
