@@ -1,5 +1,3 @@
 ﻿namespace MeepleZone.Domaines.Collection.Contrats.Modeles;
 
-public sealed record ListerModesJeuRequete
-{
-}
+public sealed record ListerModesJeuRequete();
