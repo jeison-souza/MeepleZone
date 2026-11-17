@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using MeepleZone.Site.Authentification.Liaison;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -35,6 +36,14 @@ public static class GestionEchecConnexion
                 .GetRequiredService<ILoggerFactory>()
                 .CreateLogger(typeof(GestionEchecConnexion))
                 .LogWarning(context.Failure, "Échec de la connexion externe ({Fournisseur}).", context.Scheme.Name);
+        }
+
+        // Pendant une liaison, la personne est déjà connectée : retour au profil, pas à la page de connexion.
+        if (GestionLiaisonCompte.EstLiaison(context.Properties))
+        {
+            context.Response.Redirect(annulee ? GestionLiaisonCompte.PageRetour : GestionLiaisonCompte.UrlRetour(ResultatLiaison.Echec, context.Scheme.Name));
+            context.HandleResponse();
+            return Task.CompletedTask;
         }
 
         // Le motif ne contient aucune donnée du fournisseur ni de la personne.
@@ -74,7 +83,11 @@ public static class GestionEchecConnexion
     /// </summary>
     public static Task TraiterRefus(AccessDeniedContext context)
     {
-        context.Response.Redirect("/connexion-requise?motif=annulee");
+        var urlRetour = GestionLiaisonCompte.EstLiaison(context.Properties)
+            ? GestionLiaisonCompte.PageRetour
+            : "/connexion-requise?motif=annulee";
+
+        context.Response.Redirect(urlRetour);
         context.HandleResponse();
         return Task.CompletedTask;
     }

@@ -2,6 +2,7 @@ using MeepleZone.Domaines.Collection.Extensions;
 using MeepleZone.Domaines.Compte.Extensions;
 using MeepleZone.Site.Authentification;
 using MeepleZone.Site.Authentification.Extensions;
+using MeepleZone.Site.Authentification.Liaison;
 using MeepleZone.Site.Components;
 using MeepleZone.Site.Extensions;
 using MeepleZone.Systeme.Donnees.Extensions;
@@ -50,6 +51,7 @@ builder.Services
         options.Events.OnRemoteFailure = GestionEchecConnexion.Traiter;
         options.Events.OnAccessDenied = GestionEchecConnexion.TraiterRefus;
         options.Events.OnCreatingTicket = GestionConnexionCompte.Traiter;
+        options.Events.OnTicketReceived = GestionLiaisonCompte.Traiter;
     })
     .AddMicrosoftAccount(options =>
     {
@@ -58,6 +60,7 @@ builder.Services
         options.Events.OnRemoteFailure = GestionEchecConnexion.Traiter;
         options.Events.OnAccessDenied = GestionEchecConnexion.TraiterRefus;
         options.Events.OnCreatingTicket = GestionConnexionCompte.Traiter;
+        options.Events.OnTicketReceived = GestionLiaisonCompte.Traiter;
     });
 
 builder.Services.AddOptions<GoogleOptions>(GoogleDefaults.AuthenticationScheme)
@@ -70,8 +73,11 @@ builder.Services.AddOptions<MicrosoftAccountOptions>(MicrosoftAccountDefaults.Au
               "Authentication:Microsoft : ClientId ou ClientSecret manquant.")
     .ValidateOnStart();
 
-// Identité de la session, requise par les gestionnaires du domaine Collection.
+// Identité de la session, requise par les gestionnaires des domaines Collection et Compte.
 builder.Services.AddScoped<IUtilisateurCourant, UtilisateurCourant>();
+
+// IUtilisateurCourant lit l'utilisateur de la requête quand il n'y a pas de circuit Blazor (retour du fournisseur OAuth).
+builder.Services.AddHttpContextAccessor();
 
 builder.Services
     .AjouterSystemeDonnees(builder.Configuration.GetConnectionString("MeepleZone") ?? throw new InvalidOperationException("ConnectionStrings:MeepleZone manquant."))
@@ -113,6 +119,13 @@ app.MapRazorComponents<App>()
 // L'adresse de retour passe toujours par UrlRetour : seul un chemin local du site est accepté.
 app.MapGet("/connexion/Google", (string? retour, string? creation) => Results.Challenge(ProprietesConnexion.Creer(retour, creation), [GoogleDefaults.AuthenticationScheme]));
 app.MapGet("/connexion/Microsoft", (string? retour, string? creation) => Results.Challenge(ProprietesConnexion.Creer(retour, creation), [MicrosoftAccountDefaults.AuthenticationScheme]));
+
+// Liaison d'un fournisseur à un compte déjà connecté (sans session, le cookie mène à /connexion-requise). Un fournisseur hors de la liste donne 404.
+app.MapGet("/liaison/{fournisseur}", (string fournisseur) =>
+        FournisseursConnexion.Trouver(fournisseur) is { } connu
+            ? Results.Challenge(GestionLiaisonCompte.CreerProprietes(), [connu.Nom])
+            : Results.NotFound())
+    .RequireAuthorization();
 
 // Le paramètre de formulaire fait valider le jeton antiforgery par l'intergiciel : sans jeton, la requête est refusée (400).
 app.MapPost("/deconnexion", (IFormCollection _) => Results.SignOut(new AuthenticationProperties { RedirectUri = "/" }, [CookieAuthenticationDefaults.AuthenticationScheme]));

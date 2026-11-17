@@ -1,5 +1,6 @@
 ﻿using MeepleZone.Domaines.Compte;
 using MeepleZone.Domaines.Compte.Contrats.Enums;
+using MeepleZone.Site.Authentification.Liaison;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -20,6 +21,12 @@ public static class GestionConnexionCompte
 
     public static async Task Traiter(OAuthCreatingTicketContext context)
     {
+        // Liaison à un compte déjà connecté : tout se fait au retour (GestionLiaisonCompte), sans créer ni trouver d'utilisateur.
+        if (GestionLiaisonCompte.EstLiaison(context.Properties))
+        {
+            return;
+        }
+
         var forcerCreation = context.Properties.Items.TryGetValue(CleForcerCreation, out var valeur) && valeur == ValeurForcerCreation;
         var requete = new ExtracteurRevendications().Extraire(context.Scheme.Name, context.Principal!, forcerCreation);
         var domaine = context.HttpContext.RequestServices.GetRequiredService<IDomaineCompte>();

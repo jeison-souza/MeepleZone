@@ -1,0 +1,38 @@
+@* Choix du fournisseur à associer; la page quitte ensuite le site pour s'authentifier chez ce fournisseur. *@
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">Associer un fournisseur de connexion</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudText Typo="Typo.body1">
+            Choisissez le fournisseur à associer à votre compte MeepleZone. Vous vous authentifierez chez ce fournisseur;
+            ensuite, il pourra aussi servir à vous connecter à MeepleZone.
+        </MudText>
+        <MudText Typo="Typo.body2" Class="mt-3">
+            Le compte utilisé chez ce fournisseur ne doit pas déjà être associé à un autre compte MeepleZone.
+        </MudText>
+
+        <div class="mz-fournisseur-boutons">
+            @foreach (var fournisseur in FournisseursConnexion.Tous)
+            {
+                <button type="button" class="mz-fournisseur" @onclick="() => Choisir(fournisseur)">
+                    <IconeFournisseur Nom="@fournisseur.Nom" Class="mz-fournisseur-icone" />
+                    <span>Continuer avec @fournisseur.Libelle</span>
+                </button>
+            }
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Annuler">Annuler</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    private void Annuler() => MudDialog.Cancel();
+
+    /// <summary>Ferme le dialogue en retournant le nom du fournisseur choisi.</summary>
+    private void Choisir(FournisseurConnexion fournisseur) => MudDialog.Close(DialogResult.Ok(fournisseur.Nom));
+}

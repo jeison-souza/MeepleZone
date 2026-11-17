@@ -1,0 +1,99 @@
+@using MeepleZone.Domaines.Compte
+@using MeepleZone.Domaines.Compte.Contrats.Modeles
+@using MeepleZone.Site.Authentification.Liaison
+@using Microsoft.Extensions.Logging
+@inject IDomaineCompte Domaine
+@inject IDialogService DialogService
+@inject NavigationManager Navigation
+@inject ILogger<SectionFournisseurs> Journal
+
+@* Fournisseurs de connexion liés au compte, et possibilité d'en associer un autre. La liaison elle-même se fait par /liaison/{fournisseur}. *@
+<div class="mt-6 text-left">
+    <MudText Typo="Typo.h6" HtmlTag="h2">Fournisseurs associés</MudText>
+
+    @if (Resultat is { } resultat)
+    {
+        <MudAlert Severity="@(resultat switch { ResultatLiaison.Reussie => Severity.Success, ResultatLiaison.DejaLiee => Severity.Info, _ => Severity.Error })" Variant="Variant.Outlined" Class="mt-3">
+            @resultat.Message(LibelleFournisseurRetour)
+        </MudAlert>
+    }
+
+    @if (erreur is not null)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mt-3">@erreur</MudAlert>
+    }
+    else if (lies is null)
+    {
+        <MudProgressLinear Indeterminate="true" Class="mt-3" />
+    }
+    else
+    {
+        @* Simples lignes d'information : rien à cliquer. *@
+        <div class="mz-fournisseur-liste">
+            @foreach (var lie in lies)
+            {
+                <div class="mz-fournisseur-ligne">
+                    <IconeFournisseur Nom="@lie.Fournisseur" Class="mz-fournisseur-icone" />
+                    <div class="mz-fournisseur-texte">
+                        <MudText Typo="Typo.subtitle1">@(lie.Courriel ?? lie.Fournisseur)</MudText>
+                        <MudText Typo="Typo.body2">@lie.Fournisseur · associé le @lie.CreeLe.ToLocalTime().ToString("d MMMM yyyy", Culture)</MudText>
+                    </div>
+                </div>
+            }
+        </div>
+
+        @* Plusieurs connexions du même fournisseur sont permises : le choix du fournisseur se fait dans le dialogue. *@
+        <div class="mz-fournisseur-ajout">
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
+                       OnClick="AssocierAsync">Associer un nouveau fournisseur</MudButton>
+        </div>
+    }
+</div>
+
+@code {
+    private static readonly System.Globalization.CultureInfo Culture = new("fr-CA");
+
+    private IReadOnlyList<ConnexionDto>? lies;
+    private string? erreur;
+
+    /// <summary>Issue d'une tentative de liaison, lue dans l'adresse (« ?liaison=reussie »).</summary>
+    [Parameter, SupplyParameterFromQuery(Name = ResultatLiaisonExtensions.Parametre)]
+    public string? ValeurResultat { get; set; }
+
+    /// <summary>Fournisseur concerné par l'issue (« ?fournisseur=Google »).</summary>
+    [Parameter, SupplyParameterFromQuery(Name = "fournisseur")]
+    public string? NomFournisseurRetour { get; set; }
+
+    private ResultatLiaison? Resultat => ResultatLiaisonExtensions.Lire(ValeurResultat);
+
+    private string LibelleFournisseurRetour => FournisseursConnexion.Trouver(NomFournisseurRetour)?.Libelle ?? "externe";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            lies = await Domaine.ListerConnexionsAsync(new ListerConnexionsRequete());
+        }
+        catch (Exception exception)
+        {
+            Journal.LogError(exception, "Liste des fournisseurs liés impossible à obtenir.");
+            erreur = "La liste des fournisseurs associés n'a pas pu être chargée. Réessayez dans un instant.";
+        }
+    }
+
+    private async Task AssocierAsync()
+    {
+        var dialogue = await DialogService.ShowAsync<DialogueLiaisonFournisseur>(
+            string.Empty,
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+
+        var resultat = await dialogue.Result;
+
+        // Le dialogue retourne le nom du fournisseur choisi; seul un nom de la liste est suivi.
+        if (resultat is { Canceled: false, Data: string nom } && FournisseursConnexion.Trouver(nom) is { } fournisseur)
+        {
+            // Navigation complète : le défi OAuth quitte le site.
+            Navigation.NavigateTo($"/liaison/{fournisseur.Nom}", forceLoad: true);
+        }
+    }
+}
