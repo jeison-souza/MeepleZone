@@ -14,6 +14,7 @@ Les tests unitaires du projet n'utilisent pas de base de données ([ADR 0008](..
 | [`06-ajout-jeu.sql`](06-ajout-jeu.sql) | Ajout d'un jeu à la collection : visibilité du jeu, et noms des violations d'unicité et de clé étrangère que le dépôt traduit en résultat | 12 |
 | [`07-creation-jeu.sql`](07-creation-jeu.sql) | Création d'un jeu : chaque règle du domaine correspond à la contrainte `CHECK` attendue, noms des clés étrangères traduites, atomicité de la création du jeu, de ses mécaniques et de la possession | 30 |
 | [`08-comptes-techniques.sql`](08-comptes-techniques.sql) | Comptes techniques « Système » et « Utilisateur supprimé » : contenu des données initiales, codes d'amitié et courriels réservés, format du code d'amitié, rôles, rattachement du contenu partagé à la suppression d'un compte | 18 |
+| [`09-liaison-fournisseurs.sql`](09-liaison-fournisseurs.sql) | Liaison des fournisseurs (table `identite_externe`) : unicité de l'identité entre comptes (ADR 0004, règle 2), plusieurs connexions du même fournisseur, courriel facultatif et ses contraintes, clé étrangère, tri et isolement de la liste des connexions, suppression en cascade | 14 |
 
 ## Exécution
 
