@@ -11,4 +11,8 @@ public interface IDomaineCompte
     Task<LierFournisseurReponse> LierFournisseurAsync(LierFournisseurRequete requete);
 
     Task<IReadOnlyList<ConnexionDto>> ListerConnexionsAsync(ListerConnexionsRequete requete);
+
+    Task<ProfilDto?> ObtenirProfilAsync(ObtenirProfilRequete requete);
+
+    Task<SupprimerCompteReponse> SupprimerCompteAsync(SupprimerCompteRequete requete);
 }

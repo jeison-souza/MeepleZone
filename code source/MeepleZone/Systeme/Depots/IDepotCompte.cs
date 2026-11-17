@@ -16,6 +16,8 @@ public interface IDepotCompte
 
     Task MettreAJourConnexionAsync(IdentiteExterne identite);
 
+    Task<ResultatSuppressionCompte> SupprimerCompteAsync(Guid utilisateurId, Guid compteSupprimeId);
+
     Task<IdentiteExterne?> TrouverIdentiteAsync(string fournisseur, string identifiant);
 
     Task<Utilisateur?> TrouverUtilisateurAsync(Guid identifiant);
