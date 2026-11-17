@@ -26,7 +26,7 @@ Chaque script fonctionne dans une transaction qui se termine par un `ROLLBACK` :
 
 ## Dernière exécution
 
-Les 163 cas ont été exécutés du 11 au 14 novembre 2026 contre la base de développement, après l'application des migrations du catalogue, de `possession`, de `unaccent` et des comptes techniques. Tous sont conformes. Une première exécution a échoué sur un problème de droits : les tables du catalogue et de `possession` avaient été créées avec un compte d'administration, ce qui les rendait inaccessibles au compte de l'application. Le script a révélé l'erreur, qui a été corrigée (propriétaire et privilèges) avant que le site ne s'en serve.
+Les 177 cas ont été exécutés du 11 au 16 novembre 2026 contre la base de développement, après l'application des migrations du catalogue, de `possession`, de `unaccent` et des comptes techniques. Tous sont conformes. Une première exécution a échoué sur un problème de droits : les tables du catalogue et de `possession` avaient été créées avec un compte d'administration, ce qui les rendait inaccessibles au compte de l'application. Le script a révélé l'erreur, qui a été corrigée (propriétaire et privilèges) avant que le site ne s'en serve.
 
 ## Ce que ces scripts ne prouvent pas
 
