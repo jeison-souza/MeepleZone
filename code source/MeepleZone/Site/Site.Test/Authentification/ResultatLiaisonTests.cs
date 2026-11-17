@@ -1,7 +1,6 @@
 using FluentAssertions;
 using MeepleZone.Domaines.Compte.Contrats.Enums;
 using MeepleZone.Site.Authentification.Liaison;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace MeepleZone.Site.Test.Authentification;
@@ -62,19 +61,6 @@ public class ResultatLiaisonTests
 
         // Assert
         message.Should().Contain("Microsoft").And.Contain(fragment);
-    }
-
-    [Fact]
-    public async Task Fictif_ListeDeuxConnexionsDuMemeFournisseur()
-    {
-        // Arrange
-        IFournisseursLies source = new FournisseursLiesFictif();
-
-        // Act
-        var liste = await source.ListerAsync();
-
-        // Assert
-        liste.Should().HaveCount(2).And.OnlyContain(l => l.Fournisseur == "Google");
     }
 
     [Theory]

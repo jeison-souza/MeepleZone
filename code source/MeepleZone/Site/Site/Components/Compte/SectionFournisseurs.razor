@@ -1,7 +1,8 @@
+@using MeepleZone.Domaines.Compte
 @using MeepleZone.Domaines.Compte.Contrats.Modeles
 @using MeepleZone.Site.Authentification.Liaison
 @using Microsoft.Extensions.Logging
-@inject IFournisseursLies Fournisseurs
+@inject IDomaineCompte Domaine
 @inject IDialogService DialogService
 @inject NavigationManager Navigation
 @inject ILogger<SectionFournisseurs> Journal
@@ -71,7 +72,7 @@
     {
         try
         {
-            lies = await Fournisseurs.ListerAsync();
+            lies = await Domaine.ListerConnexionsAsync(new ListerConnexionsRequete());
         }
         catch (Exception exception)
         {

@@ -73,12 +73,8 @@ builder.Services.AddOptions<MicrosoftAccountOptions>(MicrosoftAccountDefaults.Au
               "Authentication:Microsoft : ClientId ou ClientSecret manquant.")
     .ValidateOnStart();
 
-// Identité de la session, requise par les gestionnaires du domaine Collection.
+// Identité de la session, requise par les gestionnaires des domaines Collection et Compte.
 builder.Services.AddScoped<IUtilisateurCourant, UtilisateurCourant>();
-
-// Provisoire : remplacé par l'opération du domaine Compte quand elle sera fusionnée (Refs #59).
-builder.Services.AddScoped<IFournisseursLies, FournisseursLiesFictif>();
-builder.Services.AddScoped<ILiaisonFournisseur, LiaisonFournisseurFictive>();
 
 // IUtilisateurCourant lit l'utilisateur de la requête quand il n'y a pas de circuit Blazor (retour du fournisseur OAuth).
 builder.Services.AddHttpContextAccessor();

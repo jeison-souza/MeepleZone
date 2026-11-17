@@ -1,5 +1,6 @@
 using FakeItEasy;
 using FluentAssertions;
+using MeepleZone.Domaines.Compte;
 using MeepleZone.Domaines.Compte.Contrats.Enums;
 using MeepleZone.Domaines.Compte.Contrats.Modeles;
 using MeepleZone.Site.Authentification;
@@ -77,7 +78,7 @@ public class GestionLiaisonCompteTests
     public async Task Traiter_HorsLiaison_NeFaitRien()
     {
         // Arrange
-        var liaison = A.Fake<ILiaisonFournisseur>();
+        var liaison = A.Fake<IDomaineCompte>();
         var http = CreerContexteHttp(liaison, A.Fake<IAuthenticationService>());
         var contexte = CreerContexte(http, new AuthenticationProperties());
 
@@ -97,8 +98,8 @@ public class GestionLiaisonCompteTests
     {
         // Arrange
         var utilisateur = CreerPrincipal(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString());
-        var liaison = A.Fake<ILiaisonFournisseur>();
-        A.CallTo(() => liaison.LierAsync(new LierFournisseurRequete("Google", "id-externe", "externe@exemple.ca")))
+        var liaison = A.Fake<IDomaineCompte>();
+        A.CallTo(() => liaison.LierFournisseurAsync(new LierFournisseurRequete("Google", "id-externe", "externe@exemple.ca")))
             .Returns(new LierFournisseurReponse(statut));
         var http = CreerContexteHttp(liaison, CreerServiceAuthentification(utilisateur));
         var contexte = CreerContexte(http, GestionLiaisonCompte.CreerProprietes());
@@ -117,7 +118,7 @@ public class GestionLiaisonCompteTests
     public async Task Traiter_SansUtilisateurConnecte_RedirigeVersLaConnexionSansLier()
     {
         // Arrange
-        var liaison = A.Fake<ILiaisonFournisseur>();
+        var liaison = A.Fake<IDomaineCompte>();
         var http = CreerContexteHttp(liaison, CreerServiceAuthentification(null));
         var contexte = CreerContexte(http, GestionLiaisonCompte.CreerProprietes());
 
@@ -135,8 +136,8 @@ public class GestionLiaisonCompteTests
     {
         // Arrange
         var utilisateur = CreerPrincipal(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString());
-        var liaison = A.Fake<ILiaisonFournisseur>();
-        A.CallTo(() => liaison.LierAsync(A<LierFournisseurRequete>._)).Throws<InvalidOperationException>();
+        var liaison = A.Fake<IDomaineCompte>();
+        A.CallTo(() => liaison.LierFournisseurAsync(A<LierFournisseurRequete>._)).Throws<InvalidOperationException>();
         var http = CreerContexteHttp(liaison, CreerServiceAuthentification(utilisateur));
         var contexte = CreerContexte(http, GestionLiaisonCompte.CreerProprietes());
 
@@ -152,7 +153,7 @@ public class GestionLiaisonCompteTests
     public async Task EchecConnexion_PendantUneLiaison_RevientAuProfil()
     {
         // Arrange
-        var http = CreerContexteHttp(A.Fake<ILiaisonFournisseur>(), A.Fake<IAuthenticationService>());
+        var http = CreerContexteHttp(A.Fake<IDomaineCompte>(), A.Fake<IAuthenticationService>());
         var echec = new RemoteFailureContext(http, SchemaGoogle, new GoogleOptions(), new AuthenticationFailureException("The oauth state was missing or invalid."))
         {
             Properties = GestionLiaisonCompte.CreerProprietes(),
@@ -169,7 +170,7 @@ public class GestionLiaisonCompteTests
     public async Task RefusPendantUneLiaison_RevientAuProfilSansMessage()
     {
         // Arrange
-        var http = CreerContexteHttp(A.Fake<ILiaisonFournisseur>(), A.Fake<IAuthenticationService>());
+        var http = CreerContexteHttp(A.Fake<IDomaineCompte>(), A.Fake<IAuthenticationService>());
         var refus = new AccessDeniedContext(http, SchemaGoogle, new GoogleOptions())
         {
             Properties = GestionLiaisonCompte.CreerProprietes(),
@@ -199,7 +200,7 @@ public class GestionLiaisonCompteTests
         return service;
     }
 
-    private static DefaultHttpContext CreerContexteHttp(ILiaisonFournisseur liaison, IAuthenticationService authentification)
+    private static DefaultHttpContext CreerContexteHttp(IDomaineCompte liaison, IAuthenticationService authentification)
     {
         var services = new ServiceCollection()
             .AddSingleton(liaison)
