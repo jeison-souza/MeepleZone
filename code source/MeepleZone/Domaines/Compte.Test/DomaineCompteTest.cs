@@ -18,9 +18,15 @@ public class DomaineCompteTest : BaseTest<DomaineCompte>
 
     private Fake<IGestionnaireRequete<LierFournisseurReponse, LierFournisseurRequete>> _gestionnaireLierFournisseur = null!;
 
+    private Fake<IGestionnaireRequete<ProfilDto?, ObtenirProfilRequete>> _gestionnaireObtenirProfil = null!;
+
+    private Fake<IGestionnaireRequete<SupprimerCompteReponse, SupprimerCompteRequete>> _gestionnaireSupprimerCompte = null!;
+
     public override void InitialiserDependence()
     {
         base.InitialiserDependence();
+        _gestionnaireSupprimerCompte = CreerFausse<IGestionnaireRequete<SupprimerCompteReponse, SupprimerCompteRequete>>();
+        _gestionnaireObtenirProfil = CreerFausse<IGestionnaireRequete<ProfilDto?, ObtenirProfilRequete>>();
         _gestionnaireLierFournisseur = CreerFausse<IGestionnaireRequete<LierFournisseurReponse, LierFournisseurRequete>>();
         _gestionnaireGererConnexion = CreerFausse<IGestionnaireRequete<GererConnexionReponse, GererConnexionRequete>>();
         _gestionnaireListerConnexions = CreerFausse<IGestionnaireRequete<IReadOnlyList<ConnexionDto>, ListerConnexionsRequete>>();
@@ -58,6 +64,42 @@ public class DomaineCompteTest : BaseTest<DomaineCompte>
 
         // Assert
         _gestionnaireLierFournisseur.CallsTo(g => g.TraiterAsync(A<LierFournisseurRequete>._))
+            .MustHaveHappenedOnceExactly();
+        result.Should().BeSameAs(reponseAttendue);
+    }
+
+    [Fact]
+    public async Task ObtenirProfilAsync_EnToutTemps_DeleguerAuGestionnaireEtRetournerSaReponse()
+    {
+        // Arrange
+        var requete = CreerFixture<ObtenirProfilRequete>();
+        var reponseAttendue = CreerFixture<ProfilDto>();
+        _gestionnaireObtenirProfil.CallsTo(g => g.TraiterAsync(requete))
+            .Returns(reponseAttendue);
+
+        // Act
+        var result = await InstanceTest.ObtenirProfilAsync(requete);
+
+        // Assert
+        _gestionnaireObtenirProfil.CallsTo(g => g.TraiterAsync(A<ObtenirProfilRequete>._))
+            .MustHaveHappenedOnceExactly();
+        result.Should().BeSameAs(reponseAttendue);
+    }
+
+    [Fact]
+    public async Task SupprimerCompteAsync_EnToutTemps_DeleguerAuGestionnaireEtRetournerSaReponse()
+    {
+        // Arrange
+        var requete = CreerFixture<SupprimerCompteRequete>();
+        var reponseAttendue = CreerFixture<SupprimerCompteReponse>();
+        _gestionnaireSupprimerCompte.CallsTo(g => g.TraiterAsync(requete))
+            .Returns(reponseAttendue);
+
+        // Act
+        var result = await InstanceTest.SupprimerCompteAsync(requete);
+
+        // Assert
+        _gestionnaireSupprimerCompte.CallsTo(g => g.TraiterAsync(A<SupprimerCompteRequete>._))
             .MustHaveHappenedOnceExactly();
         result.Should().BeSameAs(reponseAttendue);
     }
