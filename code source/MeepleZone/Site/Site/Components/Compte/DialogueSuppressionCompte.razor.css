@@ -1,0 +1,28 @@
+.mz-liste-suppression {
+    margin: .25rem 0 .75rem;
+    padding-left: 1.25rem;
+}
+
+.mz-code-amitie {
+    font-family: ui-monospace, Consolas, monospace;
+    letter-spacing: .12em;
+    user-select: none;
+}
+
+.mz-saisie-confirmation {
+    display: block;
+    width: 100%;
+    margin-top: .5rem;
+    padding: .65rem .75rem;
+    border: 1px solid #DADCE0;
+    border-radius: 8px;
+    font-family: ui-monospace, Consolas, monospace;
+    font-size: 1.05rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+}
+
+.mz-saisie-confirmation:focus-visible {
+    outline: 3px solid var(--mz-orange);
+    outline-offset: 2px;
+}

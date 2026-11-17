@@ -1,0 +1,73 @@
+@using MeepleZone.Site.Authentification.Suppression
+
+@* Double confirmation : une case à cocher, puis le code d'amitié à retaper (le collage est bloqué). Le formulaire
+   envoie la saisie à /compte/suppression, qui la vérifie de nouveau côté serveur. *@
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">Supprimer mon compte</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Warning" Class="mb-4">
+            <strong>Action irréversible.</strong> Une fois le compte supprimé, il est impossible de le récupérer
+            ou d'annuler l'opération.
+        </MudAlert>
+
+        <MudText Typo="Typo.subtitle2">Seront supprimés définitivement :</MudText>
+        <ul class="mz-liste-suppression">
+            <li>votre compte et vos connexions à des fournisseurs d'identité;</li>
+            <li>votre collection, avec vos notes et vos commentaires;</li>
+            <li>vos amitiés et vos demandes d'amitié.</li>
+        </ul>
+        <MudText Typo="Typo.body2">
+            Les jeux que vous avez ajoutés au catalogue et que d'autres utilisent restent, sans aucun lien avec vous.
+            <MudLink Href="/aide/suppression-compte" Target="_blank">Plus de détails : questions fréquentes</MudLink>
+        </MudText>
+
+        <MudCheckBox T="bool" @bind-Value="compris" Color="Color.Error" Class="mt-3"
+                     Label="Je comprends que cette suppression est définitive." />
+
+        <form id="formulaire-suppression" method="post" action="/compte/suppression" autocomplete="off">
+            <AntiforgeryToken />
+            <input type="hidden" name="@GestionSuppressionCompte.ChampConfirmation" value="@saisie" />
+
+            <MudText Typo="Typo.body1" Class="mt-3">
+                Pour confirmer, tapez votre code d'amitié : <strong class="mz-code-amitie">@CodeAttendu</strong>
+            </MudText>
+            <MudText Typo="Typo.caption">Le collage est désactivé : le code doit être tapé.</MudText>
+
+            @* Champ simple (et non MudTextField) : il faut bloquer le collage et le glisser-déposer sur l'élément lui-même. *@
+            <input type="text" class="mz-saisie-confirmation" aria-label="Code d'amitié à retaper" autocomplete="off"
+                   autocapitalize="characters" spellcheck="false" maxlength="@CodeAttendu.Length"
+                   value="@saisie" @oninput="SurSaisie"
+                   onpaste="return false" ondrop="return false"
+                   @onpaste:preventDefault="true" @ondrop:preventDefault="true" />
+        </form>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Annuler" Color="Color.Default" Variant="Variant.Filled">Annuler</MudButton>
+        <MudButton ButtonType="ButtonType.Submit" Color="Color.Error" Variant="Variant.Filled" Disabled="!PeutSupprimer"
+                   UserAttributes="@(new Dictionary<string, object> { ["form"] = "formulaire-suppression" })">
+            Supprimer définitivement
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public string CodeAttendu { get; set; } = string.Empty;
+
+    private bool compris;
+    private string saisie = string.Empty;
+
+    private bool PeutSupprimer => compris && GestionSuppressionCompte.ConfirmationValide(saisie, CodeAttendu);
+
+    private void SurSaisie(ChangeEventArgs evenement)
+    {
+        saisie = evenement.Value?.ToString() ?? string.Empty;
+    }
+
+    private void Annuler() => MudDialog.Cancel();
+}
