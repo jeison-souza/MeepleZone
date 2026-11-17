@@ -1,8 +1,10 @@
 using MeepleZone.Domaines.Collection.Extensions;
+using MeepleZone.Domaines.Compte;
 using MeepleZone.Domaines.Compte.Extensions;
 using MeepleZone.Site.Authentification;
 using MeepleZone.Site.Authentification.Extensions;
 using MeepleZone.Site.Authentification.Liaison;
+using MeepleZone.Site.Authentification.Suppression;
 using MeepleZone.Site.Components;
 using MeepleZone.Site.Extensions;
 using MeepleZone.Systeme.Donnees.Extensions;
@@ -16,6 +18,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using MudBlazor.Services;
 using System;
 
@@ -125,6 +128,14 @@ app.MapGet("/liaison/{fournisseur}", (string fournisseur) =>
         FournisseursConnexion.Trouver(fournisseur) is { } connu
             ? Results.Challenge(GestionLiaisonCompte.CreerProprietes(), [connu.Nom])
             : Results.NotFound())
+    .RequireAuthorization();
+
+// Suppression du compte : le paramètre de formulaire fait valider le jeton antiforgery; le code d'amitié tapé est revérifié ici.
+app.MapPost("/compte/suppression", (IFormCollection formulaire, IDomaineCompte domaine, ILoggerFactory fabrique) =>
+        GestionSuppressionCompte.Traiter(
+            formulaire[GestionSuppressionCompte.ChampConfirmation].ToString(),
+            domaine,
+            fabrique.CreateLogger(typeof(GestionSuppressionCompte))))
     .RequireAuthorization();
 
 // Le paramètre de formulaire fait valider le jeton antiforgery par l'intergiciel : sans jeton, la requête est refusée (400).

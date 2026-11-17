@@ -1,0 +1,49 @@
+@page "/aide/suppression-compte"
+
+<PageTitle>MeepleZone - Suppression de compte</PageTitle>
+
+@* FAQ ouverte sans connexion : elle explique ce que la suppression efface et ce qui reste (ADR 0006). *@
+<MudContainer MaxWidth="MaxWidth.Small" Class="my-8">
+    <MudText Typo="Typo.h4" HtmlTag="h1">Suppression de compte : questions fréquentes</MudText>
+    <MudText Typo="Typo.body1" Class="mt-2 mb-4">
+        Cette page précise ce qui se passe lorsque vous supprimez votre compte MeepleZone.
+    </MudText>
+
+    <MudExpansionPanels Elevation="1" MultiExpansion="true">
+        <MudExpansionPanel Text="La suppression est-elle vraiment définitive ?" Expanded="true">
+            Oui. La suppression s'effectue immédiatement, en une seule opération. Il n'existe ni période de réflexion ni
+            corbeille : il est impossible de récupérer le compte ou de défaire l'opération.
+        </MudExpansionPanel>
+
+        <MudExpansionPanel Text="Qu'est-ce qui est supprimé ?">
+            <ul class="mz-faq-liste">
+                <li>votre compte et vos données personnelles (nom, courriel, photo);</li>
+                <li>vos connexions à des fournisseurs d'identité, quels qu'ils soient;</li>
+                <li>votre collection, avec vos notes et vos commentaires;</li>
+                <li>vos amitiés et vos demandes d'amitié, envoyées ou reçues;</li>
+                <li>les jeux que vous avez ajoutés au catalogue, s'ils n'ont pas été validés et que personne d'autre ne les utilise.</li>
+            </ul>
+        </MudExpansionPanel>
+
+        <MudExpansionPanel Text="Qu'est-ce qui reste ?">
+            Les jeux que vous avez ajoutés au catalogue et que d'autres personnes utilisent (ou qui ont été validés) restent
+            disponibles pour elles, mais ils perdent tous leurs liens avec vous.
+        </MudExpansionPanel>
+
+        <MudExpansionPanel Text="Mes amis voient-ils quelque chose après ma suppression ?">
+            Non. Vous disparaissez de leur liste d'amis, et votre collection n'est plus consultable.
+        </MudExpansionPanel>
+
+        <MudExpansionPanel Text="Puis-je me réinscrire plus tard ?">
+            Oui. Votre courriel et vos connexions sont libérés : vous pouvez ouvrir un nouveau compte avec le même fournisseur.
+            Il s'agira d'un compte neuf, sans votre collection ni vos amitiés d'avant.
+        </MudExpansionPanel>
+
+        <MudExpansionPanel Text="Pourquoi devoir retaper mon code d'amitié ?">
+            Pour éviter une suppression par erreur. Le code doit être tapé (le collage est désactivé), ce qui force
+            une dernière vérification avant une action sans retour.
+        </MudExpansionPanel>
+    </MudExpansionPanels>
+
+    <MudButton Href="/profil" Variant="Variant.Outlined" Class="mt-6">Retour à mon profil</MudButton>
+</MudContainer>

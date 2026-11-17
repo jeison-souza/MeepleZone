@@ -1,0 +1,60 @@
+@using MeepleZone.Domaines.Compte
+@using MeepleZone.Domaines.Compte.Contrats.Modeles
+@using MeepleZone.Site.Authentification.Suppression
+@using Microsoft.Extensions.Logging
+@inject IDomaineCompte Domaine
+@inject IDialogService DialogService
+@inject ILogger<SectionSuppression> Journal
+
+@* Zone de danger du profil : la suppression elle-même se fait par le formulaire du dialogue (POST /compte/suppression). *@
+<div class="mz-zone-danger">
+    <MudText Typo="Typo.h6" HtmlTag="h2" Class="mz-zone-danger-titre">Supprimer mon compte</MudText>
+
+    @if (GestionSuppressionCompte.Message(Motif) is { } message)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Class="mt-3">@message</MudAlert>
+    }
+
+    <MudText Typo="Typo.body2" Class="mt-2">
+        La suppression efface vos données personnelles et votre collection. Elle est définitive : il est impossible de la défaire.
+        <MudLink Href="/aide/suppression-compte">Que se passe-t-il exactement ?</MudLink>
+    </MudText>
+
+    <MudButton Variant="Variant.Outlined" Color="Color.Error" StartIcon="@Icons.Material.Filled.DeleteForever"
+               Class="mt-4" OnClick="OuvrirAsync">Supprimer mon compte…</MudButton>
+</div>
+
+@code {
+    [Parameter, SupplyParameterFromQuery(Name = GestionSuppressionCompte.Parametre)]
+    public string? Motif { get; set; }
+
+    private async Task OuvrirAsync()
+    {
+        string code;
+
+        try
+        {
+            var profil = await Domaine.ObtenirProfilAsync(new ObtenirProfilRequete());
+
+            if (profil is null)
+            {
+                Journal.LogWarning("Profil introuvable pour la suppression du compte.");
+
+                return;
+            }
+
+            code = profil.CodeAmitie;
+        }
+        catch (Exception exception)
+        {
+            Journal.LogError(exception, "Code d'amitié introuvable pour la suppression du compte.");
+
+            return;
+        }
+
+        await DialogService.ShowAsync<DialogueSuppressionCompte>(
+            string.Empty,
+            new DialogParameters<DialogueSuppressionCompte> { { d => d.CodeAttendu, code } },
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, BackdropClick = false });
+    }
+}

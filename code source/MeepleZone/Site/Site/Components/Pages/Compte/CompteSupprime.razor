@@ -1,0 +1,18 @@
+@page "/compte-supprime"
+
+<PageTitle>MeepleZone - Au revoir</PageTitle>
+
+@* Page d'adieu : ouverte sans connexion, puisque le cookie vient d'être retiré. *@
+<MudContainer MaxWidth="MaxWidth.Small" Class="my-8">
+    <MudPaper Elevation="2" Class="pa-8 d-flex flex-column align-center text-center">
+        <img src="images/404-meeple-triste.svg" alt="Un meeple triste, les yeux embués, tout seul." width="280" class="mb-2" style="max-width: 100%; height: auto;" />
+        <MudText Typo="Typo.h4" HtmlTag="h1">C'est triste de vous voir partir</MudText>
+        <MudText Typo="Typo.body1" Class="mt-4">
+            Votre compte et vos données personnelles ont été supprimés. Merci d'avoir pris place à la table de MeepleZone.
+        </MudText>
+        <MudText Typo="Typo.body1" Class="mt-2">
+            Votre chaise restera libre : si l'envie de rejouer vous revient, une nouvelle partie vous attend, avec un compte neuf.
+        </MudText>
+        <MudButton Href="/" Variant="Variant.Filled" Color="Color.Primary" Class="mt-6">Retour à l'accueil</MudButton>
+    </MudPaper>
+</MudContainer>
