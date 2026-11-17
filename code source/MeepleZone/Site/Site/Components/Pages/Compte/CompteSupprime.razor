@@ -1,4 +1,5 @@
 @page "/compte-supprime"
+@inject ISnackbar Snackbar
 
 <PageTitle>MeepleZone - Au revoir</PageTitle>
 
@@ -16,3 +17,14 @@
         <MudButton Href="/" Variant="Variant.Filled" Color="Color.Primary" Class="mt-6">Retour à l'accueil</MudButton>
     </MudPaper>
 </MudContainer>
+
+@code {
+    // OnAfterRender ne s'exécute pas pendant le prérendu : le message n'apparaît qu'une fois, côté interactif.
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            Snackbar.Add("Votre compte a été supprimé.", Severity.Success);
+        }
+    }
+}
