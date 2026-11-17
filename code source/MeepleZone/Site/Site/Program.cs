@@ -2,6 +2,7 @@ using MeepleZone.Domaines.Collection.Extensions;
 using MeepleZone.Domaines.Compte.Extensions;
 using MeepleZone.Site.Authentification;
 using MeepleZone.Site.Authentification.Extensions;
+using MeepleZone.Site.Authentification.Liaison;
 using MeepleZone.Site.Components;
 using MeepleZone.Site.Extensions;
 using MeepleZone.Systeme.Donnees.Extensions;
@@ -72,6 +73,9 @@ builder.Services.AddOptions<MicrosoftAccountOptions>(MicrosoftAccountDefaults.Au
 
 // Identité de la session, requise par les gestionnaires du domaine Collection.
 builder.Services.AddScoped<IUtilisateurCourant, UtilisateurCourant>();
+
+// Provisoire : remplacé par l'opération du domaine Compte quand elle sera fusionnée (Refs #59).
+builder.Services.AddScoped<IFournisseursLies, FournisseursLiesFictif>();
 
 builder.Services
     .AjouterSystemeDonnees(builder.Configuration.GetConnectionString("MeepleZone") ?? throw new InvalidOperationException("ConnectionStrings:MeepleZone manquant."))

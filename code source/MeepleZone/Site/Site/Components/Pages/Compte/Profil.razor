@@ -1,5 +1,6 @@
 @page "/profil"
 @using MeepleZone.Site.Authentification.Extensions
+@using MeepleZone.Site.Components.Compte
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize]
 
@@ -15,8 +16,9 @@
             {
                 <MudText Typo="Typo.body2" Class="mz-profil-courriel">@courriel</MudText>
             }
+            <SectionFournisseurs />
             <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mt-6">
-                La gestion du profil (photo, courriel, fournisseurs associés) n'est pas encore disponible.
+                La gestion de la photo et du courriel n'est pas encore disponible.
             </MudAlert>
         </MudPaper>
     </AuthorizeView>

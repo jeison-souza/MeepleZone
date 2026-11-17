@@ -1,0 +1,33 @@
+.mz-fournisseur-liste {
+    margin-top: .75rem;
+}
+
+.mz-fournisseur-ligne {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: .6rem .25rem;
+    border-bottom: 1px solid #E6E1D6;
+}
+
+.mz-fournisseur-ligne:last-child {
+    border-bottom: 0;
+}
+
+.mz-fournisseur-ligne ::deep .mz-fournisseur-icone {
+    flex: none;
+    width: 1.35rem;
+    height: 1.35rem;
+}
+
+.mz-fournisseur-texte {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+/* Sépare nettement les fournisseurs déjà associés de l'action d'en ajouter un. */
+.mz-fournisseur-ajout {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #DADCE0;
+}
