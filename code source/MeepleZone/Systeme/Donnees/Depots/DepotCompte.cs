@@ -18,6 +18,28 @@ public class DepotCompte(IDbContextFactory<MeepleZoneContexte> fabrique) : IDepo
 
     private readonly IDbContextFactory<MeepleZoneContexte> _fabrique = fabrique;
 
+    public async Task<ResultatAjoutIdentite> AjouterIdentiteAsync(IdentiteExterne identite)
+    {
+        await using var contexte = await _fabrique.CreateDbContextAsync();
+        try
+        {
+            contexte.IdentitesExternes.Add(identite);
+            await contexte.SaveChangesAsync();
+            return ResultatAjoutIdentite.Ajoutee;
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation } violation)
+        {
+            switch (violation.ConstraintName)
+            {
+                case IndexIdentiteExterneUnique:
+                    return ResultatAjoutIdentite.IdentiteDejaExistante;
+
+                default:
+                    throw;
+            }
+        }
+    }
+
     public async Task<ResultatEnregistrementCompte> EnregistrerNouveauCompteAsync(Utilisateur utilisateur, IdentiteExterne identite)
     {
         await using var contexte = await _fabrique.CreateDbContextAsync();

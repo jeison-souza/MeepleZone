@@ -45,5 +45,6 @@ public class ServiceCollectionExtensionsTest : BaseTest<ServiceCollection>
         portee.ServiceProvider.GetRequiredService<IGenerateurCodeAmitie>().Should().BeOfType<GenerateurCodeAmitie>();
         portee.ServiceProvider.GetRequiredService<IGestionnaireRequete<GererConnexionReponse, GererConnexionRequete>>().Should().BeOfType<GestionnaireRequeteGererConnexion>();
         portee.ServiceProvider.GetRequiredService<IGestionnaireRequete<IReadOnlyList<ConnexionDto>, ListerConnexionsRequete>>().Should().BeOfType<GestionnaireRequeteListerConnexions>();
+        portee.ServiceProvider.GetRequiredService<IGestionnaireRequete<LierFournisseurReponse, LierFournisseurRequete>>().Should().BeOfType<GestionnaireRequeteLierFournisseur>();
     }
 }

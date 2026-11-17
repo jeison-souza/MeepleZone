@@ -8,5 +8,7 @@ public interface IDomaineCompte
 {
     Task<GererConnexionReponse> GererConnexionAsync(GererConnexionRequete requete);
 
+    Task<LierFournisseurReponse> LierFournisseurAsync(LierFournisseurRequete requete);
+
     Task<IReadOnlyList<ConnexionDto>> ListerConnexionsAsync(ListerConnexionsRequete requete);
 }

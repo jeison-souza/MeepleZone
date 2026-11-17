@@ -8,6 +8,8 @@ namespace MeepleZone.Systeme.Depots;
 
 public interface IDepotCompte
 {
+    Task<ResultatAjoutIdentite> AjouterIdentiteAsync(IdentiteExterne identite);
+
     Task<ResultatEnregistrementCompte> EnregistrerNouveauCompteAsync(Utilisateur utilisateur, IdentiteExterne identite);
 
     Task<IReadOnlyList<IdentiteExterne>> ListerIdentitesAsync(Guid utilisateurId);
