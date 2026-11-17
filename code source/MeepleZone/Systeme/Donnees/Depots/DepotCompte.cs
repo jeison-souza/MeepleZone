@@ -4,6 +4,8 @@ using MeepleZone.Systeme.Entites;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace MeepleZone.Systeme.Donnees.Depots;
@@ -41,6 +43,18 @@ public class DepotCompte(IDbContextFactory<MeepleZoneContexte> fabrique) : IDepo
                     throw;
             }
         }
+    }
+
+    public async Task<IReadOnlyList<IdentiteExterne>> ListerIdentitesAsync(Guid utilisateurId)
+    {
+        await using var contexte = await _fabrique.CreateDbContextAsync();
+
+        return await contexte.IdentitesExternes
+            .AsNoTracking()
+            .Where(i => i.UtilisateurId == utilisateurId)
+            .OrderBy(i => i.CreeLe)
+            .ThenBy(i => i.Id)
+            .ToListAsync();
     }
 
     public async Task MettreAJourConnexionAsync(IdentiteExterne identite)
