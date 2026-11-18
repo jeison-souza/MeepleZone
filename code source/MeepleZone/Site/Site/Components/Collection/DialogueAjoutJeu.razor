@@ -1,6 +1,7 @@
 @using MeepleZone.Domaines.Collection
 @using MeepleZone.Domaines.Collection.Contrats.Enums
 @using MeepleZone.Domaines.Collection.Contrats.Modeles
+@using MeepleZone.Site.Collection
 @using Microsoft.Extensions.Logging
 @inject IDomaineCollection Domaine
 @inject IDialogService DialogService
@@ -40,7 +41,7 @@
                             <div class="mz-resultat-jeu-ligne">
                                 <div class="mz-resultat-jeu-texte">
                                     <MudText Typo="Typo.subtitle1">@jeu.Nom</MudText>
-                                    <MudText Typo="Typo.body2" Class="mz-resultat-jeu-detail">@Detail(jeu)</MudText>
+                                    <MudText Typo="Typo.body2" Class="mz-resultat-jeu-detail">@PresentationJeu.Detail(jeu)</MudText>
                                 </div>
                                 @if (jeu.DejaPossede)
                                 {
@@ -119,22 +120,6 @@
         {
             enRecherche = false;
         }
-    }
-
-    private static string Detail(JeuResumeDto jeu)
-    {
-        var elements = new List<string>();
-        if (jeu.AnneePublication is { } annee)
-        {
-            elements.Add(annee.ToString());
-        }
-
-        if (!string.IsNullOrWhiteSpace(jeu.Editeur))
-        {
-            elements.Add(jeu.Editeur);
-        }
-
-        return elements.Count > 0 ? string.Join(" · ", elements) : "Année et éditeur inconnus";
     }
 
     private async Task AjouterAsync(JeuResumeDto jeu)

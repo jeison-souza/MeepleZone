@@ -1,8 +1,10 @@
 @using MeepleZone.Domaines.Collection
 @using MeepleZone.Domaines.Collection.Contrats.Enums
 @using MeepleZone.Domaines.Collection.Contrats.Modeles
+@using MeepleZone.Site.Collection
 @using Microsoft.Extensions.Logging
 @inject IDomaineCollection Domaine
+@inject IDetectionDoublons Doublons
 @inject ILogger<DialogueCreationJeu> Journal
 
 @* Création d'un jeu absent du catalogue; le jeu est ajouté à la collection de la personne dès sa création. *@
@@ -25,9 +27,36 @@
             </MudAlert>
         }
 
+        @if (semblables.Count > 0)
+        {
+            <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="mb-4">
+                <MudText Typo="Typo.subtitle2">Des jeux au nom semblable existent déjà dans le catalogue.</MudText>
+                <MudText Typo="Typo.body2" Class="mb-2">Si l'un d'eux est le bon, ajoutez-le plutôt que de créer un doublon.</MudText>
+                @foreach (var jeu in semblables)
+                {
+                    <div class="mz-jeu-semblable" @key="jeu.JeuId">
+                        <div>
+                            <MudText Typo="Typo.body1">@jeu.Nom</MudText>
+                            <MudText Typo="Typo.caption">@PresentationJeu.Detail(jeu)</MudText>
+                        </div>
+                        @if (jeu.DejaPossede)
+                        {
+                            <MudChip T="string" Size="Size.Small" Icon="@Icons.Material.Filled.Check">Dans ma collection</MudChip>
+                        }
+                        else
+                        {
+                            <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Primary"
+                                       Disabled="enCours" OnClick="() => AjouterExistantAsync(jeu)">Ajouter celui-ci</MudButton>
+                        }
+                    </div>
+                }
+            </MudAlert>
+        }
+
         <MudGrid Spacing="2">
             <MudItem xs="12" sm="8">
-                <MudTextField T="string" @bind-Value="nom" Label="Nom" Required="true" MaxLength="255" Immediate="true" />
+                <MudTextField T="string" Value="nom" ValueChanged="SurChangementNomAsync" Label="Nom" Required="true" MaxLength="255"
+                              Immediate="true" DebounceInterval="400" />
             </MudItem>
             <MudItem xs="12" sm="4">
                 <MudNumericField T="short?" @bind-Value="anneePublication" Label="Année de publication" HideSpinButtons="true" />
@@ -83,7 +112,7 @@
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Annuler">Annuler</MudButton>
-        <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="enCours" OnClick="CreerAsync">Créer et ajouter</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="enCours" OnClick="CreerAsync">@(semblables.Count > 0 ? "Créer quand même" : "Créer et ajouter")</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -104,6 +133,8 @@
     private IReadOnlyList<ModeJeuDto> modes = [];
     private IReadOnlyList<MecaniqueDto> mecaniques = [];
     private readonly List<string> erreurs = [];
+    private IReadOnlyList<JeuResumeDto> semblables = [];
+    private int rechercheEnCours;
     private bool enCours;
 
     [CascadingParameter]
@@ -120,6 +151,65 @@
         {
             Journal.LogError(exception, "Chargement des modes de jeu et des mécaniques impossible.");
             erreurs.Add("Les listes de modes et de mécaniques n'ont pas pu être chargées. Le jeu peut quand même être créé sans elles.");
+        }
+    }
+
+    // Avertit sans bloquer : si la détection échoue, la création reste possible. Une réponse arrivée après une frappe plus récente est ignorée.
+    private async Task SurChangementNomAsync(string? valeur)
+    {
+        nom = valeur;
+        var numero = ++rechercheEnCours;
+
+        try
+        {
+            var trouves = await Doublons.TrouverAsync(valeur ?? string.Empty);
+
+            if (numero == rechercheEnCours)
+            {
+                semblables = trouves;
+            }
+        }
+        catch (Exception exception)
+        {
+            Journal.LogError(exception, "Détection des jeux semblables impossible.");
+
+            if (numero == rechercheEnCours)
+            {
+                semblables = [];
+            }
+        }
+    }
+
+    private async Task AjouterExistantAsync(JeuResumeDto jeu)
+    {
+        erreurs.Clear();
+        enCours = true;
+
+        try
+        {
+            var reponse = await Domaine.AjouterJeuAsync(new AjouterJeuRequete(jeu.JeuId));
+
+            switch (reponse.Statut)
+            {
+                case StatutAjout.Ajoute when reponse.Item is not null:
+                    MudDialog.Close(DialogResult.Ok(reponse.Item));
+                    break;
+                case StatutAjout.DejaPossede:
+                    erreurs.Add($"« {jeu.Nom} » fait déjà partie de votre collection.");
+                    break;
+                default:
+                    erreurs.Add("Ce jeu n'existe plus dans le catalogue.");
+                    break;
+            }
+        }
+        catch (Exception exception)
+        {
+            Journal.LogError(exception, "Ajout du jeu {JeuId} impossible.", jeu.JeuId);
+            erreurs.Add("Le jeu n'a pas pu être ajouté. Réessayez dans un instant.");
+        }
+        finally
+        {
+            enCours = false;
         }
     }
 

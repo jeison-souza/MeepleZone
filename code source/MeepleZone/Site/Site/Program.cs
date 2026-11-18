@@ -5,6 +5,7 @@ using MeepleZone.Site.Authentification;
 using MeepleZone.Site.Authentification.Extensions;
 using MeepleZone.Site.Authentification.Liaison;
 using MeepleZone.Site.Authentification.Suppression;
+using MeepleZone.Site.Collection;
 using MeepleZone.Site.Components;
 using MeepleZone.Site.Extensions;
 using MeepleZone.Systeme.Donnees.Extensions;
@@ -81,6 +82,9 @@ builder.Services.AddScoped<IUtilisateurCourant, UtilisateurCourant>();
 
 // IUtilisateurCourant lit l'utilisateur de la requête quand il n'y a pas de circuit Blazor (retour du fournisseur OAuth).
 builder.Services.AddHttpContextAccessor();
+
+// Jeux au nom semblable proposés à la création d'un jeu (provisoire, en attendant la détection du domaine : #134).
+builder.Services.AddScoped<IDetectionDoublons, DetectionDoublonsParRecherche>();
 
 builder.Services
     .AjouterSystemeDonnees(builder.Configuration.GetConnectionString("MeepleZone") ?? throw new InvalidOperationException("ConnectionStrings:MeepleZone manquant."))
