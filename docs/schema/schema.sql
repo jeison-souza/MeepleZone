@@ -295,3 +295,20 @@ VALUES ('20261115030458_AjoutComptesTechniques', '10.0.14');
 
 COMMIT;
 
+START TRANSACTION;
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+CREATE EXTENSION IF NOT EXISTS unaccent;
+
+CREATE FUNCTION unaccent_immuable(texte text) RETURNS text
+LANGUAGE sql IMMUTABLE PARALLEL SAFE STRICT
+AS $$ SELECT public.unaccent('public.unaccent'::regdictionary, texte) $$;
+
+ALTER TABLE jeu ADD nom_recherche text GENERATED ALWAYS AS (lower(unaccent_immuable(nom))) STORED NOT NULL;
+
+CREATE INDEX ix_jeu_nom_recherche ON jeu USING gin (nom_recherche gin_trgm_ops);
+
+INSERT INTO historique_migration (migration_id, product_version)
+VALUES ('20261118035937_AjoutRechercheTrigrammes', '10.0.14');
+
+COMMIT;
+

@@ -17,6 +17,8 @@ Les tests unitaires du projet n'utilisent pas de base de données ([ADR 0008](..
 | [`09-liaison-fournisseurs.sql`](09-liaison-fournisseurs.sql) | Liaison des fournisseurs (table `identite_externe`) : unicité de l'identité entre comptes (ADR 0004, règle 2), plusieurs connexions du même fournisseur, courriel facultatif et ses contraintes, clé étrangère, tri et isolement de la liste des connexions, suppression en cascade | 14 |
 | [`10-suppression-compte.sql`](10-suppression-compte.sql) | Suppression de compte (ADR 0006) : raisons de l'ordre des étapes (`RESTRICT` sur les jeux, les annexes et les possessions), séquence complète dans une transaction, conservation du contenu partagé par rattachement au compte technique, suppression des possessions, des jeux non validés sans autre possession, des couvertures, de la photo et des connexions | 14 |
 | [`11-filtre-collection.sql`](11-filtre-collection.sql) | Filtre de la collection (issue #13) : nombre de joueurs, meilleur nombre, durée maximale, note minimale, parties jouées, mode de jeu et mécaniques au choix, valeurs inconnues exclues, critères combinés, isolement entre personnes, noms des mécaniques triés | 16 |
+| [`12-colonne-nom-recherche.sql`](12-colonne-nom-recherche.sql) | Colonne `jeu.nom_recherche` (ADR 0015) : fonction `unaccent_immuable` immuable, colonne générée stockée, index de trigrammes, extensions, valeurs sans accents ni casse, recalcul au changement de nom, écriture directe refusée, recherche « contient » et similarité de trigrammes | 15 |
+| [`13-recherche-trigrammes.sql`](13-recherche-trigrammes.sql) | Recherche de jeux et détection des doublons (ADR 0015) : « contient » sans accents ni casse, tolérance aux fautes de frappe, texte trop court limité à « contient », jokers traités comme des caractères, similarité du nom entier pour les doublons avec un seuil plus strict que la recherche, nom court comparé à l'identique | 14 |
 
 ## Exécution
 
@@ -28,7 +30,7 @@ Chaque script fonctionne dans une transaction qui se termine par un `ROLLBACK` :
 
 ## Dernière exécution
 
-Les 207 cas ont été exécutés du 11 au 17 novembre 2026 contre la base de développement, après l'application des migrations du catalogue, de `possession`, de `unaccent` et des comptes techniques. Tous sont conformes. Une première exécution a échoué sur un problème de droits : les tables du catalogue et de `possession` avaient été créées avec un compte d'administration, ce qui les rendait inaccessibles au compte de l'application. Le script a révélé l'erreur, qui a été corrigée (propriétaire et privilèges) avant que le site ne s'en serve.
+Les 236 cas ont été exécutés du 11 au 17 novembre 2026 contre la base de développement, après l'application des migrations du catalogue, de `possession`, de `unaccent` et des comptes techniques. Tous sont conformes. Une première exécution a échoué sur un problème de droits : les tables du catalogue et de `possession` avaient été créées avec un compte d'administration, ce qui les rendait inaccessibles au compte de l'application. Le script a révélé l'erreur, qui a été corrigée (propriétaire et privilèges) avant que le site ne s'en serve.
 
 ## Ce que ces scripts ne prouvent pas
 

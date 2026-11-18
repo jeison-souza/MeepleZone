@@ -21,6 +21,7 @@ namespace MeepleZone.Systeme.Donnees.Migrations
                 .HasAnnotation("ProductVersion", "10.0.14")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
+            NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "pg_trgm");
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "unaccent");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
@@ -218,6 +219,13 @@ namespace MeepleZone.Systeme.Donnees.Migrations
                         .HasColumnType("text")
                         .HasColumnName("nom");
 
+                    b.Property<string>("NomRecherche")
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("text")
+                        .HasColumnName("nom_recherche")
+                        .HasComputedColumnSql("lower(unaccent_immuable(nom))", true);
+
                     b.Property<string>("Statut")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
@@ -240,6 +248,12 @@ namespace MeepleZone.Systeme.Donnees.Migrations
 
                     b.HasIndex("ModeJeuId")
                         .HasDatabaseName("ix_jeu_mode_jeu_id");
+
+                    b.HasIndex("NomRecherche")
+                        .HasDatabaseName("ix_jeu_nom_recherche");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("NomRecherche"), "gin");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("NomRecherche"), new[] { "gin_trgm_ops" });
 
                     b.ToTable("jeu", null, t =>
                         {

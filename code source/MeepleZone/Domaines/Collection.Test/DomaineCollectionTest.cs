@@ -15,6 +15,8 @@ public class DomaineCollectionTest : BaseTest<DomaineCollection>
 
     private Fake<IGestionnaireRequete<CreerJeuReponse, CreerJeuRequete>> _gestionnaireCreerJeu = null!;
 
+    private Fake<IGestionnaireRequete<IReadOnlyList<JeuResumeDto>, DetecterDoublonsRequete>> _gestionnaireDetecterDoublons = null!;
+
     private Fake<IGestionnaireRequete<ListerCollectionReponse, ListerCollectionRequete>> _gestionnaireCollection = null!;
 
     private Fake<IGestionnaireRequete<IReadOnlyList<MecaniqueDto>, ListerMecaniquesRequete>> _gestionnaireMecaniques = null!;
@@ -32,6 +34,7 @@ public class DomaineCollectionTest : BaseTest<DomaineCollection>
         base.InitialiserDependence();
         _gestionnaireAjouterJeu = CreerFausse<IGestionnaireRequete<AjouterJeuReponse, AjouterJeuRequete>>();
         _gestionnaireCreerJeu = CreerFausse<IGestionnaireRequete<CreerJeuReponse, CreerJeuRequete>>();
+        _gestionnaireDetecterDoublons = CreerFausse<IGestionnaireRequete<IReadOnlyList<JeuResumeDto>, DetecterDoublonsRequete>>();
         _gestionnaireCollection = CreerFausse<IGestionnaireRequete<ListerCollectionReponse, ListerCollectionRequete>>();
         _gestionnaireMecaniques = CreerFausse<IGestionnaireRequete<IReadOnlyList<MecaniqueDto>, ListerMecaniquesRequete>>();
         _gestionnaireModesJeu = CreerFausse<IGestionnaireRequete<IReadOnlyList<ModeJeuDto>, ListerModesJeuRequete>>();
@@ -72,6 +75,24 @@ public class DomaineCollectionTest : BaseTest<DomaineCollection>
 
         // Assert
         _gestionnaireCreerJeu.CallsTo(g => g.TraiterAsync(A<CreerJeuRequete>._))
+            .MustHaveHappenedOnceExactly();
+        result.Should().BeSameAs(reponseAttendue);
+    }
+
+    [Fact]
+    public async Task DetecterDoublonsAsync_EnToutTemps_DeleguerAuGestionnaireEtRetournerSaReponse()
+    {
+        // Arrange
+        var requete = CreerFixture<DetecterDoublonsRequete>();
+        var reponseAttendue = CreerFixture<IReadOnlyList<JeuResumeDto>>();
+        _gestionnaireDetecterDoublons.CallsTo(g => g.TraiterAsync(requete))
+            .Returns(reponseAttendue);
+
+        // Act
+        var result = await InstanceTest.DetecterDoublonsAsync(requete);
+
+        // Assert
+        _gestionnaireDetecterDoublons.CallsTo(g => g.TraiterAsync(A<DetecterDoublonsRequete>._))
             .MustHaveHappenedOnceExactly();
         result.Should().BeSameAs(reponseAttendue);
     }

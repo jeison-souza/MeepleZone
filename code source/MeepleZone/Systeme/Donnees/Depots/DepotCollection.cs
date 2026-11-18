@@ -13,6 +13,21 @@ namespace MeepleZone.Systeme.Donnees.Depots;
 
 public class DepotCollection(IDbContextFactory<MeepleZoneContexte> fabrique) : IDepotCollection
 {
+    /// <summary>
+    /// Sous ce nombre de caractères, un texte produit trop peu de trigrammes pour une similarité utile (ADR 0015).
+    /// </summary>
+    private const int LongueurMinimaleSimilarite = 3;
+
+    /// <summary>
+    /// Seuil de la similarité par mots de la recherche : privilégie le rappel (retrouver largement). Valeur à régler sur des données réelles.
+    /// </summary>
+    private const double SeuilSimilariteMots = 0.6;
+
+    /// <summary>
+    /// Seuil de la similarité du nom entier pour les doublons : privilégie la précision (ne pas accuser à tort). Valeur à régler sur des données réelles.
+    /// </summary>
+    private const double SeuilSimilariteDoublons = 0.5;
+
     private const string StatutValide = "valide";
 
     private const string StatutEnAttente = "en_attente";
@@ -150,15 +165,35 @@ public class DepotCollection(IDbContextFactory<MeepleZoneContexte> fabrique) : I
     {
         await using var contexte = await _fabrique.CreateDbContextAsync();
 
-        var jeux = contexte.Jeux
+        var visibles = contexte.Jeux
             .AsNoTracking()
-            .Where(j => j.Statut == StatutValide || (j.Statut == StatutEnAttente && j.CreeParId == utilisateurId))
-            .Where(j => EF.Functions.Unaccent(j.Nom).ToLower().Contains(EF.Functions.Unaccent(texte).ToLower()));
+            .Where(j => j.Statut == StatutValide || (j.Statut == StatutEnAttente && j.CreeParId == utilisateurId));
+
+        // Le texte est un paramètre, jamais un motif : Contains devient strpos, les jokers restent des caractères.
+        // Un texte trop court produit trop peu de trigrammes : la recherche se limite alors à « contient ».
+        IQueryable<Jeu> jeux;
+        IOrderedQueryable<Jeu> ordonnes;
+        if (texte.Length >= LongueurMinimaleSimilarite)
+        {
+            jeux = visibles.Where(j =>
+                j.NomRecherche.Contains(EF.Functions.Unaccent(texte).ToLower()) ||
+                EF.Functions.TrigramsWordSimilarity(EF.Functions.Unaccent(texte).ToLower(), j.NomRecherche) >= SeuilSimilariteMots);
+
+            ordonnes = jeux
+                .OrderBy(j => j.NomRecherche.Contains(EF.Functions.Unaccent(texte).ToLower()) ? 0 : 1)
+                .ThenByDescending(j => EF.Functions.TrigramsWordSimilarity(EF.Functions.Unaccent(texte).ToLower(), j.NomRecherche))
+                .ThenBy(j => j.Nom);
+        }
+        else
+        {
+            jeux = visibles.Where(j => j.NomRecherche.Contains(EF.Functions.Unaccent(texte).ToLower()));
+            ordonnes = jeux.OrderBy(j => j.Nom);
+        }
 
         var total = await jeux.CountAsync();
 
-        var items = await jeux
-            .OrderBy(j => j.Nom)
+        // L'identifiant départage les noms identiques : la pagination reste stable.
+        var items = await ordonnes
             .ThenBy(j => j.Id)
             .Skip(saut)
             .Take(prendre)
@@ -170,6 +205,45 @@ public class DepotCollection(IDbContextFactory<MeepleZoneContexte> fabrique) : I
             .ToListAsync();
 
         return new PageDeResultats<ResultatRechercheJeu>([.. items.Select(x => new ResultatRechercheJeu(x.Jeu, x.DejaPossede))], total);
+    }
+
+    public async Task<IReadOnlyList<ResultatRechercheJeu>> DetecterDoublonsAsync(Guid utilisateurId, string nom, int limite)
+    {
+        await using var contexte = await _fabrique.CreateDbContextAsync();
+
+        var visibles = contexte.Jeux
+            .AsNoTracking()
+            .Where(j => j.Statut == StatutValide || (j.Statut == StatutEnAttente && j.CreeParId == utilisateurId));
+
+        // Similarité du nom entier (précision) : plus stricte que la recherche par mots (rappel).
+        // Un nom trop court produit trop peu de trigrammes : seul un nom identique (sans accents ni casse) est un doublon.
+        IQueryable<Jeu> candidats;
+        if (nom.Length >= LongueurMinimaleSimilarite)
+        {
+            candidats = visibles
+                .Where(j => EF.Functions.TrigramsSimilarity(EF.Functions.Unaccent(nom).ToLower(), j.NomRecherche) >= SeuilSimilariteDoublons)
+                .OrderByDescending(j => EF.Functions.TrigramsSimilarity(EF.Functions.Unaccent(nom).ToLower(), j.NomRecherche))
+                .ThenBy(j => j.Nom)
+                .ThenBy(j => j.Id);
+        }
+        else
+        {
+            candidats = visibles
+                .Where(j => j.NomRecherche == EF.Functions.Unaccent(nom).ToLower())
+                .OrderBy(j => j.Nom)
+                .ThenBy(j => j.Id);
+        }
+
+        var items = await candidats
+            .Take(limite)
+            .Select(j => new
+            {
+                Jeu = j,
+                DejaPossede = contexte.Possessions.Any(p => p.UtilisateurId == utilisateurId && p.JeuId == j.Id)
+            })
+            .ToListAsync();
+
+        return [.. items.Select(x => new ResultatRechercheJeu(x.Jeu, x.DejaPossede))];
     }
 
     public async Task<bool> RetirerPossessionAsync(Guid utilisateurId, Guid possessionId)

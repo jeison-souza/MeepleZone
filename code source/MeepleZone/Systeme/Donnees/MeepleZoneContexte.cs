@@ -27,6 +27,7 @@ public class MeepleZoneContexte(DbContextOptions<MeepleZoneContexte> options) : 
     {
         modelBuilder.HasCollation(CollationCourriel, locale: "und-u-ks-level2", provider: "icu", deterministic: false);
         modelBuilder.HasPostgresExtension("unaccent");
+        modelBuilder.HasPostgresExtension("pg_trgm");
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(MeepleZoneContexte).Assembly);
     }
 }

@@ -2,8 +2,8 @@
 
 | | |
 |---|---|
-| **Version** | 0.9 ([historique des versions](#historique-des-versions)) |
-| **Date** | 14 novembre 2026 |
+| **Version** | 0.10 ([historique des versions](#historique-des-versions)) |
+| **Date** | 17 novembre 2026 |
 | **Statut** | Complet pour le produit minimal viable; sujet à révision après la mise en œuvre de l'authentification par les fournisseurs d'identité et les premiers tests contre une base de données réelle |
 | **Portée** | Comptes, annexes, catalogue de jeux, collection et amitiés |
 
@@ -263,6 +263,7 @@ Un jeu de société du catalogue. Chaque jeu y existe **une seule fois** : plusi
 |---|---|---|---|
 | `id` | `uuid` | `PRIMARY KEY` | Identifiant du jeu. |
 | `nom` | `text` | `NOT NULL`, `CHECK (char_length(nom) BETWEEN 1 AND 255)`¹ | Nom du jeu. C'est le seul champ que la personne doit remplir : un jeu créé à la main peut être décrit en peu de mots. Les autres colonnes obligatoires (`statut`, `cree_par_id`, dates) sont remplies par l'application ou par la base de données. Plusieurs jeux peuvent porter le même nom. |
+| `nom_recherche` | `text` | `NOT NULL`, colonne calculée stockée : `lower(unaccent_immuable(nom))`, index de trigrammes (`gin_trgm_ops`) | Nom en minuscules et sans accents, calculé par la base de données et jamais écrit par l'application. Il sert à la recherche et à la détection des doublons (voir l'[ADR 0015](../adr/0015-recherche-sans-accents.md)). |
 | `annee_publication` | `smallint` | | Année de publication. |
 | `joueurs_min` | `smallint` | `CHECK (joueurs_min >= 1)`¹ | Nombre minimal de joueurs. |
 | `joueurs_max` | `smallint` | `CHECK (joueurs_max >= 1)`¹ | Nombre maximal de joueurs. |
@@ -298,6 +299,7 @@ Règles :
 - **Validation :** un jeu créé à la main commence à `en_attente`. Il n'est alors visible que pour la personne qui l'a créé, qui peut l'ajouter à sa collection. L'administrateur le passe à `valide` (visible pour tous) ou à `refuse`. Les jeux importés de BoardGameGeek sont `valide`.
 - Au début, l'administrateur valide par une mise à jour manuelle dans la base de données; une page d'administration est l'objectif à terme.
 - **Modification d'un jeu validé :** elle le ramène à `en_attente` (règle appliquée par le code). C'est surtout la couverture qui justifie ce contrôle.
+- **Recherche et doublons :** les extensions `unaccent` et `pg_trgm` sont installées. La fonction `unaccent_immuable`, qui enveloppe `unaccent` en la déclarant immuable (condition pour l'utiliser dans une colonne calculée et dans un index), est créée par la migration `AjoutRechercheTrigrammes`, seule instruction SQL manuscrite des migrations.
 - **Distinguer des jeux de même nom :** le nom n'est pas unique. L'identifiant d'un jeu importé est son `bgg_id`. Avant de créer un jeu, la recherche affiche le nom, l'année et l'éditeur pour que la personne reconnaisse un jeu déjà présent.
 
 ### Table `mode_jeu`
@@ -540,5 +542,6 @@ Amitiés :
 | 0.7 | 11 novembre 2026 | Migration du catalogue : `mode_jeu`, `mecanique`, `jeu` et `jeu_mecanique`, avec les quatre modes de jeu et les 23 mécaniques initiales (identifiants fixes de version 7). Le schéma compte dix tables, et non onze comme l'indiquait la version 0.3. |
 | 0.8 | 11 novembre 2026 | Migration de `possession` (collection de chaque utilisateur), avec ses contraintes `CHECK`, ses clés étrangères et l'unicité du couple (`utilisateur_id`, `jeu_id`). |
 | 0.9 | 14 novembre 2026 | Données initiales de `utilisateur` : les comptes techniques « Système » et « Utilisateur supprimé » (rôle `systeme`, identifiants fixes de version 7, codes d'amitié fictifs `SYSTEME2` et `EFFACE22`). |
+| 0.10 | 17 novembre 2026 | `jeu.nom_recherche` : colonne calculée stockée avec index de trigrammes, extension `pg_trgm` et fonction `unaccent_immuable` ([ADR 0015](../adr/0015-recherche-sans-accents.md)). |
 
 Le numéro de version monte à chaque ajout ou modification importante du schéma. La version 1.0 correspondra au schéma complet du produit minimal viable.

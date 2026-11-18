@@ -16,6 +16,12 @@ public interface IDepotCollection
 
     Task<PageDeResultats<ResultatRechercheJeu>> RechercherJeuxAsync(Guid utilisateurId, string texte, int saut, int prendre);
 
+    /// <summary>
+    /// Retourne les jeux visibles par la personne dont le nom entier ressemble à <paramref name="nom"/> (similarité de trigrammes),
+    /// du plus semblable au moins semblable, limités à <paramref name="limite"/> résultats.
+    /// </summary>
+    Task<IReadOnlyList<ResultatRechercheJeu>> DetecterDoublonsAsync(Guid utilisateurId, string nom, int limite);
+
     Task<Possession?> ModifierPossessionAsync(Guid utilisateurId, Guid possessionId, short? note, string? commentaire, int partiesJouees);
 
     Task<bool> RetirerPossessionAsync(Guid utilisateurId, Guid possessionId);
