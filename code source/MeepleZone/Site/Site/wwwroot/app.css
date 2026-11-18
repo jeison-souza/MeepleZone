@@ -314,6 +314,14 @@ h1:focus {
     color: #4A4A63;
 }
 
+.mz-jeu-semblable {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.25rem 0;
+}
+
 /* ===== Accueil : identité de marque ===== */
 .mz-brand {
     display: flex;
