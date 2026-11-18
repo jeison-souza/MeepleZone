@@ -59,40 +59,47 @@
 <!-- Section Secondaire : les trois axes du projet -->
 <MudContainer MaxWidth="MaxWidth.Large" Class="my-12">
     <MudGrid Spacing="4">
+        @* Chaque bloc est un lien : la page de destination peut ne pas exister encore (404). *@
         <MudItem xs="12" md="4">
-            <MudCard Elevation="2" Class="pa-4 text-center">
-                <MudCardContent>
-                    <MudIcon Icon="@Icons.Material.Filled.LibraryBooks" Color="Color.Primary" Size="Size.Large" Class="mb-2" />
-                    <MudText Typo="Typo.h6">Catalogue personnel</MudText>
-                    <MudText Typo="Typo.body2" Class="mt-2">
-                        Enregistrez, filtrez et classez votre ludothèque selon vos propres critères : mécaniques, nombre de joueurs, durée ou complexité.
-                    </MudText>
-                </MudCardContent>
-            </MudCard>
+            <a href="/ma-collection" class="mz-bloc-lien">
+                <MudCard Elevation="2" Class="pa-4 text-center mz-bloc-carte">
+                    <MudCardContent>
+                        <MudIcon Icon="@Icons.Material.Filled.LibraryBooks" Color="Color.Primary" Size="Size.Large" Class="mb-2" />
+                        <MudText Typo="Typo.h6">Catalogue personnel</MudText>
+                        <MudText Typo="Typo.body2" Class="mt-2">
+                            Enregistrez, filtrez et classez votre ludothèque selon vos propres critères : mécaniques, nombre de joueurs, durée ou complexité.
+                        </MudText>
+                    </MudCardContent>
+                </MudCard>
+            </a>
         </MudItem>
 
         <MudItem xs="12" md="4">
-            <MudCard Elevation="2" Class="pa-4 text-center">
-                <MudCardContent>
-                    <MudIcon Icon="@Icons.Material.Filled.Groups" Color="Color.Primary" Size="Size.Large" Class="mb-2" />
-                    <MudText Typo="Typo.h6">Amis et collections</MudText>
-                    <MudText Typo="Typo.body2" Class="mt-2">
-                        Connectez-vous avec vos amis et consultez leurs ludothèques, selon leurs préférences de confidentialité, pour découvrir de nouveaux jeux.
-                    </MudText>
-                </MudCardContent>
-            </MudCard>
+            <a href="/amis" class="mz-bloc-lien">
+                <MudCard Elevation="2" Class="pa-4 text-center mz-bloc-carte">
+                    <MudCardContent>
+                        <MudIcon Icon="@Icons.Material.Filled.Groups" Color="Color.Primary" Size="Size.Large" Class="mb-2" />
+                        <MudText Typo="Typo.h6">Amis et collections</MudText>
+                        <MudText Typo="Typo.body2" Class="mt-2">
+                            Connectez-vous avec vos amis et consultez leurs ludothèques, selon leurs préférences de confidentialité, pour découvrir de nouveaux jeux.
+                        </MudText>
+                    </MudCardContent>
+                </MudCard>
+            </a>
         </MudItem>
 
         <MudItem xs="12" md="4">
-            <MudCard Elevation="2" Class="pa-4 text-center">
-                <MudCardContent>
-                    <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Color="Color.Primary" Size="Size.Large" Class="mb-2" />
-                    <MudText Typo="Typo.h6">Statistiques de jeu</MudText>
-                    <MudText Typo="Typo.body2" Class="mt-2">
-                        Suivez l'historique et la fréquence de vos parties.
-                    </MudText>
-                </MudCardContent>
-            </MudCard>
+            <a href="/statistiques" class="mz-bloc-lien">
+                <MudCard Elevation="2" Class="pa-4 text-center mz-bloc-carte">
+                    <MudCardContent>
+                        <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Color="Color.Primary" Size="Size.Large" Class="mb-2" />
+                        <MudText Typo="Typo.h6">Statistiques de jeu</MudText>
+                        <MudText Typo="Typo.body2" Class="mt-2">
+                            Suivez l'historique et la fréquence de vos parties.
+                        </MudText>
+                    </MudCardContent>
+                </MudCard>
+            </a>
         </MudItem>
     </MudGrid>
 </MudContainer>
