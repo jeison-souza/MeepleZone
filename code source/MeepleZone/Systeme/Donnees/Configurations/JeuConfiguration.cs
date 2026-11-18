@@ -6,6 +6,11 @@ namespace MeepleZone.Systeme.Donnees.Configurations;
 
 internal class JeuConfiguration : IEntityTypeConfiguration<Jeu>
 {
+    /// <summary>
+    /// Expression de la colonne calculée <c>nom_recherche</c> (ADR 0015) ; la fonction enveloppe est créée par la migration.
+    /// </summary>
+    public const string NomRechercheSql = "lower(unaccent_immuable(nom))";
+
     public void Configure(EntityTypeBuilder<Jeu> builder)
     {
         builder.ToTable("jeu", t =>
@@ -51,6 +56,13 @@ internal class JeuConfiguration : IEntityTypeConfiguration<Jeu>
 
         builder.Property(j => j.Nom)
             .IsRequired();
+
+        builder.Property(j => j.NomRecherche)
+            .HasComputedColumnSql(NomRechercheSql, stored: true);
+
+        builder.HasIndex(j => j.NomRecherche)
+            .HasMethod("gin")
+            .HasOperators("gin_trgm_ops");
 
         builder.Property(j => j.Complexite)
             .HasPrecision(2, 1);

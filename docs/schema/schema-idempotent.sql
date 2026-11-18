@@ -515,3 +515,45 @@ BEGIN
 END $EF$;
 COMMIT;
 
+START TRANSACTION;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM historique_migration WHERE "migration_id" = '20261118035937_AjoutRechercheTrigrammes') THEN
+    CREATE EXTENSION IF NOT EXISTS pg_trgm;
+    CREATE EXTENSION IF NOT EXISTS unaccent;
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM historique_migration WHERE "migration_id" = '20261118035937_AjoutRechercheTrigrammes') THEN
+    CREATE FUNCTION unaccent_immuable(texte text) RETURNS text
+    LANGUAGE sql IMMUTABLE PARALLEL SAFE STRICT
+    AS $$ SELECT public.unaccent('public.unaccent'::regdictionary, texte) $$;
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM historique_migration WHERE "migration_id" = '20261118035937_AjoutRechercheTrigrammes') THEN
+    ALTER TABLE jeu ADD nom_recherche text GENERATED ALWAYS AS (lower(unaccent_immuable(nom))) STORED NOT NULL;
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM historique_migration WHERE "migration_id" = '20261118035937_AjoutRechercheTrigrammes') THEN
+    CREATE INDEX ix_jeu_nom_recherche ON jeu USING gin (nom_recherche gin_trgm_ops);
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM historique_migration WHERE "migration_id" = '20261118035937_AjoutRechercheTrigrammes') THEN
+    INSERT INTO historique_migration (migration_id, product_version)
+    VALUES ('20261118035937_AjoutRechercheTrigrammes', '10.0.14');
+    END IF;
+END $EF$;
+COMMIT;
+

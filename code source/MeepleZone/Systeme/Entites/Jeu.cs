@@ -9,6 +9,11 @@ public class Jeu : IModifieLe
 
     public string Nom { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Nom en minuscules et sans accents, calculé par la base (colonne calculée stockée) : lecture seule, jamais écrit par le code.
+    /// </summary>
+    public string NomRecherche { get; private set; } = string.Empty;
+
     public short? AnneePublication { get; set; }
 
     public short? JoueursMin { get; set; }

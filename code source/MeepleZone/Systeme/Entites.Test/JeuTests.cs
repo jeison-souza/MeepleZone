@@ -8,6 +8,7 @@ namespace MeepleZone.Systeme.Entites.Test;
 public class JeuTests
 {
     [Theory]
+    [InlineData(nameof(Jeu.NomRecherche))]
     [InlineData(nameof(Jeu.CreeLe))]
     [InlineData(nameof(Jeu.ModifieLe))]
     public void Jeu_Propriete_SetEstPrivee(string nom)
@@ -27,6 +28,7 @@ public class JeuTests
     [Theory]
     [InlineData(nameof(Jeu.Id), false)]
     [InlineData(nameof(Jeu.Nom), false)]
+    [InlineData(nameof(Jeu.NomRecherche), false)]
     [InlineData(nameof(Jeu.AnneePublication), false)]
     [InlineData(nameof(Jeu.JoueursMin), false)]
     [InlineData(nameof(Jeu.JoueursMax), false)]

@@ -69,6 +69,7 @@ public class JeuConfigurationTests(ModeleDonneesFixture modele) : IClassFixture<
     [Theory]
     [InlineData(nameof(Jeu.Id), false)]
     [InlineData(nameof(Jeu.Nom), false)]
+    [InlineData(nameof(Jeu.NomRecherche), false)]
     [InlineData(nameof(Jeu.AnneePublication), true)]
     [InlineData(nameof(Jeu.JoueursMin), true)]
     [InlineData(nameof(Jeu.JoueursMax), true)]
@@ -143,6 +144,39 @@ public class JeuConfigurationTests(ModeleDonneesFixture modele) : IClassFixture<
 
         // Assert
         sql.Should().Be(sqlAttendu);
+    }
+
+    [Fact]
+    public void Jeu_NomRecherche_EstUneColonneCalculeeStockee()
+    {
+        // Arrange
+        var propriete = _modele.Propriete<Jeu>(nameof(Jeu.NomRecherche));
+
+        // Act
+        var sql = propriete.GetComputedColumnSql();
+        var stockee = propriete.GetIsStored();
+
+        // Assert
+        sql.Should().Be("lower(unaccent_immuable(nom))");
+        stockee.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Jeu_NomRecherche_PossedeUnIndexDeTrigrammes()
+    {
+        // Arrange
+        var type = _modele.TypeEntite<Jeu>();
+        var propriete = _modele.Propriete<Jeu>(nameof(Jeu.NomRecherche));
+
+        // Act
+        var index = type.FindIndex(propriete);
+
+        // Assert
+        index.Should().NotBeNull();
+        index!.GetDatabaseName().Should().Be("ix_jeu_nom_recherche");
+        index.IsUnique.Should().BeFalse();
+        index.GetMethod().Should().Be("gin");
+        index.GetOperators().Should().Equal("gin_trgm_ops");
     }
 
     [Fact]
@@ -248,6 +282,7 @@ public class JeuConfigurationTests(ModeleDonneesFixture modele) : IClassFixture<
     [Theory]
     [InlineData(nameof(Jeu.Id), "uuid")]
     [InlineData(nameof(Jeu.Nom), "text")]
+    [InlineData(nameof(Jeu.NomRecherche), "text")]
     [InlineData(nameof(Jeu.AnneePublication), "smallint")]
     [InlineData(nameof(Jeu.JoueursMin), "smallint")]
     [InlineData(nameof(Jeu.JoueursMax), "smallint")]

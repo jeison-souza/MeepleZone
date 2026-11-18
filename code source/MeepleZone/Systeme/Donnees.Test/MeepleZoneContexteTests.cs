@@ -104,13 +104,15 @@ public class MeepleZoneContexteTests(ModeleDonneesFixture modele) : IClassFixtur
         collation.LcCtype.Should().Be("und-u-ks-level2");
     }
 
-    [Fact]
-    public void Modele_ExtensionsPostgres_DoitPossederUnaccent()
+    [Theory]
+    [InlineData("unaccent")]
+    [InlineData("pg_trgm")]
+    public void Modele_ExtensionsPostgres_DoitPosseder(string nom)
     {
         // Arrange + Act : l'extension est lue dans le modèle, sans interroger la base
         var extensions = _modele.Modele.GetPostgresExtensions();
 
         // Assert
-        extensions.Should().ContainSingle(e => e.Name == "unaccent");
+        extensions.Should().ContainSingle(e => e.Name == nom);
     }
 }
