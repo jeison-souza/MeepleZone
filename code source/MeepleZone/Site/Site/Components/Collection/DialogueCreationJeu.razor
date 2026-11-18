@@ -4,7 +4,6 @@
 @using MeepleZone.Site.Collection
 @using Microsoft.Extensions.Logging
 @inject IDomaineCollection Domaine
-@inject IDetectionDoublons Doublons
 @inject ILogger<DialogueCreationJeu> Journal
 
 @* Création d'un jeu absent du catalogue; le jeu est ajouté à la collection de la personne dès sa création. *@
@@ -162,7 +161,7 @@
 
         try
         {
-            var trouves = await Doublons.TrouverAsync(valeur ?? string.Empty);
+            var trouves = await Domaine.DetecterDoublonsAsync(new DetecterDoublonsRequete(valeur ?? string.Empty));
 
             if (numero == rechercheEnCours)
             {
