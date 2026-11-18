@@ -45,20 +45,23 @@ public class GestionnaireRequeteModifierPossessionTests : BaseTest<GestionnaireR
         // Assert
         result.Statut.Should().Be(StatutModification.Modifie);
         result.Item.Should().BeEquivalentTo(new ItemCollectionDto(
-            possession.Id,
-            possession.Jeu!.Id,
-            possession.Jeu.Nom,
-            possession.Jeu.AnneePublication,
-            possession.Jeu.JoueursMin,
-            possession.Jeu.JoueursMax,
-            possession.Jeu.DureeMinMinutes,
-            possession.Jeu.DureeMaxMinutes,
-            possession.Jeu.CouvertureId,
-            possession.Jeu.CouvertureUrl,
-            possession.Note,
-            possession.PartiesJouees,
-            possession.Commentaire,
-            possession.Jeu.Statut));
+            PossessionId: possession.Id,
+            JeuId: possession.Jeu!.Id,
+            AnneePublication: possession.Jeu.AnneePublication,
+            Commentaire: possession.Commentaire,
+            CouvertureId: possession.Jeu.CouvertureId,
+            CouvertureUrl: possession.Jeu.CouvertureUrl,
+            DureeMinMinutes: possession.Jeu.DureeMinMinutes,
+            DureeMaxMinutes: possession.Jeu.DureeMaxMinutes,
+            JoueursMin: possession.Jeu.JoueursMin,
+            JoueursMax: possession.Jeu.JoueursMax,
+            JoueursMeilleur: possession.Jeu.JoueursMeilleur,
+            MecaniqueNoms: [],
+            ModeJeuNom: null,
+            Nom: possession.Jeu.Nom,
+            Note: possession.Note,
+            PartiesJouees: possession.PartiesJouees,
+            StatutJeu: possession.Jeu.Statut));
     }
 
     [Fact]

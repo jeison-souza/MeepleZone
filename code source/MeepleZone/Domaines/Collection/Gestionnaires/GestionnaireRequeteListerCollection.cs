@@ -25,8 +25,10 @@ public class GestionnaireRequeteListerCollection(IDepotCollection depotCollectio
             recherche = null;
         }
 
-        var page = await _depotCollection.ListerPossessionsAsync(_utilisateurCourant.Id, recherche, saut, requete.TaillePage);
+        var filtre = ValidationFiltre.Convertir(requete.Filtre);
 
-        return new ListerCollectionReponse([.. page.Items.Select(i => i.VersDto())], page.Total);
+        var page = await _depotCollection.ListerPossessionsAsync(_utilisateurCourant.Id, recherche, filtre, saut, requete.TaillePage);
+
+        return new ListerCollectionReponse([.. page.Items.Select(i => i.Possession.VersDto(i.ModeJeuNom, i.MecaniqueNoms))], page.Total);
     }
 }

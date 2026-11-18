@@ -89,20 +89,23 @@ public class GestionnaireRequeteCreerJeuTests : BaseTest<GestionnaireRequeteCree
         // Assert : la réponse, avec l'item montré à la main
         result.Statut.Should().Be(StatutCreationJeu.Cree);
         result.Item.Should().BeEquivalentTo(new ItemCollectionDto(
-            possessionEnvoyee.Id,
-            jeuEnvoye.Id,
-            "Catan",
-            1995,
-            3,
-            4,
-            60,
-            120,
-            null,
-            null,
-            null,
-            0,
-            null,
-            "en_attente"));
+            PossessionId: possessionEnvoyee.Id,
+            JeuId: jeuEnvoye.Id,
+            AnneePublication: 1995,
+            Commentaire: null,
+            CouvertureId: null,
+            CouvertureUrl: null,
+            DureeMinMinutes: 60,
+            DureeMaxMinutes: 120,
+            JoueursMin: 3,
+            JoueursMax: 4,
+            JoueursMeilleur: 4,
+            MecaniqueNoms: [],
+            ModeJeuNom: null,
+            Nom: "Catan",
+            Note: null,
+            PartiesJouees: 0,
+            StatutJeu: "en_attente"));
     }
 
     [Theory]
