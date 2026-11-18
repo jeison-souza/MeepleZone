@@ -1,0 +1,30 @@
+/* Blocs cliquables de l'accueil : même hauteur pour les trois, et un léger soulèvement au survol. */
+.mz-bloc-lien {
+    display: block;
+    height: 100%;
+    color: inherit;
+    text-decoration: none;
+    border-radius: 4px;
+}
+
+.mz-bloc-lien ::deep .mz-bloc-carte {
+    height: 100%;
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.mz-bloc-lien:hover ::deep .mz-bloc-carte,
+.mz-bloc-lien:focus-visible ::deep .mz-bloc-carte {
+    transform: translateY(-3px);
+    box-shadow: var(--mud-elevation-8);
+}
+
+.mz-bloc-lien:focus-visible {
+    outline: 3px solid var(--mz-orange);
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .mz-bloc-lien ::deep .mz-bloc-carte {
+        transition: none;
+    }
+}

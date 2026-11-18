@@ -1,0 +1,85 @@
+@using MeepleZone.Domaines.Collection.Contrats.Modeles
+@using MeepleZone.Site.Collection
+
+@* Panneau des filtres de la collection : composant d'affichage, sans accès aux données. Chaque changement est signalé tout de suite. *@
+<MudPaper Elevation="0" Outlined="true" Class="pa-4">
+    <MudGrid Spacing="3">
+        <MudItem xs="12" sm="6" md="3">
+            <MudNumericField T="short?" Value="Filtres.NombreJoueurs" ValueChanged="v => ChangerAsync(Filtres with { NombreJoueurs = v, Optimal = v is not null && Filtres.Optimal })"
+                             Label="Nombre de joueurs" Min="1" Max="99" HideSpinButtons="true" Clearable="true" />
+            <MudCheckBox T="bool" Value="Filtres.Optimal" ValueChanged="v => ChangerAsync(Filtres with { Optimal = v })"
+                         Disabled="Filtres.NombreJoueurs is null" Label="Idéal à ce nombre" Dense="true" />
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="3">
+            <MudNumericField T="short?" Value="Filtres.DureeMax" ValueChanged="v => ChangerAsync(Filtres with { DureeMax = v })"
+                             Label="Durée (minutes, au plus)" Min="1" Max="1440" HideSpinButtons="true" Clearable="true" />
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="3">
+            <MudSelect T="short?" Value="Filtres.NoteMin" ValueChanged="v => ChangerAsync(Filtres with { NoteMin = v })"
+                       Label="Note minimale" Clearable="true">
+                @for (short note = 1; note <= 10; note++)
+                {
+                    <MudSelectItem T="short?" Value="@((short?)note)">@note ou plus</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="3">
+            <MudSelect T="Guid?" Value="Filtres.ModeJeuId" ValueChanged="v => ChangerAsync(Filtres with { ModeJeuId = v })"
+                       Label="Mode de jeu" Clearable="true">
+                @foreach (var mode in Modes)
+                {
+                    <MudSelectItem T="Guid?" Value="@((Guid?)mode.ModeJeuId)">@mode.Nom</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+            <MudSelect T="Guid" Label="Mécaniques (au moins une)" MultiSelection="true" Clearable="true"
+                       SelectedValues="Filtres.MecaniqueIds" SelectedValuesChanged="v => ChangerAsync(Filtres with { MecaniqueIds = v.ToList() })"
+                       ToStringFunc="NomMecanique">
+                @foreach (var mecanique in Mecaniques)
+                {
+                    <MudSelectItem T="Guid" Value="mecanique.MecaniqueId">@mecanique.Nom</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="3">
+            <MudNumericField T="int?" Value="Filtres.PartiesMin" ValueChanged="v => ChangerAsync(Filtres.AvecPartiesMin(v))"
+                             Label="Parties jouées (min.)" Min="0" HideSpinButtons="true" Clearable="true" />
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="3">
+            <MudNumericField T="int?" Value="Filtres.PartiesMax" ValueChanged="v => ChangerAsync(Filtres.AvecPartiesMax(v))"
+                             Label="Parties jouées (max.)" Min="0" HideSpinButtons="true" Clearable="true"
+                             HelperText="0 : jamais joué" />
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+@code {
+    [Parameter, EditorRequired]
+    public FiltresCollection Filtres { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback<FiltresCollection> FiltresChanged { get; set; }
+
+    [Parameter]
+    public IReadOnlyList<ModeJeuDto> Modes { get; set; } = [];
+
+    [Parameter]
+    public IReadOnlyList<MecaniqueDto> Mecaniques { get; set; } = [];
+
+    private Task ChangerAsync(FiltresCollection nouveaux)
+    {
+        return FiltresChanged.InvokeAsync(nouveaux);
+    }
+
+    private string? NomMecanique(Guid identifiant)
+    {
+        return Mecaniques.FirstOrDefault(m => m.MecaniqueId == identifiant)?.Nom;
+    }
+}

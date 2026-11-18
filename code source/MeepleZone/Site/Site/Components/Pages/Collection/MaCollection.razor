@@ -2,11 +2,13 @@
 @using MeepleZone.Domaines.Collection
 @using MeepleZone.Domaines.Collection.Contrats.Enums
 @using MeepleZone.Domaines.Collection.Contrats.Modeles
+@using MeepleZone.Site.Collection
 @using MeepleZone.Site.Components.Collection
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.Extensions.Logging
 @attribute [Authorize]
 @inject IDomaineCollection Domaine
+@inject NavigationManager Navigation
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject ILogger<MaCollection> Journal
@@ -28,7 +30,30 @@
 
     <MudTextField T="string" Value="recherche" ValueChanged="SurChangementRechercheAsync" Label="Rechercher par nom"
                   Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
-                  Immediate="true" DebounceInterval="350" Clearable="true" Class="mt-4 mb-6" />
+                  Immediate="true" DebounceInterval="350" Clearable="true" Class="mt-4 mb-2" />
+
+    <div class="mz-collection-filtres-barre">
+        <MudButton Variant="Variant.Outlined" Size="Size.Small" StartIcon="@Icons.Material.Filled.FilterList"
+                   OnClick="() => panneauOuvert = !panneauOuvert">
+            @(filtres.NombreCriteres > 0 ? $"Filtres ({filtres.NombreCriteres})" : "Filtres")
+        </MudButton>
+
+        @foreach (var chip in filtres.Chips(nomsModes, nomsMecaniques))
+        {
+            <MudChip T="string" Size="Size.Small" Color="Color.Primary" OnClose="() => ChangerFiltresAsync(filtres.Sans(chip.Cle))">@chip.Libelle</MudChip>
+        }
+
+        @if (filtres.EstActif)
+        {
+            <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="EffacerFiltresAsync">Effacer les filtres</MudButton>
+        }
+    </div>
+
+    <MudCollapse Expanded="panneauOuvert" Class="mb-4">
+        <PanneauFiltresCollection Filtres="filtres" FiltresChanged="ChangerFiltresAsync" Modes="modes" Mecaniques="mecaniques" />
+    </MudCollapse>
+
+    <div class="mb-4"></div>
 
     @if (echec)
     {
@@ -41,7 +66,7 @@
     {
         <MudProgressLinear Indeterminate="true" />
     }
-    else if (items.Count == 0 && string.IsNullOrEmpty(recherche))
+    else if (items.Count == 0 && string.IsNullOrEmpty(recherche) && !filtres.EstActif)
     {
         <MudPaper Elevation="0" Outlined="true" Class="mz-collection-vide">
             <MudIcon Icon="@Icons.Material.Filled.Casino" Size="Size.Large" />
@@ -53,7 +78,15 @@
     }
     else if (items.Count == 0)
     {
-        <MudText Typo="Typo.body1">Aucun jeu de votre collection ne correspond à « @recherche ».</MudText>
+        <MudText Typo="Typo.body1">
+            @(filtres.EstActif
+                ? "Aucun jeu de votre collection ne correspond à ces critères."
+                : $"Aucun jeu de votre collection ne correspond à « {recherche} ».")
+        </MudText>
+        @if (filtres.EstActif)
+        {
+            <MudButton Variant="Variant.Outlined" Class="mt-3" OnClick="EffacerFiltresAsync">Effacer les filtres</MudButton>
+        }
     }
     else
     {
@@ -74,7 +107,7 @@
 </MudContainer>
 
 @code {
-    private const int TaillePage = 24;
+    private const int TaillePage = 8;
 
     private IReadOnlyList<ItemCollectionDto> items = [];
     private int total;
@@ -82,6 +115,24 @@
     private string? recherche;
     private bool chargementInitial = true;
     private bool echec;
+
+    // Les filtres vivent aussi dans l'adresse (?joueurs=4&note=7) : la page se rouvre telle quelle et le retour arrière fonctionne.
+    private FiltresCollection filtres = new();
+    private bool panneauOuvert;
+    private IReadOnlyList<ModeJeuDto> modes = [];
+    private IReadOnlyList<MecaniqueDto> mecaniques = [];
+    private IReadOnlyDictionary<Guid, string> nomsModes = new Dictionary<Guid, string>();
+    private IReadOnlyDictionary<Guid, string> nomsMecaniques = new Dictionary<Guid, string>();
+    private bool premierRendu = true;
+
+    [SupplyParameterFromQuery(Name = FiltresCollection.CleJoueurs)] public string? ParamJoueurs { get; set; }
+    [SupplyParameterFromQuery(Name = FiltresCollection.CleOptimal)] public string? ParamOptimal { get; set; }
+    [SupplyParameterFromQuery(Name = FiltresCollection.CleDuree)] public string? ParamDuree { get; set; }
+    [SupplyParameterFromQuery(Name = FiltresCollection.CleNote)] public string? ParamNote { get; set; }
+    [SupplyParameterFromQuery(Name = FiltresCollection.ClePartiesMin)] public string? ParamPartiesMin { get; set; }
+    [SupplyParameterFromQuery(Name = FiltresCollection.ClePartiesMax)] public string? ParamPartiesMax { get; set; }
+    [SupplyParameterFromQuery(Name = FiltresCollection.CleMode)] public string? ParamMode { get; set; }
+    [SupplyParameterFromQuery(Name = FiltresCollection.CleMecaniques)] public string? ParamMecaniques { get; set; }
 
     private int NombrePages => (int)Math.Ceiling(total / (double)TaillePage);
 
@@ -92,17 +143,84 @@
         _ => $"{total} jeux"
     };
 
-    protected override async Task OnInitializedAsync()
+    // Appelée à l'ouverture et à chaque changement de l'adresse (y compris ceux que la page provoque elle-même).
+    protected override async Task OnParametersSetAsync()
     {
+        var depuisAdresse = FiltresCollection.DepuisParametres(
+            ParamJoueurs, ParamOptimal, ParamDuree, ParamNote, ParamPartiesMin, ParamPartiesMax, ParamMode, ParamMecaniques);
+
+        if (premierRendu)
+        {
+            premierRendu = false;
+            filtres = depuisAdresse;
+            panneauOuvert = filtres.EstActif;
+            await ChargerListesAsync();
+            await ChargerAsync();
+
+            return;
+        }
+
+        // Retour arrière ou lien modifié : l'adresse diffère de l'état de la page.
+        if (!depuisAdresse.EstIdentique(filtres))
+        {
+            filtres = depuisAdresse;
+            page = 1;
+            await ChargerAsync();
+        }
+    }
+
+    private async Task ChargerListesAsync()
+    {
+        try
+        {
+            modes = await Domaine.ListerModesJeuAsync(new ListerModesJeuRequete());
+            mecaniques = await Domaine.ListerMecaniquesAsync(new ListerMecaniquesRequete());
+            nomsModes = modes.ToDictionary(m => m.ModeJeuId, m => m.Nom);
+            nomsMecaniques = mecaniques.ToDictionary(m => m.MecaniqueId, m => m.Nom);
+        }
+        catch (Exception exception)
+        {
+            // Les filtres numériques restent utilisables sans ces deux listes.
+            Journal.LogError(exception, "Chargement des modes de jeu et des mécaniques impossible.");
+        }
+    }
+
+    private async Task ChangerFiltresAsync(FiltresCollection nouveaux)
+    {
+        filtres = nouveaux;
+        page = 1;
+        MettreAJourAdresse();
         await ChargerAsync();
+    }
+
+    private Task EffacerFiltresAsync()
+    {
+        return ChangerFiltresAsync(new FiltresCollection());
+    }
+
+    private void MettreAJourAdresse()
+    {
+        var parametres = filtres.VersParametres();
+        var valeurs = new Dictionary<string, object?>();
+
+        foreach (var cle in new[]
+        {
+            FiltresCollection.CleJoueurs, FiltresCollection.CleOptimal, FiltresCollection.CleDuree, FiltresCollection.CleNote,
+            FiltresCollection.ClePartiesMin, FiltresCollection.ClePartiesMax, FiltresCollection.CleMode, FiltresCollection.CleMecaniques,
+        })
+        {
+            valeurs[cle] = parametres.GetValueOrDefault(cle);
+        }
+
+        Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(valeurs), replace: true);
     }
 
     private async Task ChargerAsync()
     {
         try
         {
-            var reponse = await Domaine.ListerCollectionAsync(
-                new ListerCollectionRequete(string.IsNullOrWhiteSpace(recherche) ? null : recherche.Trim(), page, TaillePage));
+            var reponse = await Domaine.ListerCollectionAsync(new ListerCollectionRequete(
+                string.IsNullOrWhiteSpace(recherche) ? null : recherche.Trim(), page, TaillePage, filtres.VersContrat()));
 
             // Dernière page vidée par un retrait : on recule d'une page plutôt que d'afficher du vide.
             if (reponse.Items.Count == 0 && page > 1)
