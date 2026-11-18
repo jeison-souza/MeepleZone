@@ -9,7 +9,10 @@ namespace MeepleZone.Systeme.Depots;
 
 public interface IDepotCollection
 {
-    Task<PageDeResultats<Possession>> ListerPossessionsAsync(Guid utilisateurId, string? recherche, int saut, int prendre);
+    /// <summary>
+    /// Liste les possessions de la personne (jeu chargé), triées par nom, avec la recherche et le filtre optionnels.
+    /// </summary>
+    Task<PageDeResultats<ResultatPossession>> ListerPossessionsAsync(Guid utilisateurId, string? recherche, FiltrePossessions? filtre, int saut, int prendre);
 
     Task<PageDeResultats<ResultatRechercheJeu>> RechercherJeuxAsync(Guid utilisateurId, string texte, int saut, int prendre);
 

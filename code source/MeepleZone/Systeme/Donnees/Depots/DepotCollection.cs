@@ -27,18 +27,22 @@ public class DepotCollection(IDbContextFactory<MeepleZoneContexte> fabrique) : I
 
     private readonly IDbContextFactory<MeepleZoneContexte> _fabrique = fabrique;
 
-    public async Task<PageDeResultats<Possession>> ListerPossessionsAsync(Guid utilisateurId, string? recherche, int saut, int prendre)
+    public async Task<PageDeResultats<ResultatPossession>> ListerPossessionsAsync(Guid utilisateurId, string? recherche, FiltrePossessions? filtre, int saut, int prendre)
     {
         await using var contexte = await _fabrique.CreateDbContextAsync();
 
         var possessions = contexte.Possessions
             .AsNoTracking()
-            .Include(p => p.Jeu)
             .Where(p => p.UtilisateurId == utilisateurId);
 
         if (!string.IsNullOrWhiteSpace(recherche))
         {
             possessions = possessions.Where(p => EF.Functions.Unaccent(p.Jeu!.Nom).ToLower().Contains(EF.Functions.Unaccent(recherche).ToLower()));
+        }
+
+        if (filtre != null)
+        {
+            possessions = AppliquerFiltre(contexte, possessions, filtre);
         }
 
         var total = await possessions.CountAsync();
@@ -48,9 +52,76 @@ public class DepotCollection(IDbContextFactory<MeepleZoneContexte> fabrique) : I
             .ThenBy(p => p.Id)
             .Skip(saut)
             .Take(prendre)
+            .Select(p => new
+            {
+                Possession = p,
+                p.Jeu,
+                ModeJeuNom = contexte.ModesJeu
+                    .Where(m => m.Id == p.Jeu!.ModeJeuId)
+                    .Select(m => m.Nom)
+                    .FirstOrDefault(),
+                MecaniqueNoms = contexte.JeuxMecaniques
+                    .Where(jm => jm.JeuId == p.JeuId)
+                    .Join(contexte.Mecaniques, jm => jm.MecaniqueId, m => m.Id, (jm, m) => m.Nom)
+                    .OrderBy(nom => nom)
+                    .ToList()
+            })
             .ToListAsync();
 
-        return new PageDeResultats<Possession>(items, total);
+        // La requête en lecture seule ne rattache pas le jeu à la possession : le rattachement se fait ici.
+        return new PageDeResultats<ResultatPossession>(
+            [.. items.Select(x =>
+            {
+                x.Possession.Jeu = x.Jeu;
+                return new ResultatPossession(x.Possession, x.ModeJeuNom, x.MecaniqueNoms);
+            })],
+            total);
+    }
+
+    private static IQueryable<Possession> AppliquerFiltre(MeepleZoneContexte contexte, IQueryable<Possession> possessions, FiltrePossessions filtre)
+    {
+        if (filtre.NombreJoueurs is { } nombre)
+        {
+            possessions = possessions.Where(p => p.Jeu!.JoueursMin <= nombre && p.Jeu.JoueursMax >= nombre);
+        }
+
+        if (filtre.JoueursMeilleur is { } meilleur)
+        {
+            possessions = possessions.Where(p => p.Jeu!.JoueursMeilleur == meilleur);
+        }
+
+        if (filtre.DureeMaxMinutes is { } duree)
+        {
+            possessions = possessions.Where(p => p.Jeu!.DureeMaxMinutes <= duree);
+        }
+
+        if (filtre.NoteMin is { } noteMin)
+        {
+            possessions = possessions.Where(p => p.Note >= noteMin);
+        }
+
+        if (filtre.PartiesJoueesMin is { } partiesMin)
+        {
+            possessions = possessions.Where(p => p.PartiesJouees >= partiesMin);
+        }
+
+        if (filtre.PartiesJoueesMax is { } partiesMax)
+        {
+            possessions = possessions.Where(p => p.PartiesJouees <= partiesMax);
+        }
+
+        if (filtre.ModeJeuId is { } modeJeuId)
+        {
+            possessions = possessions.Where(p => p.Jeu!.ModeJeuId == modeJeuId);
+        }
+
+        if (filtre.MecaniqueIds is { Count: > 0 } mecaniqueIds)
+        {
+            var ids = mecaniqueIds.ToList();
+            possessions = possessions.Where(p => contexte.JeuxMecaniques.Any(jm => jm.JeuId == p.JeuId && ids.Contains(jm.MecaniqueId)));
+        }
+
+        return possessions;
     }
 
     public async Task<Possession?> ModifierPossessionAsync(Guid utilisateurId, Guid possessionId, short? note, string? commentaire, int partiesJouees)

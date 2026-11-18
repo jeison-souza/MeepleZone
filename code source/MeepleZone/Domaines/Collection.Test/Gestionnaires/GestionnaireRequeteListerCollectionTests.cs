@@ -36,32 +36,35 @@ public class GestionnaireRequeteListerCollectionTests : BaseTest<GestionnaireReq
         var requete = new ListerCollectionRequete(null, 1, 24);
         var utilisateurId = CreerFixture<Guid>();
         var total = CreerFixture<int>();
-        List<Possession> possessions = [.. Fixture.CreateMany<Possession>(3)];
+        List<ResultatPossession> resultats = [.. Fixture.CreateMany<ResultatPossession>(3)];
         _utilisateurCourant.CallsTo(x => x.Id).Returns(utilisateurId);
         _depotCollection
-            .CallsTo(x => x.ListerPossessionsAsync(A<Guid>._, A<string?>._, A<int>._, A<int>._))
-            .Returns(new PageDeResultats<Possession>(possessions, total));
+            .CallsTo(x => x.ListerPossessionsAsync(A<Guid>._, A<string?>._, A<FiltrePossessions?>._, A<int>._, A<int>._))
+            .Returns(new PageDeResultats<ResultatPossession>(resultats, total));
 
         // Act
         var result = await InstanceTest.TraiterAsync(requete);
 
         // Assert
         result.Total.Should().Be(total);
-        result.Items.Should().BeEquivalentTo(possessions.Select(p => new ItemCollectionDto(
-            p.Id,
-            p.Jeu!.Id,
-            p.Jeu.Nom,
-            p.Jeu.AnneePublication,
-            p.Jeu.JoueursMin,
-            p.Jeu.JoueursMax,
-            p.Jeu.DureeMinMinutes,
-            p.Jeu.DureeMaxMinutes,
-            p.Jeu.CouvertureId,
-            p.Jeu.CouvertureUrl,
-            p.Note,
-            p.PartiesJouees,
-            p.Commentaire,
-            p.Jeu.Statut)),
+        result.Items.Should().BeEquivalentTo(resultats.Select(r => new ItemCollectionDto(
+            PossessionId: r.Possession.Id,
+            JeuId: r.Possession.Jeu!.Id,
+            AnneePublication: r.Possession.Jeu.AnneePublication,
+            Commentaire: r.Possession.Commentaire,
+            CouvertureId: r.Possession.Jeu.CouvertureId,
+            CouvertureUrl: r.Possession.Jeu.CouvertureUrl,
+            DureeMinMinutes: r.Possession.Jeu.DureeMinMinutes,
+            DureeMaxMinutes: r.Possession.Jeu.DureeMaxMinutes,
+            JoueursMin: r.Possession.Jeu.JoueursMin,
+            JoueursMax: r.Possession.Jeu.JoueursMax,
+            JoueursMeilleur: r.Possession.Jeu.JoueursMeilleur,
+            MecaniqueNoms: r.MecaniqueNoms,
+            ModeJeuNom: r.ModeJeuNom,
+            Nom: r.Possession.Jeu.Nom,
+            Note: r.Possession.Note,
+            PartiesJouees: r.Possession.PartiesJouees,
+            StatutJeu: r.Possession.Jeu.Statut)),
             options => options.WithStrictOrdering());
     }
 
@@ -73,8 +76,8 @@ public class GestionnaireRequeteListerCollectionTests : BaseTest<GestionnaireReq
         var possession = Fixture.Build<Possession>().Without(p => p.Jeu).Create();
         _utilisateurCourant.CallsTo(x => x.Id).Returns(CreerFixture<Guid>());
         _depotCollection
-            .CallsTo(x => x.ListerPossessionsAsync(A<Guid>._, A<string?>._, A<int>._, A<int>._))
-            .Returns(new PageDeResultats<Possession>([possession], 1));
+            .CallsTo(x => x.ListerPossessionsAsync(A<Guid>._, A<string?>._, A<FiltrePossessions?>._, A<int>._, A<int>._))
+            .Returns(new PageDeResultats<ResultatPossession>([new ResultatPossession(possession, null, [])], 1));
 
         // Act
         var act = () => InstanceTest.TraiterAsync(requete);
@@ -91,15 +94,15 @@ public class GestionnaireRequeteListerCollectionTests : BaseTest<GestionnaireReq
         var utilisateurId = CreerFixture<Guid>();
         _utilisateurCourant.CallsTo(x => x.Id).Returns(utilisateurId);
         _depotCollection
-            .CallsTo(x => x.ListerPossessionsAsync(utilisateurId, "catan", 48, 24))
-            .Returns(new PageDeResultats<Possession>([], 0));
+            .CallsTo(x => x.ListerPossessionsAsync(utilisateurId, "catan", null, 48, 24))
+            .Returns(new PageDeResultats<ResultatPossession>([], 0));
 
         // Act
         var result = await InstanceTest.TraiterAsync(requete);
 
         // Assert
         _depotCollection
-            .CallsTo(x => x.ListerPossessionsAsync(utilisateurId, "catan", 48, 24))
+            .CallsTo(x => x.ListerPossessionsAsync(utilisateurId, "catan", null, 48, 24))
             .MustHaveHappenedOnceExactly();
         result.Items.Should().BeEmpty();
         result.Total.Should().Be(0);
@@ -117,15 +120,15 @@ public class GestionnaireRequeteListerCollectionTests : BaseTest<GestionnaireReq
         var utilisateurId = CreerFixture<Guid>();
         _utilisateurCourant.CallsTo(x => x.Id).Returns(utilisateurId);
         _depotCollection
-            .CallsTo(x => x.ListerPossessionsAsync(utilisateurId, attendue, 0, 24))
-            .Returns(new PageDeResultats<Possession>([], 0));
+            .CallsTo(x => x.ListerPossessionsAsync(utilisateurId, attendue, null, 0, 24))
+            .Returns(new PageDeResultats<ResultatPossession>([], 0));
 
         // Act
         await InstanceTest.TraiterAsync(requete);
 
         // Assert
         _depotCollection
-            .CallsTo(x => x.ListerPossessionsAsync(utilisateurId, attendue, 0, 24))
+            .CallsTo(x => x.ListerPossessionsAsync(utilisateurId, attendue, null, 0, 24))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -137,8 +140,8 @@ public class GestionnaireRequeteListerCollectionTests : BaseTest<GestionnaireReq
         var utilisateurId = CreerFixture<Guid>();
         _utilisateurCourant.CallsTo(x => x.Id).Returns(utilisateurId);
         _depotCollection
-            .CallsTo(x => x.ListerPossessionsAsync(utilisateurId, null, 0, 50))
-            .Returns(new PageDeResultats<Possession>([], 0));
+            .CallsTo(x => x.ListerPossessionsAsync(utilisateurId, null, null, 0, 50))
+            .Returns(new PageDeResultats<ResultatPossession>([], 0));
 
         // Act
         var result = await InstanceTest.TraiterAsync(requete);
@@ -164,5 +167,85 @@ public class GestionnaireRequeteListerCollectionTests : BaseTest<GestionnaireReq
 
         // Assert
         await act.Should().ThrowAsync<ArgumentOutOfRangeException>();
+    }
+
+    [Fact]
+    public async Task TraiterAsync_FiltreComplet_TransmettreLeFiltreAuDepotSansDoublonsDeMecaniques()
+    {
+        // Arrange
+        var modeJeuId = CreerFixture<Guid>();
+        var mecaniqueA = CreerFixture<Guid>();
+        var mecaniqueB = CreerFixture<Guid>();
+        var filtre = new FiltreCollection(4, 4, 60, 7, 1, 20, modeJeuId, [mecaniqueA, mecaniqueB, mecaniqueA]);
+        var requete = new ListerCollectionRequete(null, 1, 24, filtre);
+        var utilisateurId = CreerFixture<Guid>();
+        FiltrePossessions? filtreRecu = null;
+        _utilisateurCourant.CallsTo(x => x.Id).Returns(utilisateurId);
+        _depotCollection
+            .CallsTo(x => x.ListerPossessionsAsync(A<Guid>._, A<string?>._, A<FiltrePossessions?>._, A<int>._, A<int>._))
+            .Invokes((Guid _, string? _, FiltrePossessions? f, int _, int _) => filtreRecu = f)
+            .Returns(new PageDeResultats<ResultatPossession>([], 0));
+
+        // Act
+        await InstanceTest.TraiterAsync(requete);
+
+        // Assert
+        filtreRecu.Should().NotBeNull();
+        filtreRecu!.NombreJoueurs.Should().Be(4);
+        filtreRecu.JoueursMeilleur.Should().Be(4);
+        filtreRecu.DureeMaxMinutes.Should().Be(60);
+        filtreRecu.NoteMin.Should().Be(7);
+        filtreRecu.PartiesJoueesMin.Should().Be(1);
+        filtreRecu.PartiesJoueesMax.Should().Be(20);
+        filtreRecu.ModeJeuId.Should().Be(modeJeuId);
+        filtreRecu.MecaniqueIds.Should().Equal(mecaniqueA, mecaniqueB);
+    }
+
+    [Theory]
+    [InlineData(0, null, null, null, null, null)]
+    [InlineData(-1, null, null, null, null, null)]
+    [InlineData(null, 0, null, null, null, null)]
+    [InlineData(null, null, 0, null, null, null)]
+    [InlineData(null, null, null, 0, null, null)]
+    [InlineData(null, null, null, 11, null, null)]
+    [InlineData(null, null, null, null, -1, null)]
+    [InlineData(null, null, null, null, null, -1)]
+    [InlineData(null, null, null, null, 5, 4)]
+    public async Task TraiterAsync_FiltreHorsLimites_LeverArgumentOutOfRangeExceptionSansAppelerLeDepot(
+        int? nombreJoueurs, int? meilleur, int? dureeMax, int? noteMin, int? partiesMin, int? partiesMax)
+    {
+        // Arrange
+        var filtre = new FiltreCollection((short?)nombreJoueurs, (short?)meilleur, (short?)dureeMax, (short?)noteMin, partiesMin, partiesMax, null, null);
+        var requete = new ListerCollectionRequete(null, 1, 24, filtre);
+
+        // Act
+        var act = () => InstanceTest.TraiterAsync(requete);
+
+        // Assert
+        await act.Should().ThrowAsync<ArgumentOutOfRangeException>();
+        _depotCollection
+            .CallsTo(x => x.ListerPossessionsAsync(A<Guid>._, A<string?>._, A<FiltrePossessions?>._, A<int>._, A<int>._))
+            .MustNotHaveHappened();
+    }
+
+    [Theory]
+    [InlineData(1, 1, 1, 1, 0, 0)]
+    [InlineData(null, null, null, 10, 3, 3)]
+    public async Task TraiterAsync_FiltreSurLesBornes_Accepter(
+        int? nombreJoueurs, int? meilleur, int? dureeMax, int? noteMin, int? partiesMin, int? partiesMax)
+    {
+        // Arrange
+        var filtre = new FiltreCollection((short?)nombreJoueurs, (short?)meilleur, (short?)dureeMax, (short?)noteMin, partiesMin, partiesMax, null, null);
+        var requete = new ListerCollectionRequete(null, 1, 24, filtre);
+        _utilisateurCourant.CallsTo(x => x.Id).Returns(CreerFixture<Guid>());
+        _depotCollection
+            .CallsTo(x => x.ListerPossessionsAsync(A<Guid>._, A<string?>._, A<FiltrePossessions?>._, A<int>._, A<int>._))
+            .Returns(new PageDeResultats<ResultatPossession>([], 0));
+
+        // Act
+        var result = await InstanceTest.TraiterAsync(requete);
+
+        // Assert
+        result.Items.Should().BeEmpty();
     }
 }

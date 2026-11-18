@@ -73,20 +73,23 @@ public class GestionnaireRequeteAjouterJeuTests : BaseTest<GestionnaireRequeteAj
         enregistree.Should().NotBeNull();
         result.Statut.Should().Be(StatutAjout.Ajoute);
         result.Item.Should().BeEquivalentTo(new ItemCollectionDto(
-            enregistree!.Id,
-            jeu.Id,
-            jeu.Nom,
-            jeu.AnneePublication,
-            jeu.JoueursMin,
-            jeu.JoueursMax,
-            jeu.DureeMinMinutes,
-            jeu.DureeMaxMinutes,
-            jeu.CouvertureId,
-            jeu.CouvertureUrl,
-            null,
-            0,
-            null,
-            jeu.Statut));
+            PossessionId: enregistree!.Id,
+            JeuId: jeu.Id,
+            AnneePublication: jeu.AnneePublication,
+            Commentaire: null,
+            CouvertureId: jeu.CouvertureId,
+            CouvertureUrl: jeu.CouvertureUrl,
+            DureeMinMinutes: jeu.DureeMinMinutes,
+            DureeMaxMinutes: jeu.DureeMaxMinutes,
+            JoueursMin: jeu.JoueursMin,
+            JoueursMax: jeu.JoueursMax,
+            JoueursMeilleur: jeu.JoueursMeilleur,
+            MecaniqueNoms: [],
+            ModeJeuNom: null,
+            Nom: jeu.Nom,
+            Note: null,
+            PartiesJouees: 0,
+            StatutJeu: jeu.Statut));
     }
 
     [Fact]
