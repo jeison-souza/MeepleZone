@@ -1,6 +1,7 @@
 ---
 title: "Projet approuvé : le volet social entre dans le MVP"
 date: 2026-10-06
+lastmod: 2026-11-19
 draft: false
 tags: ["Jalon 1", "Fondation", "MoSCoW"]
 categories: ["Documentation", "Carnet de route"]
@@ -12,7 +13,7 @@ Le projet a été approuvé à l'issue du Jalon 1. Le retour de l'enseignant est
 
 ## 2. Changement de périmètre : le social fait partie du MVP
 
-Dans la priorisation MoSCoW du billet précédent, le catalogue personnel était le seul élément « Must have ». Le volet social (amis, partage des collections) était classé « Should have ».
+Dans la priorisation MoSCoW de l'article précédent, le catalogue personnel était le seul élément « Must have ». Le volet social (amis, partage des collections) était classé « Should have ».
 
 La remarque de l'enseignant est que le catalogue seul ne suffit pas à faire une application transactionnelle à plusieurs utilisateurs. Sans interaction entre les utilisateurs, chacun se retrouve avec un inventaire isolé, ce qui est justement le problème que le projet cherche à résoudre. Le volet social est donc **intégré au cœur livré**.
 
@@ -47,4 +48,4 @@ Le temps disponible est limité et le MVP s'est déjà élargi. Remonter aussi l
 ## 4. Autres remarques à traiter
 
 * **Tests :** les tests actuels sont des exemples qui ne touchent aucun code de l'application. Ils seront remplacés par des tests du domaine dès que le catalogue sera implanté.
-* **Blogue :** les alternatives écartées seront discutées plus en détail dans les prochains posts (avantages, inconvénients et critère de choix), plutôt que simplement nommées.
+* **Blogue :** les alternatives écartées seront discutées plus en détail dans les prochains articles (avantages, inconvénients et critère de choix), plutôt que simplement nommées.
