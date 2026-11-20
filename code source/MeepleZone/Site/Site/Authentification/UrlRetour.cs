@@ -14,8 +14,7 @@ public static class UrlRetour
 
     private const int LongueurMax = 512;
 
-    // Retourner sur une page de connexion formerait une boucle.
-    private static readonly string[] PrefixesInterdits = ["/connexion", "/deconnexion"];
+    private static readonly string[] PrefixesInterdits = ["/connexion", "/deconnexion", "/compte-supprime"];
 
     public static string Valider(string? url)
     {
