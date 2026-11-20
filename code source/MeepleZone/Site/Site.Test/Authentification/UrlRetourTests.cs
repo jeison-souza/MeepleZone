@@ -48,6 +48,10 @@ public class UrlRetourTests
     [InlineData("/connexion-requise")]
     [InlineData("/Connexion-Requise?motif=erreur")]
     [InlineData("/deconnexion")]
+    [InlineData("/compte-supprime")]
+    [InlineData("/Compte-Supprime")]
+    [InlineData("/compte-supprime?test=1")]
+    [InlineData("/compte-supprime?retour=/profil")]
     public void Valider_AvecPageDeConnexion_RetourneAccueil(string url)
     {
         // Act
