@@ -2,6 +2,7 @@
    Palette : orange #D67C2F, Galaxie Deep #101026, crème #FBF5E9. Corps : Open Sans. */
 
 :root {
+    --main-width: 840px;
     --mz-orange: #D67C2F;
     --mz-orange-link: #A8530F; /* orange plus foncé pour le contraste sur le crème */
     --mz-deep: #101026;
@@ -77,6 +78,26 @@ h1, h2, h3, .logo a, .post-title, .entry-hint {
 [data-theme="dark"] .post-content a,
 [data-theme="dark"] .home-info .entry-content a {
     color: var(--mz-ban-lien);
+}
+
+/* Blocs repliables (shortcode imagerepliable) : titre cliquable en orange, avec de l'espace autour */
+.post-content details {
+    margin: 1.25rem 0;
+}
+
+.post-content details > summary {
+    width: fit-content;
+    cursor: pointer;
+    color: var(--mz-orange-link);
+    border-bottom: 1px solid currentColor;
+}
+
+[data-theme="dark"] .post-content details > summary {
+    color: var(--mz-ban-lien);
+}
+
+.post-content details[open] > summary {
+    margin-bottom: 0.75rem;
 }
 
 .logo a {
