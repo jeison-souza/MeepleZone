@@ -7,6 +7,8 @@ on:
       - 'code source/**'
   pull_request:
     branches: [ "main" ]
+  # Déclenchement manuel (bouton « Run workflow »), sur main : reconstruit, publie et redéploie.
+  workflow_dispatch:
 
 jobs:
   build-and-test:
@@ -20,12 +22,26 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Vérifier les fichiers modifiés
-      id: changes
+      id: filtre
+      if: github.event_name != 'workflow_dispatch'
       uses: dorny/paths-filter@v3
       with:
         filters: |
           src:
             - 'code source/**'
+
+    # Un déclenchement manuel n'a pas de différence à comparer : le code est toujours concerné.
+    - name: Déterminer si le code est concerné
+      id: changes
+      env:
+        EVENEMENT: ${{ github.event_name }}
+        FILTRE: ${{ steps.filtre.outputs.src }}
+      run: |
+        if [ "$EVENEMENT" = "workflow_dispatch" ]; then
+          echo "src=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "src=${FILTRE}" >> "$GITHUB_OUTPUT"
+        fi
 
     - name: Configurer le SDK .NET
       if: steps.changes.outputs.src == 'true'
@@ -74,7 +90,7 @@ jobs:
   # Livraison continue : seulement après un push sur main (jamais pour un PR) et des tests réussis.
   publier-image:
     needs: build-and-test
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -118,7 +134,7 @@ jobs:
   # Inactif tant que la variable de dépôt CD_ACTIF n'est pas « true » (webhook pas encore en place).
   deployer:
     needs: publier-image
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.CD_ACTIF == 'true'
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main' && vars.CD_ACTIF == 'true'
     runs-on: ubuntu-latest
     concurrency:
       group: deploiement
