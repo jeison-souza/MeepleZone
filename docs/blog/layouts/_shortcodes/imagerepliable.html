@@ -1,0 +1,11 @@
+{{- /*
+  Image d'un paquet de page dans un bloc repliable (fermé par défaut).
+  {{< imagerepliable summary="Titre cliquable" src="fichier.png" alt="Texte alternatif" >}}
+  Ajouter open="true" pour l'ouvrir par défaut. L'image est résolue dans le paquet de page, ce qui la publie.
+*/ -}}
+{{- $image := .Page.Resources.Get (.Get "src") -}}
+{{- if not $image -}}{{- errorf "imagerepliable : image introuvable dans le paquet de page : %q (%s)" (.Get "src") .Position -}}{{- end -}}
+<details{{ if eq (.Get "open") "true" }} open{{ end }}>
+  <summary>{{ .Get "summary" }}</summary>
+  <p><img loading="lazy" src="{{ $image.RelPermalink }}" alt="{{ .Get "alt" }}" style="max-width:100%;height:auto"></p>
+</details>
