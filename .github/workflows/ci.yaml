@@ -145,9 +145,18 @@ jobs:
         DEPLOY_WEBHOOK_URL: ${{ secrets.DEPLOY_WEBHOOK_URL }}
         DEPLOY_WEBHOOK_TOKEN: ${{ secrets.DEPLOY_WEBHOOK_TOKEN }}
       run: |
-        curl --fail --silent --show-error --max-time 30 -X POST \
+        # Affiche le code HTTP et le début de la réponse (jamais l'URL ni le jeton) pour diagnostiquer un échec.
+        code=$(curl --silent --show-error --max-time 30 -X POST \
           -H "X-Deploy-Token: ${DEPLOY_WEBHOOK_TOKEN}" \
-          "${DEPLOY_WEBHOOK_URL}"
+          --output "$RUNNER_TEMP/reponse.txt" --write-out '%{http_code}' \
+          "${DEPLOY_WEBHOOK_URL}")
+        echo "Webhook : HTTP ${code}"
+        head -c 300 "$RUNNER_TEMP/reponse.txt"
+        echo
+        if [ "${code}" -ge 300 ]; then
+          echo "::error::Le webhook de redéploiement a répondu HTTP ${code}."
+          exit 1
+        fi
 
     - name: Vérifier que le site répond
       env:
