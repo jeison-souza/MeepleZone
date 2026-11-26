@@ -124,6 +124,14 @@ h1:focus {
         color: #FFFFFF;
     }
 
+/* Version de l'application, poussée au bas du menu latéral. */
+.mz-menu-version {
+    margin-top: auto;
+    padding: 0.75rem 1rem;
+    color: rgba(244, 233, 212, 0.6);
+    font-size: 0.75rem;
+}
+
 /* ===== Menu de l'utilisateur ===== */
 /* Le bouton natif enveloppe l'avatar : il reçoit le clic, le focus et le clavier. */
 .mz-avatar-bouton {
