@@ -3,6 +3,9 @@
     <PropertyGroup>
         <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
         <UserSecretsId>8b470c99-89c0-4851-be60-3b1d1ebfe1bb</UserSecretsId>
+        <!-- Version affichée par le site : « dev », sauf si la construction fournit « numéro+commit ». -->
+        <InformationalVersion Condition="'$(InformationalVersion)' == ''">dev</InformationalVersion>
+        <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     </PropertyGroup>
 
     <ItemGroup>

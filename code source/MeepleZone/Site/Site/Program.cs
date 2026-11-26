@@ -28,8 +28,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddMudServices();
 
-// Version inscrite dans l'image, lue par la route /version et par le pied du menu latéral.
-builder.Services.AddSingleton(InformationsVersion.Lire(builder.Configuration));
+// Version inscrite à la compilation, lue par la route /version et par le pied du menu latéral.
+builder.Services.AddSingleton(InformationsVersion.Lire(typeof(Program).Assembly));
 
 // Production : proxy inverse (en-têtes transmis) et clés de protection des données conservées entre les redémarrages.
 builder.Services
