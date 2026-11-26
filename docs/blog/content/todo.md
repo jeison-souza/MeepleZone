@@ -35,10 +35,17 @@ hidden: false
 
 ### Jalon 4 : Livraison finale (07/12)
 - [ ] Volet social (MVP) : amis, partage de collections (#26, #27, #36)
-- [ ] Déploiement continu à chaque push sur `main`
-- [ ] Application accessible en ligne pour la correction
+- [x] Déploiement continu à chaque push sur `main` : image publiée, redéploiement et vérification de la version en ligne
+- [ ] Appliquer les migrations au démarrage de l'application; d'ici là, exécuter le script SQL avant de fusionner un PR qui ajoute une migration
+- [ ] Application accessible en ligne pour la correction : retirer la restriction d'accès et activer le pare-feu applicatif
+- [ ] Sauvegarde de la base de données, avec un essai de restauration
+- [ ] Adresse de courriel de contact sur le domaine
+- [ ] Documenter le retour à une version précédente
 - [ ] Should : choix des jeux pour une soirée
 - [ ] Could : planificateur de soirées, statistiques
+
+### Après le cours (Jalon 5)
+- [ ] Lenteur des écritures PostgreSQL : rétablir `synchronous_commit` (#168)
 
 ## 📅 Entrevues
 - [ ] Mi-parcours : 09/11
