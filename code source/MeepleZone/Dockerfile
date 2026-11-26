@@ -9,7 +9,11 @@ WORKDIR "/src/Site/Site"
 
 # --- Étape de publication (compile et publie en une seule passe) ---
 FROM build AS publish
-RUN dotnet publish "MeepleZone.Site.csproj" -c Release -o /app/publish --no-restore /p:UseAppHost=false
+# Numéro de version et commit, fournis par le pipeline et inscrits dans l'assembly (« dev » hors pipeline)
+ARG VERSION_NUMERO=dev
+ARG VERSION_COMMIT=
+RUN dotnet publish "MeepleZone.Site.csproj" -c Release -o /app/publish --no-restore /p:UseAppHost=false \
+    /p:InformationalVersion="${VERSION_NUMERO}${VERSION_COMMIT:++$VERSION_COMMIT}"
 
 # --- Étape finale / exécution ---
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
@@ -17,12 +21,6 @@ WORKDIR /app
 EXPOSE 8080
 
 COPY --from=publish /app/publish .
-
-# Numéro de version et commit, fournis par le pipeline et lus par l'application (« dev » hors pipeline)
-ARG VERSION_NUMERO=dev
-ARG VERSION_COMMIT=
-ENV Version__Numero=$VERSION_NUMERO \
-    Version__Commit=$VERSION_COMMIT
 
 # Exécuter sans les droits root (utilisateur "app" fourni par l'image)
 USER $APP_UID

@@ -1,10 +1,11 @@
-using Microsoft.Extensions.Configuration;
+using System.Reflection;
 
 namespace MeepleZone.Site.Versionnage;
 
 /// <summary>
-/// Version de l'application, inscrite dans l'image par la construction (variables <c>Version__Numero</c> et
-/// <c>Version__Commit</c>). Hors d'une image construite, les deux sont absentes et la version vaut « dev ».
+/// Version de l'application, inscrite dans l'assembly à la compilation sous la forme <c>numéro+commit</c>
+/// (propriété <c>InformationalVersion</c>), pour qu'un déploiement ne puisse pas la remplacer.
+/// Hors du pipeline, la version vaut « dev ».
 /// </summary>
 public sealed class InformationsVersion
 {
@@ -39,15 +40,22 @@ public sealed class InformationsVersion
         }
     }
 
-    public static InformationsVersion Lire(IConfiguration configuration)
+    public static InformationsVersion Lire(Assembly assembly)
     {
-        return new InformationsVersion(LireValeur(configuration, "Version:Numero"), LireValeur(configuration, "Version:Commit"));
+        return Lire(assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion);
     }
 
-    private static string LireValeur(IConfiguration configuration, string cle)
+    /// <summary>Sépare « numéro+commit »; une partie absente ou vide vaut « dev ».</summary>
+    public static InformationsVersion Lire(string? versionInformationnelle)
     {
-        var valeur = configuration[cle];
+        var parties = (versionInformationnelle ?? string.Empty).Split('+', 2);
+        var commit = parties.Length > 1 ? parties[1] : null;
 
+        return new InformationsVersion(Normaliser(parties[0]), Normaliser(commit));
+    }
+
+    private static string Normaliser(string? valeur)
+    {
         return string.IsNullOrWhiteSpace(valeur) ? ValeurParDefaut : valeur.Trim();
     }
 }

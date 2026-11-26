@@ -1,7 +1,5 @@
 using FluentAssertions;
 using MeepleZone.Site.Versionnage;
-using Microsoft.Extensions.Configuration;
-using System.Collections.Generic;
 using Xunit;
 
 namespace MeepleZone.Site.Test.Versionnage;
@@ -16,7 +14,7 @@ public class InformationsVersionTests
     public void Lire_AvecNumero_LeConserveTelQuel(string numero)
     {
         // Act
-        var version = Lire(numero, Sha);
+        var version = InformationsVersion.Lire($"{numero}+{Sha}");
 
         // Assert
         version.Numero.Should().Be(numero);
@@ -27,10 +25,22 @@ public class InformationsVersionTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
+    [InlineData("+")]
     public void Lire_ValeursAbsentesOuVides_ValentDev(string? valeur)
     {
         // Act
-        var version = Lire(valeur, valeur);
+        var version = InformationsVersion.Lire(valeur);
+
+        // Assert
+        version.Numero.Should().Be("dev");
+        version.Commit.Should().Be("dev");
+    }
+
+    [Fact]
+    public void Lire_AssemblyConstruitHorsDuPipeline_VautDev()
+    {
+        // Act
+        var version = InformationsVersion.Lire(typeof(InformationsVersion).Assembly);
 
         // Assert
         version.Numero.Should().Be("dev");
@@ -41,30 +51,18 @@ public class InformationsVersionTests
     public void Libelle_AvecNumeroEtCommit_AfficheSeptCaracteresDuCommit()
     {
         // Act / Assert
-        Lire("2026.11.25.158", Sha).Libelle.Should().Be("Version 2026.11.25.158 · 8271629");
+        InformationsVersion.Lire($"2026.11.25.158+{Sha}").Libelle.Should().Be("Version 2026.11.25.158 · 8271629");
     }
 
     [Theory]
-    [InlineData(null, null, "Version dev")]
-    [InlineData("", "", "Version dev")]
-    [InlineData("0.3.1", null, "Version 0.3.1")]
-    [InlineData(null, "dev", "Version dev")]
-    public void Libelle_SansCommit_NAfficheQueLeNumero(string? numero, string? commit, string attendu)
+    [InlineData(null, "Version dev")]
+    [InlineData("dev", "Version dev")]
+    [InlineData("0.3.1", "Version 0.3.1")]
+    [InlineData("0.3.1+", "Version 0.3.1")]
+    [InlineData("dev+dev", "Version dev")]
+    public void Libelle_SansCommit_NAfficheQueLeNumero(string? versionInformationnelle, string attendu)
     {
         // Act / Assert
-        Lire(numero, commit).Libelle.Should().Be(attendu);
-    }
-
-    private static InformationsVersion Lire(string? numero, string? commit)
-    {
-        var configuration = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?>
-            {
-                ["Version:Numero"] = numero,
-                ["Version:Commit"] = commit,
-            })
-            .Build();
-
-        return InformationsVersion.Lire(configuration);
+        InformationsVersion.Lire(versionInformationnelle).Libelle.Should().Be(attendu);
     }
 }

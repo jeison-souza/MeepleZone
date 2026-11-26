@@ -1,9 +1,7 @@
 using FluentAssertions;
 using MeepleZone.Site.Versionnage;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,20 +15,14 @@ public class GestionVersionTests
     public async Task Traiter_RepondLeNumeroSeulEnTexteBrutSansMiseEnCache()
     {
         // Arrange
-        var configuration = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?>
-            {
-                ["Version:Numero"] = "2026.11.25.158",
-                ["Version:Commit"] = "82716290123456789abcdef0123456789abcdef0",
-            })
-            .Build();
+        var version = InformationsVersion.Lire("2026.11.25.158+82716290123456789abcdef0123456789abcdef0");
         using var services = new ServiceCollection().AddLogging().BuildServiceProvider();
         using var corps = new MemoryStream();
         var contexte = new DefaultHttpContext { RequestServices = services };
         contexte.Response.Body = corps;
 
         // Act
-        var resultat = GestionVersion.Traiter(contexte.Response, InformationsVersion.Lire(configuration));
+        var resultat = GestionVersion.Traiter(contexte.Response, version);
         await resultat.ExecuteAsync(contexte);
 
         // Assert
