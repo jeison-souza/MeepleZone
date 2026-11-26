@@ -3,6 +3,8 @@ name: Pipeline CI .NET
 on:
   push:
     branches: [ "main" ]
+    # Une étiquette de version (v0.3.0) publie l'image numérotée; le filtre de chemins ne s'applique pas aux étiquettes.
+    tags: [ "v*" ]
     paths:
       - 'code source/**'
   pull_request:
@@ -23,21 +25,22 @@ jobs:
 
     - name: Vérifier les fichiers modifiés
       id: filtre
-      if: github.event_name != 'workflow_dispatch'
+      if: github.event_name != 'workflow_dispatch' && github.ref_type != 'tag'
       uses: dorny/paths-filter@v3
       with:
         filters: |
           src:
             - 'code source/**'
 
-    # Un déclenchement manuel n'a pas de différence à comparer : le code est toujours concerné.
+    # Un déclenchement manuel ou une étiquette de version n'a pas de différence à comparer : le code est toujours concerné.
     - name: Déterminer si le code est concerné
       id: changes
       env:
         EVENEMENT: ${{ github.event_name }}
+        TYPE_REF: ${{ github.ref_type }}
         FILTRE: ${{ steps.filtre.outputs.src }}
       run: |
-        if [ "$EVENEMENT" = "workflow_dispatch" ]; then
+        if [ "$EVENEMENT" = "workflow_dispatch" ] || [ "$TYPE_REF" = "tag" ]; then
           echo "src=true" >> "$GITHUB_OUTPUT"
         else
           echo "src=${FILTRE}" >> "$GITHUB_OUTPUT"
@@ -87,10 +90,10 @@ jobs:
           echo "::endgroup::"
         done < "$RUNNER_TEMP/solutions.txt"
 
-  # Livraison continue : seulement après un push sur main (jamais pour un PR) et des tests réussis.
+  # Livraison continue : après un push sur main ou une étiquette de version (jamais pour un PR) et des tests réussis.
   publier-image:
     needs: build-and-test
-    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -115,9 +118,15 @@ jobs:
       uses: docker/metadata-action@v5
       with:
         images: ghcr.io/${{ github.repository }}
+        # Sur main : « latest » et « sha-<commit> ». Sur une étiquette v0.3.0 : « 0.3.0 » et « 0.3 »,
+        # sans déplacer « latest », qui reste réservée à main (c'est elle qui est déployée).
+        flavor: |
+          latest=false
         tags: |
-          type=raw,value=latest
-          type=sha,prefix=sha-,format=long
+          type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+          type=sha,prefix=sha-,format=long,enable=${{ github.ref == 'refs/heads/main' }}
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
 
     - name: Construire et publier l'image
       uses: docker/build-push-action@v6
