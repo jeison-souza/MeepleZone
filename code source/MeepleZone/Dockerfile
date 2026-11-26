@@ -18,6 +18,12 @@ EXPOSE 8080
 
 COPY --from=publish /app/publish .
 
+# Numéro de version et commit, fournis par le pipeline et lus par l'application (« dev » hors pipeline)
+ARG VERSION_NUMERO=dev
+ARG VERSION_COMMIT=
+ENV Version__Numero=$VERSION_NUMERO \
+    Version__Commit=$VERSION_COMMIT
+
 # Exécuter sans les droits root (utilisateur "app" fourni par l'image)
 USER $APP_UID
 ENTRYPOINT ["dotnet", "MeepleZone.Site.dll"]

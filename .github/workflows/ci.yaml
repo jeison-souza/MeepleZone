@@ -98,9 +98,27 @@ jobs:
     permissions:
       contents: read
       packages: write
+    outputs:
+      numero: ${{ steps.version.outputs.numero }}
     steps:
     - name: Récupérer le dépôt (Checkout)
       uses: actions/checkout@v4
+
+    # Sur une étiquette v0.3.1 : « 0.3.1 ». Sinon : date du build (heure du Québec) et numéro de l'exécution,
+    # suivi du numéro de tentative si l'exécution est relancée (deux builds n'ont jamais le même numéro).
+    - name: Calculer le numéro de version
+      id: version
+      run: |
+        if [ "$GITHUB_REF_TYPE" = "tag" ]; then
+          numero="${GITHUB_REF_NAME#v}"
+        else
+          numero="$(TZ=America/Toronto date +%Y.%m.%d).${GITHUB_RUN_NUMBER}"
+          if [ "$GITHUB_RUN_ATTEMPT" -gt 1 ]; then
+            numero="${numero}.${GITHUB_RUN_ATTEMPT}"
+          fi
+        fi
+        echo "Version : ${numero}"
+        echo "numero=${numero}" >> "$GITHUB_OUTPUT"
 
     - name: Configurer Docker Buildx
       uses: docker/setup-buildx-action@v3
@@ -134,12 +152,15 @@ jobs:
         context: 'code source/MeepleZone'
         file: 'code source/MeepleZone/Dockerfile'
         push: true
+        build-args: |
+          VERSION_NUMERO=${{ steps.version.outputs.numero }}
+          VERSION_COMMIT=${{ github.sha }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
-  # Déclenche le redéploiement sur le serveur puis vérifie que le site répond.
+  # Déclenche le redéploiement sur le serveur puis vérifie que le site sert la version qui vient d'être publiée.
   # Inactif tant que la variable de dépôt CD_ACTIF n'est pas « true » (webhook pas encore en place).
   deployer:
     needs: publier-image
@@ -158,19 +179,27 @@ jobs:
           -H "X-Deploy-Token: ${DEPLOY_WEBHOOK_TOKEN}" \
           "${DEPLOY_WEBHOOK_URL}"
 
-    - name: Vérifier que le site répond
+    - name: Vérifier que la nouvelle version est en ligne
       env:
         SITE_URL: ${{ vars.SITE_URL }}
+        VERSION_ATTENDUE: ${{ needs.publier-image.outputs.numero }}
       run: |
-        # Laisse le temps au serveur de télécharger l'image et de recréer le conteneur (migrations comprises).
-        sleep 45
-        for tentative in $(seq 1 20); do
-          code=$(curl --silent --output /dev/null --write-out '%{http_code}' --max-time 15 "${SITE_URL}" || true)
-          echo "Tentative ${tentative} : HTTP ${code}"
-          if [ "${code}" = "200" ]; then
+        # L'ancien conteneur répond encore pendant le téléchargement de l'image : seul le numéro de version
+        # prouve que le redéploiement a eu lieu (migrations comprises).
+        echo "Version attendue : ${VERSION_ATTENDUE}"
+        for tentative in $(seq 1 30); do
+          sleep 15
+          code=$(curl --silent --max-time 15 --output "$RUNNER_TEMP/version.txt" --write-out '%{http_code}' \
+            "${SITE_URL%/}/version?essai=${tentative}" || true)
+          recue=""
+          # Seule une réponse qui ressemble à un numéro de version est affichée dans le journal.
+          if [ "${code}" = "200" ] && grep -qxE '[0-9A-Za-z.-]{1,40}' "$RUNNER_TEMP/version.txt"; then
+            recue=$(cat "$RUNNER_TEMP/version.txt")
+          fi
+          echo "Tentative ${tentative} : HTTP ${code} ${recue}"
+          if [ "${recue}" = "${VERSION_ATTENDUE}" ]; then
             exit 0
           fi
-          sleep 15
         done
-        echo "::error::Le site n'a pas répondu 200 après le déploiement (${SITE_URL})."
+        echo "::error::La version ${VERSION_ATTENDUE} n'est pas en ligne après le déploiement."
         exit 1
