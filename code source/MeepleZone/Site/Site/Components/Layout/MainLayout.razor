@@ -1,4 +1,6 @@
 @inherits LayoutComponentBase
+@using MeepleZone.Site.Versionnage
+@inject InformationsVersion Version
 <MudThemeProvider Theme="@MeepleZoneTheme" />
 <MudPopoverProvider />
 <MudDialogProvider />
@@ -61,6 +63,7 @@
             </a>
         </MudDrawerHeader>
         <NavMenu />
+        <div class="mz-menu-version">@Version.Libelle</div>
     </MudDrawer>
 
     <MudMainContent Class="mz-contenu">

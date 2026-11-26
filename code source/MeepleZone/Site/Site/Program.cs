@@ -7,6 +7,7 @@ using MeepleZone.Site.Authentification.Liaison;
 using MeepleZone.Site.Authentification.Suppression;
 using MeepleZone.Site.Components;
 using MeepleZone.Site.Extensions;
+using MeepleZone.Site.Versionnage;
 using MeepleZone.Systeme.Donnees.Extensions;
 using MeepleZone.Systeme.Interfaces;
 using Microsoft.AspNetCore.Authentication;
@@ -26,6 +27,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddMudServices();
+
+// Version inscrite dans l'image, lue par la route /version et par le pied du menu latéral.
+builder.Services.AddSingleton(InformationsVersion.Lire(builder.Configuration));
 
 // Production : proxy inverse (en-têtes transmis) et clés de protection des données conservées entre les redémarrages.
 builder.Services
@@ -119,6 +123,10 @@ app.MapRazorComponents<App>()
     .AddAdditionalAssemblies(typeof(MeepleZone.Site.Client._Imports).Assembly);
 
 // (Endpoints)
+// Anonyme : le pipeline de déploiement l'interroge sans session.
+app.MapGet(GestionVersion.Route, (HttpResponse reponse, InformationsVersion version) => GestionVersion.Traiter(reponse, version))
+    .AllowAnonymous();
+
 // L'adresse de retour passe toujours par UrlRetour : seul un chemin local du site est accepté.
 app.MapGet("/connexion/Google", (string? retour, string? creation) => Results.Challenge(ProprietesConnexion.Creer(retour, creation), [GoogleDefaults.AuthenticationScheme]));
 app.MapGet("/connexion/Microsoft", (string? retour, string? creation) => Results.Challenge(ProprietesConnexion.Creer(retour, creation), [MicrosoftAccountDefaults.AuthenticationScheme]));
