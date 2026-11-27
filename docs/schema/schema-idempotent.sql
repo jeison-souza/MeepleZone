@@ -557,3 +557,85 @@ BEGIN
 END $EF$;
 COMMIT;
 
+START TRANSACTION;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM historique_migration WHERE "migration_id" = '20261127190059_CreationTablesAmities') THEN
+    CREATE TABLE amitie (
+        utilisateur_a_id uuid NOT NULL,
+        utilisateur_b_id uuid NOT NULL,
+        cree_le timestamp with time zone NOT NULL DEFAULT (now()),
+        CONSTRAINT pk_amitie PRIMARY KEY (utilisateur_a_id, utilisateur_b_id),
+        CONSTRAINT ck_amitie_utilisateurs_ordre CHECK (utilisateur_a_id < utilisateur_b_id),
+        CONSTRAINT fk_amitie_utilisateur_utilisateur_a_id FOREIGN KEY (utilisateur_a_id) REFERENCES utilisateur (id) ON DELETE CASCADE,
+        CONSTRAINT fk_amitie_utilisateur_utilisateur_b_id FOREIGN KEY (utilisateur_b_id) REFERENCES utilisateur (id) ON DELETE CASCADE
+    );
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM historique_migration WHERE "migration_id" = '20261127190059_CreationTablesAmities') THEN
+    CREATE TABLE demande_amitie (
+        id uuid NOT NULL,
+        demandeur_id uuid NOT NULL,
+        destinataire_id uuid,
+        courriel_destinataire text COLLATE courriel_ci,
+        statut text NOT NULL DEFAULT 'en_attente',
+        cree_le timestamp with time zone NOT NULL DEFAULT (now()),
+        modifie_le timestamp with time zone NOT NULL DEFAULT (now()),
+        CONSTRAINT pk_demande_amitie PRIMARY KEY (id),
+        CONSTRAINT ck_demande_amitie_demandeur_distinct CHECK (demandeur_id <> destinataire_id),
+        CONSTRAINT ck_demande_amitie_destinataire CHECK ((destinataire_id IS NULL) <> (courriel_destinataire IS NULL)),
+        CONSTRAINT ck_demande_amitie_statut CHECK (statut IN ('en_attente', 'ignoree', 'rejetee')),
+        CONSTRAINT fk_demande_amitie_utilisateur_demandeur_id FOREIGN KEY (demandeur_id) REFERENCES utilisateur (id) ON DELETE CASCADE,
+        CONSTRAINT fk_demande_amitie_utilisateur_destinataire_id FOREIGN KEY (destinataire_id) REFERENCES utilisateur (id) ON DELETE CASCADE
+    );
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM historique_migration WHERE "migration_id" = '20261127190059_CreationTablesAmities') THEN
+    CREATE INDEX ix_amitie_utilisateur_b_id ON amitie (utilisateur_b_id);
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM historique_migration WHERE "migration_id" = '20261127190059_CreationTablesAmities') THEN
+    CREATE INDEX ix_demande_amitie_courriel_destinataire ON demande_amitie (courriel_destinataire);
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM historique_migration WHERE "migration_id" = '20261127190059_CreationTablesAmities') THEN
+    CREATE UNIQUE INDEX ix_demande_amitie_demandeur_id_courriel_destinataire ON demande_amitie (demandeur_id, courriel_destinataire);
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM historique_migration WHERE "migration_id" = '20261127190059_CreationTablesAmities') THEN
+    CREATE UNIQUE INDEX ix_demande_amitie_demandeur_id_destinataire_id ON demande_amitie (demandeur_id, destinataire_id);
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM historique_migration WHERE "migration_id" = '20261127190059_CreationTablesAmities') THEN
+    CREATE INDEX ix_demande_amitie_destinataire_id ON demande_amitie (destinataire_id);
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM historique_migration WHERE "migration_id" = '20261127190059_CreationTablesAmities') THEN
+    INSERT INTO historique_migration (migration_id, product_version)
+    VALUES ('20261127190059_CreationTablesAmities', '10.0.14');
+    END IF;
+END $EF$;
+COMMIT;
+
