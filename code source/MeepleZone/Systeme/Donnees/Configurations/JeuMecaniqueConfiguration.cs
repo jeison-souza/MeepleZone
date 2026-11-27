@@ -14,13 +14,13 @@ internal class JeuMecaniqueConfiguration : IEntityTypeConfiguration<JeuMecanique
 
         builder.HasOne<Jeu>()
             .WithMany()
-            .HasForeignKey(u => u.JeuId)
+            .HasForeignKey(j => j.JeuId)
             .HasConstraintName("fk_jeu_mecanique_jeu_jeu_id")
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne<Mecanique>()
             .WithMany()
-            .HasForeignKey(u => u.MecaniqueId)
+            .HasForeignKey(j => j.MecaniqueId)
             .HasConstraintName("fk_jeu_mecanique_mecanique_mecanique_id")
             .OnDelete(DeleteBehavior.Restrict);
     }

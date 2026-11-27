@@ -2,8 +2,8 @@
 
 | | |
 |---|---|
-| **Version** | 0.10 ([historique des versions](#historique-des-versions)) |
-| **Date** | 17 novembre 2026 |
+| **Version** | 0.11 ([historique des versions](#historique-des-versions)) |
+| **Date** | 27 novembre 2026 |
 | **Statut** | Complet pour le produit minimal viable; sujet à révision après la mise en œuvre de l'authentification par les fournisseurs d'identité et les premiers tests contre une base de données réelle |
 | **Portée** | Comptes, annexes, catalogue de jeux, collection et amitiés |
 
@@ -11,7 +11,7 @@ Ce document décrit les tables de la base de données, leurs champs et leurs rel
 
 Le système retenu est PostgreSQL (voir l'[ADR 0005](../adr/0005-base-de-donnees.md)). L'authentification passe uniquement par des fournisseurs externes, sans mot de passe local (voir l'[ADR 0001](../adr/0001-authentification.md)), et la liaison de plusieurs fournisseurs à un même compte suit l'[ADR 0004](../adr/0004-liaison-comptes-fournisseurs.md).
 
-Le script SQL généré par les migrations d'EF Core se trouve dans [`schema.sql`](schema.sql). Il crée les tables décrites ici, dans l'ordre des migrations, et ne couvre pour l'instant que celles qui sont déjà migrées : `utilisateur`, `identite_externe`, `annexe`, `mode_jeu`, `mecanique`, `jeu`, `jeu_mecanique` et `possession`. Il contient aussi les données initiales des modes de jeu et des mécaniques. Restent à migrer `demande_amitie` et `amitie`. Il est généré à nouveau à chaque migration, à partir de `code source/MeepleZone` : `dotnet ef migrations script --project Systeme/Donnees --output ../../docs/schema/schema.sql`. Sa version idempotente, [`schema-idempotent.sql`](schema-idempotent.sql), vérifie `historique_migration` avant chaque migration : elle s'applique à une base dans n'importe quel état, et se régénère de la même façon avec `--idempotent` et `--output ../../docs/schema/schema-idempotent.sql`. L'application applique elle-même les migrations à son démarrage; ces scripts servent à la révision et, au besoin, à une application manuelle (voir l'[ADR 0007](../adr/0007-strategie-de-migrations.md)).
+Le script SQL généré par les migrations d'EF Core se trouve dans [`schema.sql`](schema.sql). Il crée les dix tables décrites ici, dans l'ordre des migrations. Il contient aussi les données initiales des modes de jeu, des mécaniques et des comptes techniques. Il est généré à nouveau à chaque migration, à partir de `code source/MeepleZone` : `dotnet ef migrations script --project Systeme/Donnees --output ../../docs/schema/schema.sql`. Sa version idempotente, [`schema-idempotent.sql`](schema-idempotent.sql), vérifie `historique_migration` avant chaque migration : elle s'applique à une base dans n'importe quel état, et se régénère de la même façon avec `--idempotent` et `--output ../../docs/schema/schema-idempotent.sql`. L'application applique elle-même les migrations à son démarrage; ces scripts servent à la révision et, au besoin, à une application manuelle (voir l'[ADR 0007](../adr/0007-strategie-de-migrations.md)).
 
 ## Contenu
 
@@ -461,6 +461,7 @@ Contraintes sur la table :
 - `CHECK ((destinataire_id IS NULL) <> (courriel_destinataire IS NULL))`¹ : exactement un des deux est rempli.
 - `CHECK (demandeur_id <> destinataire_id)`¹ : on ne se demande pas soi-même en ami.
 - `UNIQUE (demandeur_id, destinataire_id)` et `UNIQUE (demandeur_id, courriel_destinataire)` : une seule demande à la même personne.
+- Un index sur `destinataire_id`, pour retrouver les demandes reçues, et un index sur `courriel_destinataire`, pour retrouver les demandes qui attendent un courriel au moment d'une inscription ou de l'ajout de ce courriel à un compte.
 
 Règles :
 
@@ -543,5 +544,6 @@ Amitiés :
 | 0.8 | 11 novembre 2026 | Migration de `possession` (collection de chaque utilisateur), avec ses contraintes `CHECK`, ses clés étrangères et l'unicité du couple (`utilisateur_id`, `jeu_id`). |
 | 0.9 | 14 novembre 2026 | Données initiales de `utilisateur` : les comptes techniques « Système » et « Utilisateur supprimé » (rôle `systeme`, identifiants fixes de version 7, codes d'amitié fictifs `SYSTEME2` et `EFFACE22`). |
 | 0.10 | 17 novembre 2026 | `jeu.nom_recherche` : colonne calculée stockée avec index de trigrammes, extension `pg_trgm` et fonction `unaccent_immuable` ([ADR 0015](../adr/0015-recherche-sans-accents.md)). |
+| 0.11 | 27 novembre 2026 | Migration des amitiés : `demande_amitie` et `amitie`, avec leurs contraintes `CHECK`, leurs clés étrangères et leurs index, dont un index non unique sur `demande_amitie.courriel_destinataire`. Les dix tables du schéma sont migrées. |
 
 Le numéro de version monte à chaque ajout ou modification importante du schéma. La version 1.0 correspondra au schéma complet du produit minimal viable.

@@ -25,6 +25,34 @@ namespace MeepleZone.Systeme.Donnees.Migrations
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "unaccent");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("MeepleZone.Systeme.Entites.Amitie", b =>
+                {
+                    b.Property<Guid>("UtilisateurAId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("utilisateur_a_id");
+
+                    b.Property<Guid>("UtilisateurBId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("utilisateur_b_id");
+
+                    b.Property<DateTimeOffset>("CreeLe")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("cree_le")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("UtilisateurAId", "UtilisateurBId")
+                        .HasName("pk_amitie");
+
+                    b.HasIndex("UtilisateurBId")
+                        .HasDatabaseName("ix_amitie_utilisateur_b_id");
+
+                    b.ToTable("amitie", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_amitie_utilisateurs_ordre", "utilisateur_a_id < utilisateur_b_id");
+                        });
+                });
+
             modelBuilder.Entity("MeepleZone.Systeme.Entites.Annexe", b =>
                 {
                     b.Property<Guid>("Id")
@@ -72,6 +100,72 @@ namespace MeepleZone.Systeme.Donnees.Migrations
                             t.HasCheckConstraint("ck_annexe_nom_fichier", "char_length(nom_fichier) BETWEEN 1 AND 255");
 
                             t.HasCheckConstraint("ck_annexe_taille_octets", "taille_octets > 0");
+                        });
+                });
+
+            modelBuilder.Entity("MeepleZone.Systeme.Entites.DemandeAmitie", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("CourrielDestinataire")
+                        .HasColumnType("text")
+                        .HasColumnName("courriel_destinataire")
+                        .UseCollation("courriel_ci");
+
+                    b.Property<DateTimeOffset>("CreeLe")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("cree_le")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<Guid>("DemandeurId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("demandeur_id");
+
+                    b.Property<Guid?>("DestinataireId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("destinataire_id");
+
+                    b.Property<DateTimeOffset>("ModifieLe")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modifie_le")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Statut")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("en_attente")
+                        .HasColumnName("statut");
+
+                    b.HasKey("Id")
+                        .HasName("pk_demande_amitie");
+
+                    b.HasIndex("CourrielDestinataire")
+                        .HasDatabaseName("ix_demande_amitie_courriel_destinataire");
+
+                    b.HasIndex("DestinataireId")
+                        .HasDatabaseName("ix_demande_amitie_destinataire_id");
+
+                    b.HasIndex("DemandeurId", "CourrielDestinataire")
+                        .IsUnique()
+                        .HasDatabaseName("ix_demande_amitie_demandeur_id_courriel_destinataire");
+
+                    b.HasIndex("DemandeurId", "DestinataireId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_demande_amitie_demandeur_id_destinataire_id");
+
+                    b.ToTable("demande_amitie", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_demande_amitie_demandeur_distinct", "demandeur_id <> destinataire_id");
+
+                            t.HasCheckConstraint("ck_demande_amitie_destinataire", "(destinataire_id IS NULL) <> (courriel_destinataire IS NULL)");
+
+                            t.HasCheckConstraint("ck_demande_amitie_statut", "statut IN ('en_attente', 'ignoree', 'rejetee')");
                         });
                 });
 
@@ -736,6 +830,23 @@ namespace MeepleZone.Systeme.Donnees.Migrations
                         });
                 });
 
+            modelBuilder.Entity("MeepleZone.Systeme.Entites.Amitie", b =>
+                {
+                    b.HasOne("MeepleZone.Systeme.Entites.Utilisateur", null)
+                        .WithMany()
+                        .HasForeignKey("UtilisateurAId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_amitie_utilisateur_utilisateur_a_id");
+
+                    b.HasOne("MeepleZone.Systeme.Entites.Utilisateur", null)
+                        .WithMany()
+                        .HasForeignKey("UtilisateurBId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_amitie_utilisateur_utilisateur_b_id");
+                });
+
             modelBuilder.Entity("MeepleZone.Systeme.Entites.Annexe", b =>
                 {
                     b.HasOne("MeepleZone.Systeme.Entites.Utilisateur", null)
@@ -744,6 +855,22 @@ namespace MeepleZone.Systeme.Donnees.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_annexe_utilisateur_cree_par_id");
+                });
+
+            modelBuilder.Entity("MeepleZone.Systeme.Entites.DemandeAmitie", b =>
+                {
+                    b.HasOne("MeepleZone.Systeme.Entites.Utilisateur", null)
+                        .WithMany()
+                        .HasForeignKey("DemandeurId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_demande_amitie_utilisateur_demandeur_id");
+
+                    b.HasOne("MeepleZone.Systeme.Entites.Utilisateur", null)
+                        .WithMany()
+                        .HasForeignKey("DestinataireId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_demande_amitie_utilisateur_destinataire_id");
                 });
 
             modelBuilder.Entity("MeepleZone.Systeme.Entites.IdentiteExterne", b =>
