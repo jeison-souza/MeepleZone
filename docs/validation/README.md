@@ -22,7 +22,7 @@ Les tests unitaires du projet n'utilisent pas de base de données ([ADR 0008](..
 
 ## Exécution
 
-1. Appliquer `docs/schema/schema-idempotent.sql` avec le compte de déploiement (deux fois : la seconde ne doit rien changer). Les migrations ne s'appliquent jamais avec un compte d'administration du serveur : les tables en deviendraient propriétaires et le compte de l'application n'y aurait pas accès ([ADR 0007](../adr/0007-strategie-de-migrations.md)).
+1. Appliquer les migrations avec le compte de déploiement : en démarrant l'application avec la chaîne `ConnectionStrings:MeepleZoneMigration` dans les secrets de l'utilisateur, ou en exécutant `docs/schema/schema-idempotent.sql` (deux fois : la seconde ne doit rien changer). Les migrations ne s'appliquent jamais avec un compte d'administration du serveur : les tables en deviendraient propriétaires et le compte de l'application n'y aurait pas accès ([ADR 0007](../adr/0007-strategie-de-migrations.md)).
 2. Exécuter chaque script **en entier**, avec le même compte. Les scripts qui l'indiquent commencent par afficher le compte utilisé.
 3. La dernière requête de chaque script doit afficher `ok = true` à toutes les lignes.
 

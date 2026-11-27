@@ -5,9 +5,11 @@ using MeepleZone.Site.Authentification;
 using MeepleZone.Site.Authentification.Extensions;
 using MeepleZone.Site.Authentification.Liaison;
 using MeepleZone.Site.Authentification.Suppression;
+using MeepleZone.Site.BaseDonnees;
 using MeepleZone.Site.Components;
 using MeepleZone.Site.Extensions;
 using MeepleZone.Site.Versionnage;
+using MeepleZone.Systeme.Donnees.BaseDonnees;
 using MeepleZone.Systeme.Donnees.Extensions;
 using MeepleZone.Systeme.Interfaces;
 using Microsoft.AspNetCore.Authentication;
@@ -92,6 +94,19 @@ builder.Services
     .AjouterDomaineCollection();
 
 var app = builder.Build();
+
+// La base est mise à jour avant que l'application accepte des requêtes, avec le rôle de déploiement.
+var chaineMigration = ConfigurationMigration.LireChaineConnexion(app.Configuration, app.Environment);
+if (chaineMigration is null)
+{
+    app.Logger.LogWarning(
+        "ConnectionStrings:{NomChaine} manquant : les migrations ne sont pas appliquées au démarrage.",
+        ConfigurationMigration.NomChaine);
+}
+else
+{
+    await MigrateurBaseDonnees.MigrerAsync(chaineMigration, app.Logger);
+}
 
 // Doit venir en premier : le schéma (https) et l'adresse doivent être corrigés avant HSTS, la redirection HTTPS et l'authentification.
 app.UseForwardedHeaders();
