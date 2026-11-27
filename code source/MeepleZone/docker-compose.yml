@@ -1,24 +1,27 @@
 services:
   meeplezone:
-    image: mcr.microsoft.com/dotnet/aspnet:10.0
+    # Image publiée par le pipeline à chaque push sur main. Pour revenir à une version précédente, utiliser l'étiquette sha-<commit>.
+    image: ghcr.io/jeison-souza/meeplezone:latest
     container_name: MeepleZone
     environment:
       Authentication__Microsoft__ClientId: ${MICROSOFT_CLIENT_ID:?Définir MICROSOFT_CLIENT_ID dans .env}
       Authentication__Microsoft__ClientSecret: ${MICROSOFT_CLIENT_SECRET:?Définir MICROSOFT_CLIENT_SECRET dans .env}
       Authentication__Google__ClientId: ${GOOGLE_CLIENT_ID:?Définir GOOGLE_CLIENT_ID dans .env}
       Authentication__Google__ClientSecret: ${GOOGLE_CLIENT_SECRET:?Définir GOOGLE_CLIENT_SECRET dans .env}
-      ConnectionStrings__MeepleZone: Host=${POSTGRES_HOST:?Définir POSTGRES_HOST dans .env};Database=${POSTGRES_DATABASE:?Définir POSTGRES_DATABASE dans .env};Username=${POSTGRES_USER:?Définir POSTGRES_USER dans .env};Password=${POSTGRES_PASSWORD:?Définir POSTGRES_PASSWORD dans .env};SSL Mode=VerifyFull
+      # Accès aux données, avec le rôle de l'application.
+      ConnectionStrings__MeepleZone: Host=${POSTGRES_HOST:?Définir POSTGRES_HOST dans .env};Database=${POSTGRES_DATABASE:?Définir POSTGRES_DATABASE dans .env};Username=${POSTGRES_USER:?Définir POSTGRES_USER dans .env};Password=${POSTGRES_PASSWORD:?Définir POSTGRES_PASSWORD dans .env};SSL Mode=VerifyFull;Root Certificate=/certificats/ca.crt
+      # Sert seulement à appliquer les migrations au démarrage, avec le rôle de déploiement.
+      ConnectionStrings__MeepleZoneMigration: Host=${POSTGRES_HOST:?Définir POSTGRES_HOST dans .env};Database=${POSTGRES_DATABASE:?Définir POSTGRES_DATABASE dans .env};Username=${POSTGRES_DEPLOY_USER:?Définir POSTGRES_DEPLOY_USER dans .env};Password=${POSTGRES_DEPLOY_PASSWORD:?Définir POSTGRES_DEPLOY_PASSWORD dans .env};SSL Mode=VerifyFull;Root Certificate=/certificats/ca.crt
       # Adresse source de confiance pour les en-têtes X-Forwarded-* (celle que l'application voit, voir .env.example) et dossier des clés de protection des données (cookies, antiforgery).
       EnTetesTransmis__Proxys__0: ${PROXY_IP:?Définir PROXY_IP dans .env}
       ProtectionDonnees__Repertoire: /cles
     extra_hosts:
       - "${POSTGRES_HOST:?Définir POSTGRES_HOST dans .env}:${POSTGRES_IP:?Définir POSTGRES_IP dans .env}"
     volumes:
-      - ${DOCKERDIR:?Définir DOCKERDIR dans .env}/MeepleZone/App:/app
+      # Certificat public de l'autorité qui a signé celui du serveur PostgreSQL.
+      - ${DOCKERDIR:?Définir DOCKERDIR dans .env}/MeepleZone/Certificats/ca.crt:/certificats/ca.crt:ro
       # Doit survivre aux redémarrages : sans ce dossier, chaque redémarrage déconnecte tout le monde.
       - ${DOCKERDIR:?Définir DOCKERDIR dans .env}/MeepleZone/Cles:/cles
-    working_dir: /app
-    command: ["dotnet", "MeepleZone.Site.dll"]
     security_opt:
       - no-new-privileges:true
     cap_drop:
