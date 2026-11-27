@@ -11,15 +11,15 @@ internal class ModeJeuConfiguration : IEntityTypeConfiguration<ModeJeu>
     {
         builder.ToTable("mode_jeu");
 
-        builder.HasKey(u => u.Id);
+        builder.HasKey(m => m.Id);
 
-        builder.HasIndex(u => u.Nom)
+        builder.HasIndex(m => m.Nom)
             .IsUnique();
 
-        builder.Property(u => u.Nom)
+        builder.Property(m => m.Nom)
             .IsRequired();
 
-        builder.Property(u => u.CreeLe)
+        builder.Property(m => m.CreeLe)
             .IsRequired()
             .HasDefaultValueSql("now()");
 

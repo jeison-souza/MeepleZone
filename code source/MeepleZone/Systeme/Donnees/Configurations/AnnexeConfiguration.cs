@@ -14,30 +14,30 @@ internal class AnnexeConfiguration : IEntityTypeConfiguration<Annexe>
             t.HasCheckConstraint("ck_annexe_taille_octets", "taille_octets > 0");
         });
 
-        builder.HasKey(u => u.Id);
+        builder.HasKey(a => a.Id);
 
         builder.HasOne<Utilisateur>()
             .WithMany()
-            .HasForeignKey(ie => ie.CreeParId)
+            .HasForeignKey(a => a.CreeParId)
             .HasConstraintName("fk_annexe_utilisateur_cree_par_id")
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.Property(u => u.NomFichier)
+        builder.Property(a => a.NomFichier)
             .IsRequired();
 
-        builder.Property(u => u.Contenu)
+        builder.Property(a => a.Contenu)
             .IsRequired();
 
-        builder.Property(u => u.TypeMime)
+        builder.Property(a => a.TypeMime)
             .IsRequired();
 
-        builder.Property(u => u.TailleOctets)
+        builder.Property(a => a.TailleOctets)
             .IsRequired();
 
-        builder.Property(u => u.CreeParId)
+        builder.Property(a => a.CreeParId)
             .IsRequired();
 
-        builder.Property(u => u.CreeLe)
+        builder.Property(a => a.CreeLe)
             .IsRequired()
             .HasDefaultValueSql("now()");
     }

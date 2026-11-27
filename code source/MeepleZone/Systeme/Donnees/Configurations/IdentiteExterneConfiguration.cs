@@ -13,11 +13,11 @@ internal class IdentiteExterneConfiguration : IEntityTypeConfiguration<IdentiteE
             t.HasCheckConstraint("ck_identite_externe_courriel", "courriel = btrim(courriel) AND courriel <> ''");
         });
 
-        builder.HasKey(u => u.Id);
+        builder.HasKey(i => i.Id);
 
         builder.HasOne<Utilisateur>()
             .WithMany()
-            .HasForeignKey(ie => ie.UtilisateurId)
+            .HasForeignKey(i => i.UtilisateurId)
             .HasConstraintName("fk_identite_externe_utilisateur_utilisateur_id")
             .OnDelete(DeleteBehavior.Cascade);
 
@@ -26,24 +26,24 @@ internal class IdentiteExterneConfiguration : IEntityTypeConfiguration<IdentiteE
 
         builder.HasIndex(nameof(IdentiteExterne.Courriel));
 
-        builder.Property(u => u.UtilisateurId)
+        builder.Property(i => i.UtilisateurId)
             .IsRequired();
 
-        builder.Property(u => u.IdentifiantCompteExterne)
+        builder.Property(i => i.IdentifiantCompteExterne)
             .IsRequired();
 
-        builder.Property(u => u.Courriel)
+        builder.Property(i => i.Courriel)
             .UseCollation(MeepleZoneContexte.CollationCourriel);
 
-        builder.Property(u => u.DerniereConnexionLe)
+        builder.Property(i => i.DerniereConnexionLe)
             .IsRequired()
             .HasDefaultValueSql("now()");
 
-        builder.Property(u => u.CreeLe)
+        builder.Property(i => i.CreeLe)
             .IsRequired()
             .HasDefaultValueSql("now()");
 
-        builder.Property(u => u.ModifieLe)
+        builder.Property(i => i.ModifieLe)
             .IsRequired()
             .HasDefaultValueSql("now()");
     }

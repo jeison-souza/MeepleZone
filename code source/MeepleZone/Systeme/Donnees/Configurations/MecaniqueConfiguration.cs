@@ -11,18 +11,18 @@ internal class MecaniqueConfiguration : IEntityTypeConfiguration<Mecanique>
     {
         builder.ToTable("mecanique");
 
-        builder.HasKey(u => u.Id);
+        builder.HasKey(m => m.Id);
 
-        builder.HasIndex(u => u.Nom)
+        builder.HasIndex(m => m.Nom)
             .IsUnique();
 
-        builder.Property(u => u.Nom)
+        builder.Property(m => m.Nom)
             .IsRequired();
 
-        builder.HasIndex(u => u.BggId)
+        builder.HasIndex(m => m.BggId)
             .IsUnique();
 
-        builder.Property(u => u.CreeLe)
+        builder.Property(m => m.CreeLe)
             .IsRequired()
             .HasDefaultValueSql("now()");
 
