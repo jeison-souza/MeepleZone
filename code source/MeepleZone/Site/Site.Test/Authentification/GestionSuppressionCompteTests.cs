@@ -148,7 +148,7 @@ public class GestionSuppressionCompteTests
     {
         var domaine = A.Fake<IDomaineCompte>();
         A.CallTo(() => domaine.ObtenirProfilAsync(A<ObtenirProfilRequete>._))
-            .Returns(Task.FromResult<ProfilDto?>(new ProfilDto("Test", null, Code, VisibiliteCollection.Privee)));
+            .Returns(Task.FromResult<ProfilDto?>(new ProfilDto("Test", null, Code, VisibiliteCollection.Privee, false)));
         A.CallTo(() => domaine.SupprimerCompteAsync(A<SupprimerCompteRequete>._)).Returns(new SupprimerCompteReponse(statut));
 
         return domaine;

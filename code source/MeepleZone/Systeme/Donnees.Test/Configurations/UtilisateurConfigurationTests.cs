@@ -201,6 +201,20 @@ public class UtilisateurConfigurationTests(ModeleDonneesFixture modele) : IClass
     }
 
     [Fact]
+    public void Utilisateur_IndexCourriel_NeViseQueLesCourrielsVerifies()
+    {
+        // Arrange
+        var type = _modele.TypeEntite<Utilisateur>();
+
+        // Act
+        var index = type.GetIndexes().SingleOrDefault(i => i.GetDatabaseName() == "ix_utilisateur_courriel");
+
+        // Assert
+        index.Should().NotBeNull();
+        index!.GetFilter().Should().Be("courriel_verifie_le IS NOT NULL");
+    }
+
+    [Fact]
     public void Utilisateur_Courriel_UtiliseLaCollationDuCourriel()
     {
         // Arrange

@@ -4,5 +4,4 @@ public enum ResultatEnregistrementCompte
 {
     Enregistre,
     IdentiteDejaExistante,
-    CourrielDejaUtilise,
 }

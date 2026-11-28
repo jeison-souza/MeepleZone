@@ -32,26 +32,21 @@ public class GestionnaireRequeteGererConnexion(IDepotCompte depotCompte, IGenera
         string? courrielUtilisateur = null;
         if (courrielNormalise != null)
         {
-            var courrielExiste = await _depotCompte.VerifierExistenceCourrielAsync(courrielNormalise);
-            if (!courrielExiste)
-            {
-                courrielUtilisateur = courrielNormalise;
-            }
-            else if (!requete.ForcerCreation)
+            var presence = await _depotCompte.VerifierPresenceCourrielAsync(courrielNormalise);
+            if (presence != PresenceCourriel.Aucune && !requete.ForcerCreation)
             {
                 return new GererConnexionReponse(StatutConnexion.CompteProbable, null);
+            }
+
+            // Seul un courriel vérifié réserve l'adresse (ADR 0004, règle 1).
+            if (presence != PresenceCourriel.Verifiee)
+            {
+                courrielUtilisateur = courrielNormalise;
             }
         }
 
         var compte = await ConstruireCompteAsync(requete, courrielUtilisateur, courrielNormalise);
         var resultat = await _depotCompte.EnregistrerNouveauCompteAsync(compte.Utilisateur, compte.Identite);
-
-        // Un courriel pris entre la vérification et l'enregistrement : l'utilisateur a déjà demandé la création, un seul nouvel essai sans courriel.
-        if (resultat == ResultatEnregistrementCompte.CourrielDejaUtilise && requete.ForcerCreation && courrielUtilisateur != null)
-        {
-            compte = await ConstruireCompteAsync(requete, null, courrielNormalise);
-            resultat = await _depotCompte.EnregistrerNouveauCompteAsync(compte.Utilisateur, compte.Identite);
-        }
 
         switch (resultat)
         {
@@ -67,9 +62,6 @@ public class GestionnaireRequeteGererConnexion(IDepotCompte depotCompte, IGenera
                 }
 
                 return reponseParallele;
-
-            case ResultatEnregistrementCompte.CourrielDejaUtilise when !requete.ForcerCreation:
-                return new GererConnexionReponse(StatutConnexion.CompteProbable, null);
 
             default:
                 throw new InvalidOperationException($"Résultat d'enregistrement inattendu : {resultat}.");

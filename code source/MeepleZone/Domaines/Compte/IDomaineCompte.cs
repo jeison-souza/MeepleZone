@@ -6,6 +6,8 @@ namespace MeepleZone.Domaines.Compte;
 
 public interface IDomaineCompte
 {
+    Task<EnregistrerCourrielReponse> EnregistrerCourrielAsync(EnregistrerCourrielRequete requete);
+
     Task<GererConnexionReponse> GererConnexionAsync(GererConnexionRequete requete);
 
     Task<LierFournisseurReponse> LierFournisseurAsync(LierFournisseurRequete requete);

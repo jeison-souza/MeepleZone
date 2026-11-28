@@ -368,3 +368,13 @@ VALUES ('20261128021701_AjoutCodeDestinataireDemandeAmitie', '10.0.14');
 
 COMMIT;
 
+START TRANSACTION;
+DROP INDEX ix_utilisateur_courriel;
+
+CREATE UNIQUE INDEX ix_utilisateur_courriel ON utilisateur (courriel) WHERE courriel_verifie_le IS NOT NULL;
+
+INSERT INTO historique_migration (migration_id, product_version)
+VALUES ('20261128145645_UniciteCourrielVerifie', '10.0.14');
+
+COMMIT;
+
