@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Version** | 0.11 ([historique des versions](#historique-des-versions)) |
+| **Version** | 0.12 ([historique des versions](#historique-des-versions)) |
 | **Date** | 27 novembre 2026 |
 | **Statut** | Complet pour le produit minimal viable; sujet à révision après la mise en œuvre de l'authentification par les fournisseurs d'identité et les premiers tests contre une base de données réelle |
 | **Portée** | Comptes, annexes, catalogue de jeux, collection et amitiés |
@@ -124,7 +124,7 @@ Représente une personne dans MeepleZone, indépendamment du fournisseur qu'elle
 |---|---|---|---|
 | `id` | `uuid` | `PRIMARY KEY` | Identifiant de l'utilisateur. |
 | `courriel` | `text` (collation ICU) | `UNIQUE`, `CHECK (courriel = btrim(courriel) AND courriel <> '')`¹ | Courriel du compte, **facultatif** : celui que MeepleZone utilise pour joindre la personne et pour la retrouver par courriel (recherche d'amis). Copié de la première connexion externe quand le fournisseur en communique un, il appartient ensuite à la personne, qui pourra le changer ou, s'il manquait, l'ajouter. Vide pour une personne dont le fournisseur n'en donne pas : la connexion et le code d'amitié fonctionnent sans lui. Quand il existe, il est unique dans toute la table, sans égard à la casse (ADR 0004, règles 1 et 5); plusieurs comptes sans courriel sont permis. Un courriel saisi par la personne n'est enregistré qu'après confirmation par un code (ADR 0004, règle 5). Un texte vide, fait seulement d'espaces, ou avec des espaces au début ou à la fin n'est pas accepté par la base : le code retire ces espaces avant d'enregistrer et traite un texte vide comme une absence. |
-| `courriel_verifie_le` | `timestamptz` | | Moment où le courriel du compte a été reconnu comme vérifié (UTC) : dès la première connexion si le fournisseur l'atteste, sinon par un code envoyé par MeepleZone. Vide tant qu'il ne l'est pas (et toujours vide sans courriel), et effacé quand le courriel change. La connexion ne dépend pas de cette valeur : elle autorise les communications par courriel et la recherche d'amis par courriel. |
+| `courriel_verifie_le` | `timestamptz` | | Moment où le courriel du compte a été vérifié (UTC), uniquement par un code envoyé par MeepleZone (ADR 0004, règle 3). Vide tant qu'il ne l'est pas (et toujours vide sans courriel), et effacé quand le courriel change. La connexion ne dépend pas de cette valeur : elle autorise les communications par courriel et la réception des demandes d'amitié faites par courriel. |
 | `nom_affichage` | `text` | `NOT NULL` | Nom montré aux autres utilisateurs. Copié du fournisseur lors de la première connexion. |
 | `role` | `text` | `NOT NULL`, `DEFAULT 'membre'`, `CHECK (role IN ('membre', 'administrateur', 'systeme'))`¹ | Ce que la personne peut faire dans MeepleZone (voir ci-dessous). |
 | `photo_id` | `uuid` | `REFERENCES annexe(id) ON DELETE SET NULL` | Photo de profil. Vide tant qu'aucune photo n'est enregistrée. |
@@ -422,6 +422,7 @@ erDiagram
         uuid demandeur_id FK
         uuid destinataire_id FK "nullable"
         text courriel_destinataire "nullable, collation ICU"
+        text code_destinataire "nullable"
         text statut "en_attente, ignoree, rejetee"
         timestamptz cree_le
         timestamptz modifie_le
@@ -444,35 +445,48 @@ Le code est la colonne `utilisateur.code_amitie` (voir la table `utilisateur`).
 
 ### Table `demande_amitie`
 
-Une demande d'amitié en cours, ou refusée. Elle est faite à une personne qui a un compte (par son code ou par son courriel) ou, par courriel, à une personne qui n'en a pas encore.
+Une demande d'amitié en cours, ou refusée. Elle est faite avec le code d'amitié d'une personne, ou avec un courriel, qu'il appartienne ou non à un compte.
+
+La demande conserve **ce qui a été saisi** (le code ou le courriel), qui ne change plus ensuite. Elle n'est **rattachée à un compte** (`destinataire_id`) que lorsque la personne visée est établie :
+
+| Demande | Rattachement à un compte |
+|---|---|
+| Par code d'amitié | À l'envoi. |
+| Par courriel déjà vérifié par un compte | À l'envoi. |
+| Par courriel sans compte, ou non vérifié | Quand un compte vérifie ce courriel. |
 
 | Colonne | Type | Contraintes | Description |
 |---|---|---|---|
 | `id` | `uuid` | `PRIMARY KEY` | Identifiant de la demande. |
 | `demandeur_id` | `uuid` | `NOT NULL`, `REFERENCES utilisateur(id) ON DELETE CASCADE` | La personne qui demande. |
-| `destinataire_id` | `uuid` | `REFERENCES utilisateur(id) ON DELETE CASCADE` | La personne qui reçoit la demande, quand elle a un compte. |
-| `courriel_destinataire` | `text` (collation ICU) | | Courriel saisi, quand la personne n'a pas de compte. |
+| `destinataire_id` | `uuid` | `REFERENCES utilisateur(id) ON DELETE CASCADE` | La personne qui reçoit la demande, une fois la demande rattachée à son compte. |
+| `courriel_destinataire` | `text` (collation ICU) | | Courriel saisi, pour une demande par courriel. |
+| `code_destinataire` | `text` | | Code d'amitié saisi, sans trait d'union et en majuscules, pour une demande par code. |
 | `statut` | `text` | `NOT NULL`, `DEFAULT 'en_attente'`, `CHECK (statut IN ('en_attente', 'ignoree', 'rejetee'))`¹ | État de la demande (voir ci-dessous). |
 | `cree_le` | `timestamptz` | `NOT NULL`, `DEFAULT now()` | Moment de l'envoi (UTC). |
 | `modifie_le` | `timestamptz` | `NOT NULL`, `DEFAULT now()` | Moment du dernier changement d'état (UTC), mis à jour par l'application. |
 
 Contraintes sur la table :
 
-- `CHECK ((destinataire_id IS NULL) <> (courriel_destinataire IS NULL))`¹ : exactement un des deux est rempli.
+- `CHECK ((courriel_destinataire IS NULL) <> (code_destinataire IS NULL))`¹ : exactement une saisie, un courriel ou un code.
+- `CHECK (code_destinataire IS NULL OR destinataire_id IS NOT NULL)`¹ : une demande par code est toujours rattachée à un compte.
 - `CHECK (demandeur_id <> destinataire_id)`¹ : on ne se demande pas soi-même en ami.
-- `UNIQUE (demandeur_id, destinataire_id)` et `UNIQUE (demandeur_id, courriel_destinataire)` : une seule demande à la même personne.
-- Un index sur `destinataire_id`, pour retrouver les demandes reçues, et un index sur `courriel_destinataire`, pour retrouver les demandes qui attendent un courriel au moment d'une inscription ou de l'ajout de ce courriel à un compte.
+- `UNIQUE (demandeur_id, destinataire_id)` et `UNIQUE (demandeur_id, courriel_destinataire)` : une seule demande à la même personne, et une seule au même courriel.
+- Un index sur `destinataire_id`, pour retrouver les demandes reçues, et un index sur `courriel_destinataire`, pour retrouver les demandes à rattacher au moment où un courriel est vérifié.
 
 Règles :
 
 - **Ce que voit la personne qui demande :** `en_attente` et `ignoree` s'affichent toutes deux comme « en attente » (elle ne peut pas savoir qu'on l'a ignorée); `rejetee` s'affiche comme « rejetée ». Elle voit le courriel ou le code qu'elle a saisi, jamais le nom ni la photo du compte correspondant avant l'acceptation : sans cela, la demande révélerait qui est inscrit.
-- **Ce que fait la personne qui reçoit :** accepter (la demande disparaît et l'amitié naît), rejeter (`rejetee`) ou ignorer (`ignoree`, pour la retirer de sa boîte sans le dire). Elle ne voit la demande qu'une fois son courriel vérifié : une personne sans courriel ne reçoit donc pas de demandes avant d'en avoir ajouté un et de l'avoir confirmé.
+- **Ce que fait la personne qui reçoit :** accepter (la demande disparaît et l'amitié naît), rejeter (`rejetee`) ou ignorer (`ignoree`, pour la retirer de sa boîte sans le dire). Elle voit les demandes rattachées à son compte, et seulement celles-là : une demande faite avec son code d'amitié est visible dès son envoi, même sans courriel; une demande faite avec son courriel ne l'est qu'une fois ce courriel vérifié.
 - **Annuler :** la personne qui demande peut supprimer sa demande à tout moment, quel que soit l'état. La ligne disparaît.
 - **Limite :** une personne a au plus **5** demandes `en_attente` ou `ignoree` à la fois. Les demandes `rejetee` ne comptent pas. Le nombre est un paramètre de configuration, et la règle est appliquée par le code. Comme les demandes ne s'expirent pas (cela exigerait une tâche planifiée), annuler est le moyen de libérer une place.
-- **Demandes croisées :** si une personne demande l'amitié de quelqu'un qui lui a déjà fait une demande en attente, la demande existante est acceptée au lieu d'en créer une seconde.
-- **Demande par courriel :** si le courriel appartient à un compte existant, `destinataire_id` est rempli. Sinon `courriel_destinataire` est conservé; quand une personne s'inscrit avec ce courriel, ou l'ajoute à son compte après confirmation, le code remplace `courriel_destinataire` par `destinataire_id`.
+- **Demandes croisées :** si une personne demande l'amitié de quelqu'un dont elle a déjà une demande en attente, rattachée à son compte, la demande existante est acceptée au lieu d'en créer une seconde. Une demande non rattachée, donc invisible, n'est jamais acceptée de cette façon.
+- **Doublons :** quand la personne visée a déjà une demande de la même personne, aucune seconde demande n'est créée et aucune erreur n'est signalée. Une personne qui possède à la fois le code et le courriel d'une autre peut ainsi déduire qu'ils vont ensemble : risque jugé faible, puisque ces deux renseignements viennent normalement de la personne elle-même.
+- **Rattachement à la vérification d'un courriel :** les demandes non rattachées faites à ce courriel reçoivent `destinataire_id`; la saisie est conservée. Une demande est plutôt supprimée si la même personne en a déjà une rattachée au compte, ou si elle vient de ce compte. Ce rattachement sera mis en œuvre avec la vérification du courriel.
+- **Changement de courriel :** les demandes rattachées suivent le compte et restent visibles. Les demandes non rattachées à l'ancien courriel le demeurent.
+- **Demande à soi-même par courriel :** refusée par le code, qui compare le courriel saisi avec celui du compte.
 - L'envoi du courriel d'invitation à une personne sans compte dépend de la mise en place de l'envoi de courriels. Tant qu'il n'existe pas, la demande reste en attente avec la même apparence.
-- Le courriel d'une personne sans compte n'est conservé que tant que la demande existe : il disparaît à l'annulation, ou à la suppression du compte de la personne qui demande.
+- Le courriel d'une demande non rattachée n'est conservé que tant que la demande existe : il disparaît à l'annulation, ou à la suppression du compte de la personne qui demande. Les demandes rattachées à un compte disparaissent aussi avec lui.
 
 ### Table `amitie`
 
@@ -503,7 +517,7 @@ Règles :
 Comptes :
 
 - Changement du courriel du compte par la personne : saisie du nouveau courriel, code de vérification envoyé à cette adresse, puis remplacement. Ce parcours dépend de la mise en place de l'envoi de courriels.
-- Ajout d'un courriel par une personne dont le fournisseur n'en donne pas : même parcours que le changement (saisie, code, enregistrement), jamais d'enregistrement sans confirmation, pour qu'un courriel saisi à la main ne bloque pas l'inscription d'une autre personne (ADR 0004, règle 5). L'écran du profil rappelle que le courriel est nécessaire pour recevoir des demandes d'amitié et des communications. Aucun fournisseur actuel (Google, Microsoft) n'en a besoin.
+- Ajout d'un courriel par une personne dont le fournisseur n'en donne pas : même parcours que le changement (saisie, code, enregistrement), jamais d'enregistrement sans confirmation, pour qu'un courriel saisi à la main ne bloque pas l'inscription d'une autre personne (ADR 0004, règle 5). L'écran du profil rappelle qu'un courriel vérifié est nécessaire pour recevoir les demandes d'amitié faites par courriel et les communications. Aucun fournisseur actuel (Google, Microsoft) n'en a besoin.
 - Vérification du courriel par un code envoyé par l'application, pour les communications futures (colonne `utilisateur.courriel_verifie_le`).
 
 Catalogue :
@@ -524,7 +538,7 @@ Amitiés :
 
 - Annuler une demande rejetée puis la renvoyer permet d'insister auprès de quelqu'un qui a refusé : risque jugé acceptable pour le produit minimal viable.
 - Blocage d'un utilisateur.
-- Durée de conservation du courriel d'une personne sans compte, et limites contre les abus de l'envoi d'invitations (par adresse et par personne), une fois l'envoi de courriels en place.
+- Durée de conservation du courriel d'une demande non rattachée, et limites contre les abus de l'envoi d'invitations (par adresse et par personne), une fois l'envoi de courriels en place.
 
 ### À surveiller
 
@@ -545,5 +559,6 @@ Amitiés :
 | 0.9 | 14 novembre 2026 | Données initiales de `utilisateur` : les comptes techniques « Système » et « Utilisateur supprimé » (rôle `systeme`, identifiants fixes de version 7, codes d'amitié fictifs `SYSTEME2` et `EFFACE22`). |
 | 0.10 | 17 novembre 2026 | `jeu.nom_recherche` : colonne calculée stockée avec index de trigrammes, extension `pg_trgm` et fonction `unaccent_immuable` ([ADR 0015](../adr/0015-recherche-sans-accents.md)). |
 | 0.11 | 27 novembre 2026 | Migration des amitiés : `demande_amitie` et `amitie`, avec leurs contraintes `CHECK`, leurs clés étrangères et leurs index, dont un index non unique sur `demande_amitie.courriel_destinataire`. Les dix tables du schéma sont migrées. |
+| 0.12 | 27 novembre 2026 | Colonne `demande_amitie.code_destinataire` : la demande conserve la saisie (code ou courriel) et n'est rattachée à un compte que lorsque la personne visée est établie. `destinataire_id` n'est plus exclusif avec `courriel_destinataire`. Une demande par code est visible sans courriel vérifié (ADR 0004, règles 3 et 5). `courriel_verifie_le` ne dépend que du code envoyé par MeepleZone. |
 
 Le numéro de version monte à chaque ajout ou modification importante du schéma. La version 1.0 correspondra au schéma complet du produit minimal viable.
