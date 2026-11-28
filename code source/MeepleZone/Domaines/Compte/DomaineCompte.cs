@@ -9,7 +9,9 @@ public class DomaineCompte(
     IGestionnaireRequete<GererConnexionReponse, GererConnexionRequete> gestionnaireGererConnexion,
     IGestionnaireRequete<IReadOnlyList<ConnexionDto>, ListerConnexionsRequete> gestionnaireListerConnexions,
     IGestionnaireRequete<LierFournisseurReponse, LierFournisseurRequete> gestionnaireLierFournisseur,
+    IGestionnaireRequete<ModifierVisibiliteReponse, ModifierVisibiliteRequete> gestionnaireModifierVisibilite,
     IGestionnaireRequete<ProfilDto?, ObtenirProfilRequete> gestionnaireObtenirProfil,
+    IGestionnaireRequete<RegenererCodeAmitieReponse, RegenererCodeAmitieRequete> gestionnaireRegenererCodeAmitie,
     IGestionnaireRequete<SupprimerCompteReponse, SupprimerCompteRequete> gestionnaireSupprimerCompte)
     : IDomaineCompte
 {
@@ -19,7 +21,11 @@ public class DomaineCompte(
 
     private readonly IGestionnaireRequete<LierFournisseurReponse, LierFournisseurRequete> _gestionnaireLierFournisseur = gestionnaireLierFournisseur;
 
+    private readonly IGestionnaireRequete<ModifierVisibiliteReponse, ModifierVisibiliteRequete> _gestionnaireModifierVisibilite = gestionnaireModifierVisibilite;
+
     private readonly IGestionnaireRequete<ProfilDto?, ObtenirProfilRequete> _gestionnaireObtenirProfil = gestionnaireObtenirProfil;
+
+    private readonly IGestionnaireRequete<RegenererCodeAmitieReponse, RegenererCodeAmitieRequete> _gestionnaireRegenererCodeAmitie = gestionnaireRegenererCodeAmitie;
 
     private readonly IGestionnaireRequete<SupprimerCompteReponse, SupprimerCompteRequete> _gestionnaireSupprimerCompte = gestionnaireSupprimerCompte;
 
@@ -38,9 +44,19 @@ public class DomaineCompte(
         return _gestionnaireListerConnexions.TraiterAsync(requete);
     }
 
+    public Task<ModifierVisibiliteReponse> ModifierVisibiliteAsync(ModifierVisibiliteRequete requete)
+    {
+        return _gestionnaireModifierVisibilite.TraiterAsync(requete);
+    }
+
     public Task<ProfilDto?> ObtenirProfilAsync(ObtenirProfilRequete requete)
     {
         return _gestionnaireObtenirProfil.TraiterAsync(requete);
+    }
+
+    public Task<RegenererCodeAmitieReponse> RegenererCodeAmitieAsync(RegenererCodeAmitieRequete requete)
+    {
+        return _gestionnaireRegenererCodeAmitie.TraiterAsync(requete);
     }
 
     public Task<SupprimerCompteReponse> SupprimerCompteAsync(SupprimerCompteRequete requete)

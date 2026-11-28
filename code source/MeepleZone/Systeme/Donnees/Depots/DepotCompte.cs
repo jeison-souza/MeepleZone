@@ -17,6 +17,8 @@ public class DepotCompte(IDbContextFactory<MeepleZoneContexte> fabrique) : IDepo
 
     private const string IndexIdentiteExterneUnique = "ix_identite_externe_fournisseur_identifiant_compte_externe";
 
+    private const string IndexUtilisateurCodeAmitie = "ix_utilisateur_code_amitie";
+
     private const string IndexUtilisateurCourriel = "ix_utilisateur_courriel";
 
     private const string StatutJeuValide = "valide";
@@ -90,6 +92,57 @@ public class DepotCompte(IDbContextFactory<MeepleZoneContexte> fabrique) : IDepo
 
         contexte.IdentitesExternes.Update(identite);
         await contexte.SaveChangesAsync();
+    }
+
+    public async Task<ResultatModificationCodeAmitie> ModifierCodeAmitieAsync(Guid utilisateurId, string code)
+    {
+        await using var contexte = await _fabrique.CreateDbContextAsync();
+
+        // L'entité est chargée puis enregistrée : ExecuteUpdate ne passerait pas par l'intercepteur de modifie_le.
+        var utilisateur = await contexte.Utilisateurs.FirstOrDefaultAsync(u => u.Id == utilisateurId);
+        if (utilisateur == null)
+        {
+            return ResultatModificationCodeAmitie.Introuvable;
+        }
+
+        utilisateur.CodeAmitie = code;
+
+        try
+        {
+            await contexte.SaveChangesAsync();
+            return ResultatModificationCodeAmitie.Modifie;
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return ResultatModificationCodeAmitie.Introuvable;
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation, ConstraintName: IndexUtilisateurCodeAmitie })
+        {
+            return ResultatModificationCodeAmitie.CodeDejaUtilise;
+        }
+    }
+
+    public async Task<ResultatModificationVisibilite> ModifierVisibiliteAsync(Guid utilisateurId, string visibilite)
+    {
+        await using var contexte = await _fabrique.CreateDbContextAsync();
+
+        var utilisateur = await contexte.Utilisateurs.FirstOrDefaultAsync(u => u.Id == utilisateurId);
+        if (utilisateur == null)
+        {
+            return ResultatModificationVisibilite.Introuvable;
+        }
+
+        utilisateur.VisibiliteCollection = visibilite;
+
+        try
+        {
+            await contexte.SaveChangesAsync();
+            return ResultatModificationVisibilite.Modifiee;
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return ResultatModificationVisibilite.Introuvable;
+        }
     }
 
     public async Task<ResultatSuppressionCompte> SupprimerCompteAsync(Guid utilisateurId, Guid compteSupprimeId)

@@ -46,7 +46,9 @@ public class ServiceCollectionExtensionsTest : BaseTest<ServiceCollection>
         portee.ServiceProvider.GetRequiredService<IGestionnaireRequete<GererConnexionReponse, GererConnexionRequete>>().Should().BeOfType<GestionnaireRequeteGererConnexion>();
         portee.ServiceProvider.GetRequiredService<IGestionnaireRequete<IReadOnlyList<ConnexionDto>, ListerConnexionsRequete>>().Should().BeOfType<GestionnaireRequeteListerConnexions>();
         portee.ServiceProvider.GetRequiredService<IGestionnaireRequete<LierFournisseurReponse, LierFournisseurRequete>>().Should().BeOfType<GestionnaireRequeteLierFournisseur>();
+        portee.ServiceProvider.GetRequiredService<IGestionnaireRequete<ModifierVisibiliteReponse, ModifierVisibiliteRequete>>().Should().BeOfType<GestionnaireRequeteModifierVisibilite>();
         portee.ServiceProvider.GetRequiredService<IGestionnaireRequete<ProfilDto?, ObtenirProfilRequete>>().Should().BeOfType<GestionnaireRequeteObtenirProfil>();
+        portee.ServiceProvider.GetRequiredService<IGestionnaireRequete<RegenererCodeAmitieReponse, RegenererCodeAmitieRequete>>().Should().BeOfType<GestionnaireRequeteRegenererCodeAmitie>();
         portee.ServiceProvider.GetRequiredService<IGestionnaireRequete<SupprimerCompteReponse, SupprimerCompteRequete>>().Should().BeOfType<GestionnaireRequeteSupprimerCompte>();
     }
 }

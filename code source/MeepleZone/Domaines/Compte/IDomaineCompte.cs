@@ -12,7 +12,11 @@ public interface IDomaineCompte
 
     Task<IReadOnlyList<ConnexionDto>> ListerConnexionsAsync(ListerConnexionsRequete requete);
 
+    Task<ModifierVisibiliteReponse> ModifierVisibiliteAsync(ModifierVisibiliteRequete requete);
+
     Task<ProfilDto?> ObtenirProfilAsync(ObtenirProfilRequete requete);
+
+    Task<RegenererCodeAmitieReponse> RegenererCodeAmitieAsync(RegenererCodeAmitieRequete requete);
 
     Task<SupprimerCompteReponse> SupprimerCompteAsync(SupprimerCompteRequete requete);
 }
