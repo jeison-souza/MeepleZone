@@ -1,11 +1,11 @@
 # ADR 0011 : Concurrence à l'enregistrement d'un compte et contrats de dépôt
 
-- **Statut :** accepté
+- **Statut :** accepté, amendé le 2026-11-28
 - **Date :** 2026-11-10
 
 ## Contexte
 
-La première connexion d'une personne crée un utilisateur et sa connexion externe ([ADR 0004](0004-liaison-comptes-fournisseurs.md)). L'opération est un « trouver ou créer » ([ADR 0009](0009-organisation-de-la-solution.md), règle 4) : le gestionnaire vérifie d'abord que la connexion et le courriel sont inconnus, puis enregistre. Entre la vérification et l'enregistrement, une autre requête peut avoir créé la même connexion (deux onglets, un double clic sur le bouton de connexion) ou pris le même courriel. La base de données refuse alors le second enregistrement par une contrainte d'unicité : l'index sur le couple fournisseur + identifiant externe de `identite_externe`, ou l'index sur `utilisateur.courriel`.
+La première connexion d'une personne crée un utilisateur et sa connexion externe ([ADR 0004](0004-liaison-comptes-fournisseurs.md)). L'opération est un « trouver ou créer » ([ADR 0009](0009-organisation-de-la-solution.md), règle 4) : le gestionnaire vérifie d'abord que la connexion et le courriel sont inconnus, puis enregistre. Entre la vérification et l'enregistrement, une autre requête peut avoir créé la même connexion (deux onglets, un double clic sur le bouton de connexion) ou pris le même courriel. La base de données refuse alors le second enregistrement par une contrainte d'unicité : l'index sur le couple fournisseur + identifiant externe de `identite_externe`, ou l'index sur `utilisateur.courriel`. Depuis le 2026-11-28, seul un courriel vérifié est unique ([ADR 0004](0004-liaison-comptes-fournisseurs.md), règle 1) : un nouveau compte n'ayant jamais un courriel vérifié, seul le conflit sur la connexion externe subsiste.
 
 Ces deux cas ne sont pas des erreurs de programmation. Ils sont attendus, ont chacun une suite précise dans les règles d'affaires, et doivent être testables sans base de données ([ADR 0008](0008-logique-d-affaires-testable.md)). Or la violation de la contrainte est un détail du fournisseur de base de données (`DbUpdateException` d'EF Core qui enveloppe une `PostgresException` de code `23505`) que le gestionnaire ne doit pas connaître.
 
@@ -33,32 +33,29 @@ Une seconde question s'est posée au moment d'écrire le dépôt : où placer le
 
 ## Décision
 
-- **Signalement : option C.** `IDepotCompte.EnregistrerNouveauCompteAsync` retourne une valeur de l'énumération `ResultatEnregistrementCompte` : `Enregistre`, `IdentiteDejaExistante` ou `CourrielDejaUtilise`. Le dépôt n'appelle `SaveChanges` qu'une fois, pour l'utilisateur et sa connexion ensemble : l'enregistrement est atomique et un refus ne laisse aucune ligne partielle. Il traduit la violation de contrainte (`DbUpdateException` dont l'exception interne est une `PostgresException` de code `23505`) en lisant le nom de la contrainte : `ix_identite_externe_fournisseur_identifiant_compte_externe` donne `IdentiteDejaExistante`, `ix_utilisateur_courriel` donne `CourrielDejaUtilise`. Toute autre violation d'unicité (par exemple celle du code d'amitié) est relancée telle quelle : elle n'a pas de suite prévue dans les règles.
+- **Signalement : option C.** `IDepotCompte.EnregistrerNouveauCompteAsync` retourne une valeur de l'énumération `ResultatEnregistrementCompte` : `Enregistre` ou `IdentiteDejaExistante`. Le dépôt n'appelle `SaveChanges` qu'une fois, pour l'utilisateur et sa connexion ensemble : l'enregistrement est atomique et un refus ne laisse aucune ligne partielle. Il traduit la violation de contrainte (`DbUpdateException` dont l'exception interne est une `PostgresException` de code `23505`) en lisant le nom de la contrainte : `ix_identite_externe_fournisseur_identifiant_compte_externe` donne `IdentiteDejaExistante`. Toute autre violation d'unicité (par exemple celle du code d'amitié) est relancée telle quelle : elle n'a pas de suite prévue dans les règles.
 - **Suite décidée par le gestionnaire.** Le dépôt ne décide rien ; le gestionnaire réagit à chaque issue :
   - `Enregistre` : la personne est connectée avec le compte créé.
   - `IdentiteDejaExistante` : une autre requête a créé la même connexion entre-temps; le gestionnaire reprend le chemin « connexion connue » (retrouver, mettre à jour la date de connexion, retourner le compte). Si la connexion reste introuvable, c'est une anomalie, et il lève une exception.
-  - `CourrielDejaUtilise` sans création forcée : le résultat est « compte probable », comme si la vérification avait trouvé le courriel d'emblée ([ADR 0004](0004-liaison-comptes-fournisseurs.md), règle 1).
-  - `CourrielDejaUtilise` avec création forcée : un seul nouvel essai, cette fois sans courriel sur l'utilisateur (la connexion externe conserve celui du fournisseur). Un second échec n'est pas retenté.
 - **Emplacement : option D.** L'interface `IDepotCompte` et l'énumération vivent dans un nouveau projet, `Systeme/Depots`, qui ne référence que `Systeme/Entites`. Le principe : le consommateur définit le contrat qu'il utilise. Le sens des dépendances est `Compte` → `Depots` ← `Donnees`; l'ADR 0009 est amendé en conséquence (règles 6 et 7). `Systeme/Interfaces` ne conserve que les interfaces de gestionnaires. Les deux vocabulaires restent distincts : `StatutConnexion` est la réponse du domaine vers le site, `ResultatEnregistrementCompte` est la réponse du dépôt vers le domaine.
-- **Lectures et écritures.** L'enregistrement est un seul appel du dépôt (jamais une lecture suivie d'une écriture décidée par l'appelant); la vérification préalable du courriel reste une aide qui évite la plupart des échecs, et la contrainte unique est le dernier filet.
+- **Lectures et écritures.** L'enregistrement est un seul appel du dépôt (jamais une lecture suivie d'une écriture décidée par l'appelant); la recherche préalable du courriel décide du compte probable et de la copie du courriel. Si un autre compte vérifie ce courriel entre la recherche et l'enregistrement, le nouveau compte est tout de même créé avec ce courriel, non vérifié. Cet écart à la règle 1 de l'ADR 0004 est accepté : la fenêtre est très courte, et cette copie ne reçoit rien et ne peut pas être vérifiée.
 
 ## Conséquences
 
 ### Positives
 
-- Les issues attendues de la concurrence sont visibles dans la signature et dans le `switch` du gestionnaire; elles se testent en faisant retourner la valeur voulue au faux dépôt, sans base de données ni exception fabriquée. Six tests couvrent les deux sens de la concurrence, dont l'échec du nouvel essai.
+- Les issues attendues de la concurrence sont visibles dans la signature et dans le `switch` du gestionnaire; elles se testent en faisant retourner la valeur voulue au faux dépôt, sans base de données ni exception fabriquée. Des tests couvrent la connexion créée en parallèle, dont le cas où elle reste introuvable.
 - Le domaine ne référence ni EF Core ni Npgsql.
-- La base reste l'arbitre final : même si la vérification préalable laisse passer une course, aucune donnée en double n'est enregistrée.
+- La base reste l'arbitre final : même si la vérification préalable laisse passer une course, aucune connexion en double n'est enregistrée.
 - Un refus ne laisse aucune ligne partielle (un seul `SaveChanges`); cela a été vérifié à la main contre la base de développement.
 - Une personne qui double-clique sur le bouton de connexion aboutit dans son compte, sans erreur.
 
 ### Négatives
 
-- Le dépôt dépend du nom de deux index : renommer un index sans mettre à jour la constante casse la traduction (le cas tombe alors dans « relancer » et se voit dans les journaux, mais pas dans les tests sans base). Un test contre un PostgreSQL réel, prévu plus tard (ADR 0009, règle 11), couvrira ce point.
+- Le dépôt dépend du nom d'un index : le renommer sans mettre à jour la constante casse la traduction (le cas tombe alors dans « relancer » et se voit dans les journaux, mais pas dans les tests sans base). Un test contre un PostgreSQL réel, prévu plus tard (ADR 0009, règle 11), couvrira ce point.
 - Un projet de plus (`Systeme/Depots`), presque sans code, que le `Dockerfile` et la solution doivent connaître.
-- Le gestionnaire compte plusieurs chemins (existant, nouveau, concurrence, nouvel essai) : il a été écrit comme un enchaînement plat d'étapes pour rester lisible, mais reste la classe la plus dense du domaine.
-- Le nouvel essai unique est un choix : une troisième collision dans la même requête lève une exception. Elle est jugée improbable pour ce projet.
-- Une autre violation d'unicité que les deux prévues (code d'amitié) n'est pas traitée : elle remonte comme erreur. La génération du code d'amitié ne gère pas la collision pour l'instant.
+- Le gestionnaire compte plusieurs chemins (existant, nouveau, concurrence) : il a été écrit comme un enchaînement plat d'étapes pour rester lisible, mais reste la classe la plus dense du domaine.
+- Une autre violation d'unicité que celle prévue (code d'amitié) n'est pas traitée : elle remonte comme erreur. La génération du code d'amitié ne gère pas la collision pour l'instant.
 
 ## Décisions liées
 
