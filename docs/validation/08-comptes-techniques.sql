@@ -64,13 +64,9 @@ SELECT pg_temp.essayer('aucune identite externe pour les comptes techniques', $q
         END IF;
     END $x$ $q$, 'ok');
 
--- Les codes et courriels réservés ne peuvent pas être pris par un autre compte.
+-- Les codes réservés ne peuvent pas être pris par un autre compte. L'unicité du courriel est vérifiée par 15-courriel-verifie.sql.
 SELECT pg_temp.essayer('code d amitie des comptes techniques deja pris', $q$
     INSERT INTO utilisateur (id, nom_affichage, code_amitie) VALUES (gen_random_uuid(), 'Essai', 'SYSTEME2') $q$, 'ix_utilisateur_code_amitie');
-SELECT pg_temp.essayer('courriel des comptes techniques deja pris', $q$
-    INSERT INTO utilisateur (id, nom_affichage, code_amitie, courriel) VALUES (gen_random_uuid(), 'Essai', 'ABCDEFGH', 'systeme@meeplezone.ca') $q$, 'ix_utilisateur_courriel');
-SELECT pg_temp.essayer('courriel reserve, casse differente', $q$
-    INSERT INTO utilisateur (id, nom_affichage, code_amitie, courriel) VALUES (gen_random_uuid(), 'Essai', 'ABCDEFGH', 'Systeme@MeepleZone.CA') $q$, 'ix_utilisateur_courriel');
 
 -- Format du code d'amitié : aucune lettre I ni O, aucun 0 ni 1.
 SELECT pg_temp.essayer('code avec la lettre I', $q$ INSERT INTO utilisateur (id, nom_affichage, code_amitie) VALUES (gen_random_uuid(), 'Essai', 'ABCDEFGI') $q$, 'ck_utilisateur_code_amitie');
