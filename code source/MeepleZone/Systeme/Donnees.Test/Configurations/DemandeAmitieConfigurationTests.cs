@@ -55,7 +55,8 @@ public class DemandeAmitieConfigurationTests(ModeleDonneesFixture modele) : ICla
 
     [Theory]
     [InlineData("ck_demande_amitie_statut", "statut IN ('en_attente', 'ignoree', 'rejetee')")]
-    [InlineData("ck_demande_amitie_destinataire", "(destinataire_id IS NULL) <> (courriel_destinataire IS NULL)")]
+    [InlineData("ck_demande_amitie_destinataire", "(courriel_destinataire IS NULL) <> (code_destinataire IS NULL)")]
+    [InlineData("ck_demande_amitie_code_rattache", "code_destinataire IS NULL OR destinataire_id IS NOT NULL")]
     [InlineData("ck_demande_amitie_demandeur_distinct", "demandeur_id <> destinataire_id")]
     public void DemandeAmitie_ContrainteCheck_EstDeclareeAvecSonSql(string nom, string sqlAttendu)
     {
@@ -176,6 +177,7 @@ public class DemandeAmitieConfigurationTests(ModeleDonneesFixture modele) : ICla
     [InlineData(nameof(DemandeAmitie.DemandeurId), false)]
     [InlineData(nameof(DemandeAmitie.DestinataireId), true)]
     [InlineData(nameof(DemandeAmitie.CourrielDestinataire), true)]
+    [InlineData(nameof(DemandeAmitie.CodeDestinataire), true)]
     [InlineData(nameof(DemandeAmitie.Statut), false)]
     [InlineData(nameof(DemandeAmitie.CreeLe), false)]
     [InlineData(nameof(DemandeAmitie.ModifieLe), false)]
@@ -196,6 +198,7 @@ public class DemandeAmitieConfigurationTests(ModeleDonneesFixture modele) : ICla
     [InlineData(nameof(DemandeAmitie.DemandeurId), true)]
     [InlineData(nameof(DemandeAmitie.DestinataireId), true)]
     [InlineData(nameof(DemandeAmitie.CourrielDestinataire), true)]
+    [InlineData(nameof(DemandeAmitie.CodeDestinataire), false)]
     [InlineData(nameof(DemandeAmitie.Statut), false)]
     [InlineData(nameof(DemandeAmitie.CreeLe), false)]
     [InlineData(nameof(DemandeAmitie.ModifieLe), false)]
@@ -287,6 +290,7 @@ public class DemandeAmitieConfigurationTests(ModeleDonneesFixture modele) : ICla
     [InlineData(nameof(DemandeAmitie.DemandeurId), "uuid")]
     [InlineData(nameof(DemandeAmitie.DestinataireId), "uuid")]
     [InlineData(nameof(DemandeAmitie.CourrielDestinataire), "text")]
+    [InlineData(nameof(DemandeAmitie.CodeDestinataire), "text")]
     [InlineData(nameof(DemandeAmitie.Statut), "text")]
     [InlineData(nameof(DemandeAmitie.CreeLe), "timestamp with time zone")]
     [InlineData(nameof(DemandeAmitie.ModifieLe), "timestamp with time zone")]

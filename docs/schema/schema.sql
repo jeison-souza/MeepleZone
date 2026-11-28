@@ -354,3 +354,17 @@ VALUES ('20261127190059_CreationTablesAmities', '10.0.14');
 
 COMMIT;
 
+START TRANSACTION;
+ALTER TABLE demande_amitie DROP CONSTRAINT ck_demande_amitie_destinataire;
+
+ALTER TABLE demande_amitie ADD code_destinataire text;
+
+ALTER TABLE demande_amitie ADD CONSTRAINT ck_demande_amitie_code_rattache CHECK (code_destinataire IS NULL OR destinataire_id IS NOT NULL);
+
+ALTER TABLE demande_amitie ADD CONSTRAINT ck_demande_amitie_destinataire CHECK ((courriel_destinataire IS NULL) <> (code_destinataire IS NULL));
+
+INSERT INTO historique_migration (migration_id, product_version)
+VALUES ('20261128021701_AjoutCodeDestinataireDemandeAmitie', '10.0.14');
+
+COMMIT;
+

@@ -14,6 +14,8 @@ public class DemandeAmitie : IModifieLe
 
     public string? CourrielDestinataire { get; set; }
 
+    public string? CodeDestinataire { get; set; }
+
     public string Statut { get; set; } = StatutsDemandeAmitie.EnAttente;
 
     public DateTimeOffset CreeLe { get; private set; }

@@ -29,6 +29,7 @@ public class DemandeAmitieTests
     [InlineData(nameof(DemandeAmitie.DemandeurId), false)]
     [InlineData(nameof(DemandeAmitie.DestinataireId), false)]
     [InlineData(nameof(DemandeAmitie.CourrielDestinataire), false)]
+    [InlineData(nameof(DemandeAmitie.CodeDestinataire), false)]
     [InlineData(nameof(DemandeAmitie.Statut), false)]
     [InlineData(nameof(DemandeAmitie.CreeLe), false)]
     [InlineData(nameof(DemandeAmitie.ModifieLe), false)]

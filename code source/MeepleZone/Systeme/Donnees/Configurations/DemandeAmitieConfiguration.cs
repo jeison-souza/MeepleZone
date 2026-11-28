@@ -12,7 +12,8 @@ internal class DemandeAmitieConfiguration : IEntityTypeConfiguration<DemandeAmit
         builder.ToTable("demande_amitie", t =>
         {
             t.HasCheckConstraint("ck_demande_amitie_statut", "statut IN ('en_attente', 'ignoree', 'rejetee')");
-            t.HasCheckConstraint("ck_demande_amitie_destinataire", "(destinataire_id IS NULL) <> (courriel_destinataire IS NULL)");
+            t.HasCheckConstraint("ck_demande_amitie_destinataire", "(courriel_destinataire IS NULL) <> (code_destinataire IS NULL)");
+            t.HasCheckConstraint("ck_demande_amitie_code_rattache", "code_destinataire IS NULL OR destinataire_id IS NOT NULL");
             t.HasCheckConstraint("ck_demande_amitie_demandeur_distinct", "demandeur_id <> destinataire_id");
         });
 
