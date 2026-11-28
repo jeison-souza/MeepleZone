@@ -19,8 +19,6 @@ public class DepotCompte(IDbContextFactory<MeepleZoneContexte> fabrique) : IDepo
 
     private const string IndexUtilisateurCodeAmitie = "ix_utilisateur_code_amitie";
 
-    private const string IndexUtilisateurCourriel = "ix_utilisateur_courriel";
-
     private const string StatutJeuValide = "valide";
 
     private readonly IDbContextFactory<MeepleZoneContexte> _fabrique = fabrique;
@@ -64,9 +62,6 @@ public class DepotCompte(IDbContextFactory<MeepleZoneContexte> fabrique) : IDepo
             {
                 case IndexIdentiteExterneUnique:
                     return ResultatEnregistrementCompte.IdentiteDejaExistante;
-
-                case IndexUtilisateurCourriel:
-                    return ResultatEnregistrementCompte.CourrielDejaUtilise;
 
                 default:
                     throw;
@@ -119,6 +114,31 @@ public class DepotCompte(IDbContextFactory<MeepleZoneContexte> fabrique) : IDepo
         catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation, ConstraintName: IndexUtilisateurCodeAmitie })
         {
             return ResultatModificationCodeAmitie.CodeDejaUtilise;
+        }
+    }
+
+    public async Task<ResultatModificationCourriel> ModifierCourrielAsync(Guid utilisateurId, string courriel)
+    {
+        await using var contexte = await _fabrique.CreateDbContextAsync();
+
+        var utilisateur = await contexte.Utilisateurs.FirstOrDefaultAsync(u => u.Id == utilisateurId);
+        if (utilisateur == null)
+        {
+            return ResultatModificationCourriel.Introuvable;
+        }
+
+        utilisateur.Courriel = courriel;
+        utilisateur.CourrielVerifieLe = null;
+
+        try
+        {
+            await contexte.SaveChangesAsync();
+            return ResultatModificationCourriel.Modifie;
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            // Le compte a été supprimé entre la lecture et l'enregistrement.
+            return ResultatModificationCourriel.Introuvable;
         }
     }
 
@@ -275,15 +295,20 @@ public class DepotCompte(IDbContextFactory<MeepleZoneContexte> fabrique) : IDepo
             .AnyAsync(u => u.CodeAmitie == code);
     }
 
-    public async Task<bool> VerifierExistenceCourrielAsync(string courriel)
+    public async Task<PresenceCourriel> VerifierPresenceCourrielAsync(string courriel)
     {
         await using var contexte = await _fabrique.CreateDbContextAsync();
 
-        if (await contexte.Utilisateurs.AsNoTracking().AnyAsync(u => u.Courriel == courriel))
+        if (await contexte.Utilisateurs.AsNoTracking().AnyAsync(u => u.Courriel == courriel && u.CourrielVerifieLe != null))
         {
-            return true;
+            return PresenceCourriel.Verifiee;
         }
 
-        return await contexte.IdentitesExternes.AsNoTracking().AnyAsync(i => i.Courriel == courriel);
+        if (await contexte.IdentitesExternes.AsNoTracking().AnyAsync(i => i.Courriel == courriel))
+        {
+            return PresenceCourriel.NonVerifiee;
+        }
+
+        return PresenceCourriel.Aucune;
     }
 }

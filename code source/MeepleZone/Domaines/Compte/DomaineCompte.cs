@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 namespace MeepleZone.Domaines.Compte;
 
 public class DomaineCompte(
+    IGestionnaireRequete<EnregistrerCourrielReponse, EnregistrerCourrielRequete> gestionnaireEnregistrerCourriel,
     IGestionnaireRequete<GererConnexionReponse, GererConnexionRequete> gestionnaireGererConnexion,
     IGestionnaireRequete<IReadOnlyList<ConnexionDto>, ListerConnexionsRequete> gestionnaireListerConnexions,
     IGestionnaireRequete<LierFournisseurReponse, LierFournisseurRequete> gestionnaireLierFournisseur,
@@ -15,6 +16,8 @@ public class DomaineCompte(
     IGestionnaireRequete<SupprimerCompteReponse, SupprimerCompteRequete> gestionnaireSupprimerCompte)
     : IDomaineCompte
 {
+    private readonly IGestionnaireRequete<EnregistrerCourrielReponse, EnregistrerCourrielRequete> _gestionnaireEnregistrerCourriel = gestionnaireEnregistrerCourriel;
+
     private readonly IGestionnaireRequete<GererConnexionReponse, GererConnexionRequete> _gestionnaireGererConnexion = gestionnaireGererConnexion;
 
     private readonly IGestionnaireRequete<IReadOnlyList<ConnexionDto>, ListerConnexionsRequete> _gestionnaireListerConnexions = gestionnaireListerConnexions;
@@ -28,6 +31,11 @@ public class DomaineCompte(
     private readonly IGestionnaireRequete<RegenererCodeAmitieReponse, RegenererCodeAmitieRequete> _gestionnaireRegenererCodeAmitie = gestionnaireRegenererCodeAmitie;
 
     private readonly IGestionnaireRequete<SupprimerCompteReponse, SupprimerCompteRequete> _gestionnaireSupprimerCompte = gestionnaireSupprimerCompte;
+
+    public Task<EnregistrerCourrielReponse> EnregistrerCourrielAsync(EnregistrerCourrielRequete requete)
+    {
+        return _gestionnaireEnregistrerCourriel.TraiterAsync(requete);
+    }
 
     public Task<GererConnexionReponse> GererConnexionAsync(GererConnexionRequete requete)
     {

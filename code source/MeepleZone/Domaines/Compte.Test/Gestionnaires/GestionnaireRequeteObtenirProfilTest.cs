@@ -8,6 +8,7 @@ using MeepleZone.Systeme.Depots;
 using MeepleZone.Systeme.Entites;
 using MeepleZone.Systeme.Interfaces;
 using System;
+using System.Globalization;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -43,7 +44,30 @@ public class GestionnaireRequeteObtenirProfilTest : BaseTest<GestionnaireRequete
         var result = await InstanceTest.TraiterAsync(requete);
 
         // Assert
-        result.Should().Be(new ProfilDto(utilisateur.NomAffichage, utilisateur.Courriel, utilisateur.CodeAmitie, attendue));
+        result.Should().Be(new ProfilDto(utilisateur.NomAffichage, utilisateur.Courriel, utilisateur.CodeAmitie, attendue, CourrielVerifie: true));
+    }
+
+    [Theory]
+    [InlineData("2026-11-28T12:00:00Z", true)]
+    [InlineData(null, false)]
+    public async Task TraiterAsync_SelonLaDateDeVerification_IndiquerSiLeCourrielEstVerifie(string? dateVerification, bool attendu)
+    {
+        // Arrange
+        var requete = CreerFixture<ObtenirProfilRequete>();
+        var utilisateur = CreerFixture<Utilisateur>();
+        utilisateur.VisibiliteCollection = "privee";
+        utilisateur.CourrielVerifieLe = dateVerification == null
+            ? null
+            : DateTimeOffset.Parse(dateVerification, CultureInfo.InvariantCulture);
+        _utilisateurCourant.CallsTo(x => x.Id).Returns(utilisateur.Id);
+        _depotCompte.CallsTo(x => x.TrouverUtilisateurAsync(utilisateur.Id)).Returns(utilisateur);
+
+        // Act
+        var result = await InstanceTest.TraiterAsync(requete);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.CourrielVerifie.Should().Be(attendu);
     }
 
     [Fact]

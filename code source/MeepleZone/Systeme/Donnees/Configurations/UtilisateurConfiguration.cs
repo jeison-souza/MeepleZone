@@ -30,7 +30,8 @@ internal class UtilisateurConfiguration : IEntityTypeConfiguration<Utilisateur>
             .IsUnique();
 
         builder.HasIndex(u => u.Courriel)
-            .IsUnique();
+            .IsUnique()
+            .HasFilter("courriel_verifie_le IS NOT NULL");
 
         builder.Property(u => u.Courriel)
             .UseCollation(MeepleZoneContexte.CollationCourriel);

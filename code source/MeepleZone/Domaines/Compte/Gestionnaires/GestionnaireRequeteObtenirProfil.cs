@@ -27,6 +27,7 @@ public class GestionnaireRequeteObtenirProfil(IDepotCompte depotCompte, IUtilisa
             utilisateur.NomAffichage,
             utilisateur.Courriel,
             utilisateur.CodeAmitie,
-            utilisateur.VisibiliteCollection.VersVisibiliteCollection());
+            utilisateur.VisibiliteCollection.VersVisibiliteCollection(),
+            utilisateur.CourrielVerifieLe != null);
     }
 }

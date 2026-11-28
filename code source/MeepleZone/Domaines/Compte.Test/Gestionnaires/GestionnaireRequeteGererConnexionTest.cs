@@ -10,7 +10,6 @@ using MeepleZone.Systeme.Depots;
 using MeepleZone.Systeme.Depots.Enums;
 using MeepleZone.Systeme.Entites;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -118,13 +117,15 @@ public class GestionnaireRequeteGererConnexionTest : BaseTest<GestionnaireRequet
         identiteExterne.Courriel.Should().Be(courrielDepart);
     }
 
-    [Fact]
-    public async Task TraiterAsync_QuandNouvelleIdentiteEtCourrielDejaUtiliseEtSansForcerCreation_RetournerCompteProbableSansEnregistrer()
+    [Theory]
+    [InlineData(PresenceCourriel.NonVerifiee)]
+    [InlineData(PresenceCourriel.Verifiee)]
+    public async Task TraiterAsync_QuandNouvelleIdentiteEtCourrielConnuEtSansForcerCreation_RetournerCompteProbableSansEnregistrer(PresenceCourriel presence)
     {
         // Arrange
         var requete = Fixture.Create<GererConnexionRequete>() with { ForcerCreation = false };
         ConfigurerIdentiteInconnue(requete);
-        ConfigurerVerificationCourriel(requete.Courriel!.ToLowerInvariant(), existe: true);
+        ConfigurerPresenceCourriel(requete.Courriel!.ToLowerInvariant(), presence);
 
         // Act
         var result = await InstanceTest.TraiterAsync(requete);
@@ -143,7 +144,7 @@ public class GestionnaireRequeteGererConnexionTest : BaseTest<GestionnaireRequet
         var codeAmitie = Fixture.Create<string>();
         var courrielNormalise = requete.Courriel!.ToLowerInvariant();
         ConfigurerIdentiteInconnue(requete);
-        ConfigurerVerificationCourriel(courrielNormalise, existe: false);
+        ConfigurerPresenceCourriel(courrielNormalise, PresenceCourriel.Aucune);
         var compte = ConfigurerEnregistrement(codeAmitie, ResultatEnregistrementCompte.Enregistre);
 
         // Act
@@ -162,7 +163,7 @@ public class GestionnaireRequeteGererConnexionTest : BaseTest<GestionnaireRequet
         var codeAmitie = Fixture.Create<string>();
         var courrielNormalise = requete.Courriel!.ToLowerInvariant();
         ConfigurerIdentiteInconnue(requete);
-        ConfigurerVerificationCourriel(courrielNormalise, existe: false);
+        ConfigurerPresenceCourriel(courrielNormalise, PresenceCourriel.Aucune);
         var compte = ConfigurerEnregistrement(codeAmitie, ResultatEnregistrementCompte.Enregistre);
 
         // Act
@@ -174,14 +175,33 @@ public class GestionnaireRequeteGererConnexionTest : BaseTest<GestionnaireRequet
     }
 
     [Fact]
-    public async Task TraiterAsync_QuandNouvelleIdentiteEtCourrielDejaUtiliseEtAvecForcerCreation_CreerCompteSansCourrielUtilisateurEtRetournerConnecte()
+    public async Task TraiterAsync_QuandNouvelleIdentiteEtCourrielNonVerifieEtAvecForcerCreation_CreerCompteAvecCourrielEtRetournerConnecte()
     {
         // Arrange
         var requete = Fixture.Create<GererConnexionRequete>() with { ForcerCreation = true };
         var codeAmitie = Fixture.Create<string>();
         var courrielNormalise = requete.Courriel!.ToLowerInvariant();
         ConfigurerIdentiteInconnue(requete);
-        ConfigurerVerificationCourriel(courrielNormalise, existe: true);
+        ConfigurerPresenceCourriel(courrielNormalise, PresenceCourriel.NonVerifiee);
+        var compte = ConfigurerEnregistrement(codeAmitie, ResultatEnregistrementCompte.Enregistre);
+
+        // Act
+        var result = await InstanceTest.TraiterAsync(requete);
+
+        // Assert
+        ValiderNombreAppels(trouverIdentite: 1, trouverUtilisateur: 0, mettreAJour: 0, verifierCourriel: 1, genererCode: 1, enregistrerNouveau: 1);
+        ValiderCompteCree(result, compte, requete, codeAmitie, requete.NomAffichage!, courrielUtilisateur: courrielNormalise, courrielIdentite: courrielNormalise);
+    }
+
+    [Fact]
+    public async Task TraiterAsync_QuandNouvelleIdentiteEtCourrielVerifieEtAvecForcerCreation_CreerCompteSansCourrielUtilisateurEtRetournerConnecte()
+    {
+        // Arrange
+        var requete = Fixture.Create<GererConnexionRequete>() with { ForcerCreation = true };
+        var codeAmitie = Fixture.Create<string>();
+        var courrielNormalise = requete.Courriel!.ToLowerInvariant();
+        ConfigurerIdentiteInconnue(requete);
+        ConfigurerPresenceCourriel(courrielNormalise, PresenceCourriel.Verifiee);
         var compte = ConfigurerEnregistrement(codeAmitie, ResultatEnregistrementCompte.Enregistre);
 
         // Act
@@ -236,7 +256,7 @@ public class GestionnaireRequeteGererConnexionTest : BaseTest<GestionnaireRequet
         var codeAmitie = Fixture.Create<string>();
         var courrielNormalise = "test@example.com";
         ConfigurerIdentiteInconnue(requete);
-        ConfigurerVerificationCourriel(courrielNormalise, existe: false);
+        ConfigurerPresenceCourriel(courrielNormalise, PresenceCourriel.Aucune);
         var compte = ConfigurerEnregistrement(codeAmitie, ResultatEnregistrementCompte.Enregistre);
 
         // Act
@@ -258,7 +278,7 @@ public class GestionnaireRequeteGererConnexionTest : BaseTest<GestionnaireRequet
         var codeAmitie = Fixture.Create<string>();
         var courrielNormalise = requete.Courriel!.ToLowerInvariant();
         ConfigurerIdentiteInconnue(requete);
-        ConfigurerVerificationCourriel(courrielNormalise, existe: false);
+        ConfigurerPresenceCourriel(courrielNormalise, PresenceCourriel.Aucune);
         var compte = ConfigurerEnregistrement(codeAmitie, ResultatEnregistrementCompte.Enregistre);
 
         // Act
@@ -281,7 +301,7 @@ public class GestionnaireRequeteGererConnexionTest : BaseTest<GestionnaireRequet
         _depotCompte
             .CallsTo(x => x.TrouverIdentiteAsync(requete.Fournisseur, requete.IdentifiantCompteExterne))
             .ReturnsNextFromSequence(Task.FromResult<IdentiteExterne?>(null), Task.FromResult<IdentiteExterne?>(identiteExterne));
-        ConfigurerVerificationCourriel(courrielNormalise, existe: false);
+        ConfigurerPresenceCourriel(courrielNormalise, PresenceCourriel.Aucune);
         ConfigurerEnregistrement(Fixture.Create<string>(), ResultatEnregistrementCompte.IdentiteDejaExistante);
         _depotCompte
             .CallsTo(x => x.TrouverUtilisateurAsync(identiteExterne.UtilisateurId))
@@ -311,7 +331,7 @@ public class GestionnaireRequeteGererConnexionTest : BaseTest<GestionnaireRequet
         _depotCompte
             .CallsTo(x => x.TrouverIdentiteAsync(requete.Fournisseur, requete.IdentifiantCompteExterne))
             .Returns(Task.FromResult<IdentiteExterne?>(null));
-        ConfigurerVerificationCourriel(courrielNormalise, existe: false);
+        ConfigurerPresenceCourriel(courrielNormalise, PresenceCourriel.Aucune);
         ConfigurerEnregistrement(Fixture.Create<string>(), ResultatEnregistrementCompte.IdentiteDejaExistante);
 
         // Act
@@ -321,104 +341,6 @@ public class GestionnaireRequeteGererConnexionTest : BaseTest<GestionnaireRequet
         await action.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("Impossible de retrouver la connexion enregistrée en parallèle.");
         ValiderNombreAppels(trouverIdentite: 2, trouverUtilisateur: 0, mettreAJour: 0, verifierCourriel: 1, genererCode: 1, enregistrerNouveau: 1);
-    }
-
-    [Fact]
-    public async Task TraiterAsync_QuandCourrielPrisEnParalleleEtSansForcerCreation_RetournerCompteProbableSansNouvelEssai()
-    {
-        // Arrange
-        var requete = Fixture.Create<GererConnexionRequete>() with { ForcerCreation = false };
-        var courrielNormalise = requete.Courriel!.ToLowerInvariant();
-        ConfigurerIdentiteInconnue(requete);
-        ConfigurerVerificationCourriel(courrielNormalise, existe: false);
-        ConfigurerEnregistrement(Fixture.Create<string>(), ResultatEnregistrementCompte.CourrielDejaUtilise);
-
-        // Act
-        var result = await InstanceTest.TraiterAsync(requete);
-
-        // Assert
-        ValiderNombreAppels(trouverIdentite: 1, trouverUtilisateur: 0, mettreAJour: 0, verifierCourriel: 1, genererCode: 1, enregistrerNouveau: 1);
-        result.Statut.Should().Be(StatutConnexion.CompteProbable);
-        result.Utilisateur.Should().BeNull();
-    }
-
-    [Fact]
-    public async Task TraiterAsync_QuandCourrielPrisEnParalleleEtAvecForcerCreation_ReessayerUneFoisSansCourrielUtilisateurEtRetournerConnecte()
-    {
-        // Arrange
-        var requete = Fixture.Create<GererConnexionRequete>() with { ForcerCreation = true };
-        var courrielNormalise = requete.Courriel!.ToLowerInvariant();
-        var codesAmitie = new[] { Fixture.Create<string>(), Fixture.Create<string>() };
-        ConfigurerIdentiteInconnue(requete);
-        ConfigurerVerificationCourriel(courrielNormalise, existe: false);
-        var comptes = ConfigurerEnregistrementsSuccessifs(
-            codesAmitie,
-            ResultatEnregistrementCompte.CourrielDejaUtilise,
-            ResultatEnregistrementCompte.Enregistre);
-
-        // Act
-        var result = await InstanceTest.TraiterAsync(requete);
-
-        // Assert
-        ValiderNombreAppels(trouverIdentite: 1, trouverUtilisateur: 0, mettreAJour: 0, verifierCourriel: 1, genererCode: 2, enregistrerNouveau: 2);
-        comptes.Should().HaveCount(2);
-        comptes[0].Utilisateur.Courriel.Should().Be(courrielNormalise);
-        comptes[1].Utilisateur.Id.Should().NotBe(comptes[0].Utilisateur.Id);
-        ValiderCompteCree(result, comptes[1], requete, codesAmitie[1], requete.NomAffichage!, courrielUtilisateur: null, courrielIdentite: courrielNormalise);
-    }
-
-    [Fact]
-    public async Task TraiterAsync_QuandCourrielPrisEnParalleleEtNouvelEssaiEchoueAussi_LancerInvalidOperationException()
-    {
-        // Arrange
-        var requete = Fixture.Create<GererConnexionRequete>() with { ForcerCreation = true };
-        var courrielNormalise = requete.Courriel!.ToLowerInvariant();
-        ConfigurerIdentiteInconnue(requete);
-        ConfigurerVerificationCourriel(courrielNormalise, existe: false);
-        ConfigurerEnregistrement(Fixture.Create<string>(), ResultatEnregistrementCompte.CourrielDejaUtilise);
-
-        // Act
-        Func<Task> action = () => InstanceTest.TraiterAsync(requete);
-
-        // Assert
-        await action.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Résultat d'enregistrement inattendu*");
-        ValiderNombreAppels(trouverIdentite: 1, trouverUtilisateur: 0, mettreAJour: 0, verifierCourriel: 1, genererCode: 2, enregistrerNouveau: 2);
-    }
-
-    [Fact]
-    public async Task TraiterAsync_QuandCourrielPrisEnParalleleEtNouvelEssaiTrouveIdentiteEnregistreeEnParallele_ActualiserConnexionDeLIdentiteExistanteEtRetournerConnecte()
-    {
-        // Arrange
-        var requete = Fixture.Create<GererConnexionRequete>() with { ForcerCreation = true };
-        var courrielNormalise = requete.Courriel!.ToLowerInvariant();
-        var identiteExterne = CreerFixture<IdentiteExterne>();
-        var utilisateurAttendu = CreerFixture<Utilisateur>();
-        _depotCompte
-            .CallsTo(x => x.TrouverIdentiteAsync(requete.Fournisseur, requete.IdentifiantCompteExterne))
-            .ReturnsNextFromSequence(Task.FromResult<IdentiteExterne?>(null), Task.FromResult<IdentiteExterne?>(identiteExterne));
-        ConfigurerVerificationCourriel(courrielNormalise, existe: false);
-        var comptes = ConfigurerEnregistrementsSuccessifs(
-            new[] { Fixture.Create<string>(), Fixture.Create<string>() },
-            ResultatEnregistrementCompte.CourrielDejaUtilise,
-            ResultatEnregistrementCompte.IdentiteDejaExistante);
-        _depotCompte
-            .CallsTo(x => x.TrouverUtilisateurAsync(identiteExterne.UtilisateurId))
-            .Returns(utilisateurAttendu);
-        _depotCompte
-            .CallsTo(x => x.MettreAJourConnexionAsync(identiteExterne))
-            .Returns(Task.CompletedTask);
-
-        // Act
-        var result = await InstanceTest.TraiterAsync(requete);
-
-        // Assert
-        ValiderNombreAppels(trouverIdentite: 2, trouverUtilisateur: 1, mettreAJour: 1, verifierCourriel: 1, genererCode: 2, enregistrerNouveau: 2);
-        comptes.Should().HaveCount(2);
-        comptes[1].Utilisateur.Courriel.Should().BeNull();
-        result.Statut.Should().Be(StatutConnexion.Connecte);
-        result.Utilisateur.Should().BeEquivalentTo(utilisateurAttendu.VersDto());
-        identiteExterne.DerniereConnexionLe.Should().Be(FakeTimeProvider.GetUtcNow());
     }
 
     private sealed class CompteEnregistre
@@ -435,11 +357,11 @@ public class GestionnaireRequeteGererConnexionTest : BaseTest<GestionnaireRequet
             .Returns(Task.FromResult<IdentiteExterne?>(null));
     }
 
-    private void ConfigurerVerificationCourriel(string courrielNormalise, bool existe)
+    private void ConfigurerPresenceCourriel(string courrielNormalise, PresenceCourriel presence)
     {
         _depotCompte
-            .CallsTo(x => x.VerifierExistenceCourrielAsync(courrielNormalise))
-            .Returns(Task.FromResult(existe));
+            .CallsTo(x => x.VerifierPresenceCourrielAsync(courrielNormalise))
+            .Returns(Task.FromResult(presence));
     }
 
     private CompteEnregistre ConfigurerEnregistrement(string codeAmitie, ResultatEnregistrementCompte resultat)
@@ -457,22 +379,6 @@ public class GestionnaireRequeteGererConnexionTest : BaseTest<GestionnaireRequet
             })
             .Returns(Task.FromResult(resultat));
         return compte;
-    }
-
-    private List<CompteEnregistre> ConfigurerEnregistrementsSuccessifs(string[] codesAmitie, params ResultatEnregistrementCompte[] resultats)
-    {
-        var comptes = new List<CompteEnregistre>();
-        _generateurCodeAmitie
-            .CallsTo(x => x.GenererAsync())
-            .ReturnsNextFromSequence(Array.ConvertAll(codesAmitie, code => Task.FromResult(code)));
-        _depotCompte
-            .CallsTo(x => x.EnregistrerNouveauCompteAsync(A<Utilisateur>.Ignored, A<IdentiteExterne>.Ignored))
-            .ReturnsLazily((Utilisateur u, IdentiteExterne i) =>
-            {
-                comptes.Add(new CompteEnregistre { Utilisateur = u, Identite = i });
-                return Task.FromResult(resultats[comptes.Count - 1]);
-            });
-        return comptes;
     }
 
     private void ValiderCompteCree(
@@ -512,7 +418,7 @@ public class GestionnaireRequeteGererConnexionTest : BaseTest<GestionnaireRequet
             .CallsTo(x => x.MettreAJourConnexionAsync(A<IdentiteExterne>.Ignored))
             .MustHaveHappenedANumberOfTimesMatching(n => n == mettreAJour);
         _depotCompte
-            .CallsTo(x => x.VerifierExistenceCourrielAsync(A<string>.Ignored))
+            .CallsTo(x => x.VerifierPresenceCourrielAsync(A<string>.Ignored))
             .MustHaveHappenedANumberOfTimesMatching(n => n == verifierCourriel);
         _generateurCodeAmitie
             .CallsTo(x => x.GenererAsync())

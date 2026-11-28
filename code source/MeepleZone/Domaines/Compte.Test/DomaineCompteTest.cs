@@ -26,9 +26,12 @@ public class DomaineCompteTest : BaseTest<DomaineCompte>
 
     private Fake<IGestionnaireRequete<RegenererCodeAmitieReponse, RegenererCodeAmitieRequete>> _gestionnaireRegenererCodeAmitie = null!;
 
+    private Fake<IGestionnaireRequete<EnregistrerCourrielReponse, EnregistrerCourrielRequete>> _gestionnaireEnregistrerCourriel = null!;
+
     public override void InitialiserDependence()
     {
         base.InitialiserDependence();
+        _gestionnaireEnregistrerCourriel = CreerFausse<IGestionnaireRequete<EnregistrerCourrielReponse, EnregistrerCourrielRequete>>();
         _gestionnaireModifierVisibilite = CreerFausse<IGestionnaireRequete<ModifierVisibiliteReponse, ModifierVisibiliteRequete>>();
         _gestionnaireRegenererCodeAmitie = CreerFausse<IGestionnaireRequete<RegenererCodeAmitieReponse, RegenererCodeAmitieRequete>>();
         _gestionnaireSupprimerCompte = CreerFausse<IGestionnaireRequete<SupprimerCompteReponse, SupprimerCompteRequete>>();
@@ -36,6 +39,24 @@ public class DomaineCompteTest : BaseTest<DomaineCompte>
         _gestionnaireLierFournisseur = CreerFausse<IGestionnaireRequete<LierFournisseurReponse, LierFournisseurRequete>>();
         _gestionnaireGererConnexion = CreerFausse<IGestionnaireRequete<GererConnexionReponse, GererConnexionRequete>>();
         _gestionnaireListerConnexions = CreerFausse<IGestionnaireRequete<IReadOnlyList<ConnexionDto>, ListerConnexionsRequete>>();
+    }
+
+    [Fact]
+    public async Task EnregistrerCourrielAsync_EnToutTemps_DeleguerAuGestionnaireEtRetournerSaReponse()
+    {
+        // Arrange
+        var requete = CreerFixture<EnregistrerCourrielRequete>();
+        var reponseAttendue = CreerFixture<EnregistrerCourrielReponse>();
+        _gestionnaireEnregistrerCourriel.CallsTo(g => g.TraiterAsync(requete))
+            .Returns(reponseAttendue);
+
+        // Act
+        var result = await InstanceTest.EnregistrerCourrielAsync(requete);
+
+        // Assert
+        _gestionnaireEnregistrerCourriel.CallsTo(g => g.TraiterAsync(A<EnregistrerCourrielRequete>._))
+            .MustHaveHappenedOnceExactly();
+        result.Should().BeSameAs(reponseAttendue);
     }
 
     [Fact]

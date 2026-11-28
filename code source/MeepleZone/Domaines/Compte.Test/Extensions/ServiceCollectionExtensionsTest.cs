@@ -43,6 +43,7 @@ public class ServiceCollectionExtensionsTest : BaseTest<ServiceCollection>
         using var portee = fournisseur.CreateScope();
         portee.ServiceProvider.GetRequiredService<IDomaineCompte>().Should().BeOfType<DomaineCompte>();
         portee.ServiceProvider.GetRequiredService<IGenerateurCodeAmitie>().Should().BeOfType<GenerateurCodeAmitie>();
+        portee.ServiceProvider.GetRequiredService<IGestionnaireRequete<EnregistrerCourrielReponse, EnregistrerCourrielRequete>>().Should().BeOfType<GestionnaireRequeteEnregistrerCourriel>();
         portee.ServiceProvider.GetRequiredService<IGestionnaireRequete<GererConnexionReponse, GererConnexionRequete>>().Should().BeOfType<GestionnaireRequeteGererConnexion>();
         portee.ServiceProvider.GetRequiredService<IGestionnaireRequete<IReadOnlyList<ConnexionDto>, ListerConnexionsRequete>>().Should().BeOfType<GestionnaireRequeteListerConnexions>();
         portee.ServiceProvider.GetRequiredService<IGestionnaireRequete<LierFournisseurReponse, LierFournisseurRequete>>().Should().BeOfType<GestionnaireRequeteLierFournisseur>();

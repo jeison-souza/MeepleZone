@@ -795,7 +795,8 @@ namespace MeepleZone.Systeme.Donnees.Migrations
 
                     b.HasIndex("Courriel")
                         .IsUnique()
-                        .HasDatabaseName("ix_utilisateur_courriel");
+                        .HasDatabaseName("ix_utilisateur_courriel")
+                        .HasFilter("courriel_verifie_le IS NOT NULL");
 
                     b.HasIndex("PhotoId")
                         .HasDatabaseName("ix_utilisateur_photo_id");

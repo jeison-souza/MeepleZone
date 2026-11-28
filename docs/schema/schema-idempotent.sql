@@ -678,3 +678,28 @@ BEGIN
 END $EF$;
 COMMIT;
 
+START TRANSACTION;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM historique_migration WHERE "migration_id" = '20261128145645_UniciteCourrielVerifie') THEN
+    DROP INDEX ix_utilisateur_courriel;
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM historique_migration WHERE "migration_id" = '20261128145645_UniciteCourrielVerifie') THEN
+    CREATE UNIQUE INDEX ix_utilisateur_courriel ON utilisateur (courriel) WHERE courriel_verifie_le IS NOT NULL;
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM historique_migration WHERE "migration_id" = '20261128145645_UniciteCourrielVerifie') THEN
+    INSERT INTO historique_migration (migration_id, product_version)
+    VALUES ('20261128145645_UniciteCourrielVerifie', '10.0.14');
+    END IF;
+END $EF$;
+COMMIT;
+

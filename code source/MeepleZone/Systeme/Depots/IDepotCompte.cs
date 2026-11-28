@@ -18,6 +18,11 @@ public interface IDepotCompte
 
     Task<ResultatModificationCodeAmitie> ModifierCodeAmitieAsync(Guid utilisateurId, string code);
 
+    /// <summary>
+    /// Enregistre le courriel du compte et efface la date de sa vérification.
+    /// </summary>
+    Task<ResultatModificationCourriel> ModifierCourrielAsync(Guid utilisateurId, string courriel);
+
     Task<ResultatModificationVisibilite> ModifierVisibiliteAsync(Guid utilisateurId, string visibilite);
 
     Task<ResultatSuppressionCompte> SupprimerCompteAsync(Guid utilisateurId, Guid compteSupprimeId);
@@ -28,5 +33,5 @@ public interface IDepotCompte
 
     Task<bool> VerifierExistenceCodeAmitieAsync(string code);
 
-    Task<bool> VerifierExistenceCourrielAsync(string courriel);
+    Task<PresenceCourriel> VerifierPresenceCourrielAsync(string courriel);
 }
