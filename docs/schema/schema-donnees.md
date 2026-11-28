@@ -2,8 +2,8 @@
 
 | | |
 |---|---|
-| **Version** | 0.12 ([historique des versions](#historique-des-versions)) |
-| **Date** | 27 novembre 2026 |
+| **Version** | 0.13 ([historique des versions](#historique-des-versions)) |
+| **Date** | 28 novembre 2026 |
 | **Statut** | Complet pour le produit minimal viable; sujet à révision après la mise en œuvre de l'authentification par les fournisseurs d'identité et les premiers tests contre une base de données réelle |
 | **Portée** | Comptes, annexes, catalogue de jeux, collection et amitiés |
 
@@ -11,13 +11,13 @@ Ce document décrit les tables de la base de données, leurs champs et leurs rel
 
 Le système retenu est PostgreSQL (voir l'[ADR 0005](../adr/0005-base-de-donnees.md)). L'authentification passe uniquement par des fournisseurs externes, sans mot de passe local (voir l'[ADR 0001](../adr/0001-authentification.md)), et la liaison de plusieurs fournisseurs à un même compte suit l'[ADR 0004](../adr/0004-liaison-comptes-fournisseurs.md).
 
-Le script SQL généré par les migrations d'EF Core se trouve dans [`schema.sql`](schema.sql). Il crée les dix tables décrites ici, dans l'ordre des migrations. Il contient aussi les données initiales des modes de jeu, des mécaniques et des comptes techniques. Il est généré à nouveau à chaque migration, à partir de `code source/MeepleZone` : `dotnet ef migrations script --project Systeme/Donnees --output ../../docs/schema/schema.sql`. Sa version idempotente, [`schema-idempotent.sql`](schema-idempotent.sql), vérifie `historique_migration` avant chaque migration : elle s'applique à une base dans n'importe quel état, et se régénère de la même façon avec `--idempotent` et `--output ../../docs/schema/schema-idempotent.sql`. L'application applique elle-même les migrations à son démarrage; ces scripts servent à la révision et, au besoin, à une application manuelle (voir l'[ADR 0007](../adr/0007-strategie-de-migrations.md)).
+Le script SQL généré par les migrations d'EF Core se trouve dans [`schema.sql`](schema.sql). Il crée les onze tables décrites ici, dans l'ordre des migrations. Il contient aussi les données initiales des modes de jeu, des mécaniques et des comptes techniques. Il est généré à nouveau à chaque migration, à partir de `code source/MeepleZone` : `dotnet ef migrations script --project Systeme/Donnees --output ../../docs/schema/schema.sql`. Sa version idempotente, [`schema-idempotent.sql`](schema-idempotent.sql), vérifie `historique_migration` avant chaque migration : elle s'applique à une base dans n'importe quel état, et se régénère de la même façon avec `--idempotent` et `--output ../../docs/schema/schema-idempotent.sql`. L'application applique elle-même les migrations à son démarrage; ces scripts servent à la révision et, au besoin, à une application manuelle (voir l'[ADR 0007](../adr/0007-strategie-de-migrations.md)).
 
 ## Contenu
 
 1. [Conventions](#conventions) et [lecture des tableaux de colonnes](#lecture-des-tableaux-de-colonnes)
 2. [Vue d'ensemble](#vue-densemble)
-3. [Comptes et annexes](#comptes-et-annexes) : `utilisateur`, `identite_externe`, `annexe`
+3. [Comptes et annexes](#comptes-et-annexes) : `utilisateur`, `identite_externe`, `annexe`, `demande_verification`
 4. [Catalogue de jeux](#catalogue-de-jeux) : `jeu`, `mode_jeu`, `mecanique`, `jeu_mecanique`
 5. [Collection](#collection) : `possession`
 6. [Amitiés](#amitiés) : `demande_amitie`, `amitie`
@@ -69,6 +69,7 @@ erDiagram
     utilisateur |o--o{ demande_amitie : "recoit"
     utilisateur ||--o{ amitie : "est ami (a)"
     utilisateur ||--o{ amitie : "est ami (b)"
+    utilisateur ||--o{ demande_verification : "demande"
 ```
 
 Le diagramme ne montre que les relations. Les colonnes de chaque table figurent dans le diagramme de sa section.
@@ -80,10 +81,11 @@ erDiagram
     utilisateur ||--o{ identite_externe : "possede"
     annexe |o--o| utilisateur : "est la photo de"
     utilisateur |o--o{ annexe : "cree"
+    utilisateur ||--o{ demande_verification : "demande"
 
     utilisateur {
         uuid id PK
-        text courriel UK "nullable, collation ICU"
+        text courriel "nullable, collation ICU, unique si vérifié"
         timestamptz courriel_verifie_le "nullable"
         text nom_affichage
         text role "membre, administrateur, systeme"
@@ -114,6 +116,15 @@ erDiagram
         uuid cree_par_id FK
         timestamptz cree_le
     }
+
+    demande_verification {
+        uuid id PK
+        uuid utilisateur_id FK
+        text courriel "collation ICU"
+        timestamptz cree_le
+        timestamptz envoye_le "nullable"
+        interval duree_validite
+    }
 ```
 
 ### Table `utilisateur`
@@ -123,8 +134,8 @@ Représente une personne dans MeepleZone, indépendamment du fournisseur qu'elle
 | Colonne | Type | Contraintes | Description |
 |---|---|---|---|
 | `id` | `uuid` | `PRIMARY KEY` | Identifiant de l'utilisateur. |
-| `courriel` | `text` (collation ICU) | `UNIQUE`, `CHECK (courriel = btrim(courriel) AND courriel <> '')`¹ | Courriel du compte, **facultatif** : celui que MeepleZone utilise pour joindre la personne et pour la retrouver par courriel (recherche d'amis). Copié de la première connexion externe quand le fournisseur en communique un, il appartient ensuite à la personne, qui pourra le changer ou, s'il manquait, l'ajouter. Vide pour une personne dont le fournisseur n'en donne pas : la connexion et le code d'amitié fonctionnent sans lui. Quand il existe, il est unique dans toute la table, sans égard à la casse (ADR 0004, règles 1 et 5); plusieurs comptes sans courriel sont permis. Un courriel saisi par la personne n'est enregistré qu'après confirmation par un code (ADR 0004, règle 5). Un texte vide, fait seulement d'espaces, ou avec des espaces au début ou à la fin n'est pas accepté par la base : le code retire ces espaces avant d'enregistrer et traite un texte vide comme une absence. |
-| `courriel_verifie_le` | `timestamptz` | | Moment où le courriel du compte a été vérifié (UTC), uniquement par un code envoyé par MeepleZone (ADR 0004, règle 3). Vide tant qu'il ne l'est pas (et toujours vide sans courriel), et effacé quand le courriel change. La connexion ne dépend pas de cette valeur : elle autorise les communications par courriel et la réception des demandes d'amitié faites par courriel. |
+| `courriel` | `text` (collation ICU) | unique parmi les courriels vérifiés, `CHECK (courriel = btrim(courriel) AND courriel <> '')`¹ | Courriel du compte, **facultatif** : celui que MeepleZone utilise pour joindre la personne et pour la retrouver par courriel (recherche d'amis). Copié de la première connexion externe quand le fournisseur en communique un, il appartient ensuite à la personne, qui pourra le changer ou, s'il manquait, l'ajouter ([ADR 0016](../adr/0016-ajout-et-modification-du-courriel.md)). Vide pour une personne dont le fournisseur n'en donne pas : la connexion et le code d'amitié fonctionnent sans lui. Un courriel vérifié est unique dans toute la table, sans égard à la casse; un courriel non vérifié ne réserve pas l'adresse (ADR 0004, règle 1), et plusieurs comptes sans courriel sont permis. Un courriel saisi par la personne est enregistré dès la saisie, sans date de vérification, sauf si un autre compte l'a déjà vérifié (ADR 0016). La vérification d'un courriel le retire des autres comptes qui l'ont sans l'avoir vérifié (ADR 0017). Un texte vide, fait seulement d'espaces, ou avec des espaces au début ou à la fin n'est pas accepté par la base : le code retire ces espaces avant d'enregistrer et traite un texte vide comme une absence. |
+| `courriel_verifie_le` | `timestamptz` | | Moment où le courriel du compte a été vérifié (UTC), uniquement par un lien envoyé par MeepleZone ([ADR 0017](../adr/0017-verification-du-courriel.md)). Vide tant qu'il ne l'est pas (et toujours vide sans courriel), et effacé quand le courriel change. La connexion ne dépend pas de cette valeur : elle autorise les communications par courriel et la réception des demandes d'amitié faites par courriel. |
 | `nom_affichage` | `text` | `NOT NULL` | Nom montré aux autres utilisateurs. Copié du fournisseur lors de la première connexion. |
 | `role` | `text` | `NOT NULL`, `DEFAULT 'membre'`, `CHECK (role IN ('membre', 'administrateur', 'systeme'))`¹ | Ce que la personne peut faire dans MeepleZone (voir ci-dessous). |
 | `photo_id` | `uuid` | `REFERENCES annexe(id) ON DELETE SET NULL` | Photo de profil. Vide tant qu'aucune photo n'est enregistrée. |
@@ -173,7 +184,7 @@ Règles :
 
 - Le couple (`fournisseur`, `identifiant_compte_externe`) est unique : une même connexion externe ne peut appartenir qu'à un seul utilisateur (ADR 0004, règle 2).
 - Un utilisateur possède une ou plusieurs connexions externes (relation un à plusieurs). La dernière connexion d'un compte ne peut pas être retirée; cette règle est appliquée par le code et non par la base.
-- Le courriel n'est pas unique dans cette table : une même personne peut avoir le même courriel chez deux fournisseurs. L'unicité entre comptes différents est garantie par `utilisateur.courriel` et par le code.
+- Le courriel n'est pas unique dans cette table : une même personne peut avoir le même courriel chez deux fournisseurs. Entre comptes différents, seul un courriel de compte vérifié est unique.
 - À la création du compte, `utilisateur.courriel` est celui de la première connexion quand le fournisseur en communique un; sinon il reste vide et le compte est créé quand même (ADR 0004, règle 5). Ensuite il peut différer de ceux des connexions, car la personne peut changer le sien et les fournisseurs peuvent changer le leur.
 - Le dernier accès d'une personne, et le fournisseur utilisé, se lisent dans la connexion dont `derniere_connexion_le` est la plus récente. Aucune adresse IP ni information sur le navigateur n'est conservée.
 - Les connexions n'appartiennent qu'à l'utilisateur et aucune autre table n'en dépend : la suppression en cascade (`ON DELETE CASCADE`) est sûre ici. Le comportement des autres clés étrangères vers `utilisateur` est fixé par l'[ADR 0006](../adr/0006-suppression-de-compte.md) : `CASCADE` pour les données personnelles, `RESTRICT` pour `cree_par_id`.
@@ -201,6 +212,27 @@ Règles :
 - La photo de profil est téléchargée une seule fois, à la première connexion, depuis l'adresse fournie par le fournisseur, avec une limite de taille. Elle est ensuite redimensionnée et réencodée avant d'être conservée.
 - La photo est facultative : sans photo, l'interface affiche un avatar avec les initiales.
 - La photo est un renseignement personnel : elle est supprimée avec le compte (ADR 0006).
+
+### Table `demande_verification`
+
+Chaque ligne est une demande de vérification d'un courriel ([ADR 0017](../adr/0017-verification-du-courriel.md)). Le lien envoyé ne contient que l'identifiant de la demande, chiffré et signé. La table porte l'échéance et sert aussi aux limites d'envoi et au suivi des envois.
+
+| Colonne | Type | Contraintes | Description |
+|---|---|---|---|
+| `id` | `uuid` | `PRIMARY KEY` | Identifiant de la demande. |
+| `utilisateur_id` | `uuid` | `NOT NULL`, `REFERENCES utilisateur(id) ON DELETE CASCADE` | Compte qui fait la demande. |
+| `courriel` | `text` (collation ICU) | `NOT NULL`, `CHECK (courriel = btrim(courriel) AND courriel <> '')`¹ | Adresse à vérifier. |
+| `cree_le` | `timestamptz` | `NOT NULL`, `DEFAULT now()` | Moment de la demande (UTC), point de départ de la durée de validité. |
+| `envoye_le` | `timestamptz` | | Moment de l'envoi du courriel (UTC). Vide tant que l'envoi n'a pas réussi. |
+| `duree_validite` | `interval` | `NOT NULL`, `CHECK (duree_validite > interval '0')`¹ | Durée de validité appliquée à cette demande. |
+
+Règles :
+
+- Les limites d'envoi comptent les demandes par compte (`utilisateur_id`) et par adresse (`courriel`), même celles dont l'envoi a échoué. Elles sont appliquées par le code, selon l'ADR 0017.
+- La confirmation est acceptée si la demande appartient au compte connecté, porte sur le courriel actuel du compte et n'est pas échue (`cree_le` plus `duree_validite`). Cette règle est appliquée par le code.
+- Une nouvelle demande n'annule pas les précédentes.
+- Les demandes de plus de 24 heures qui sont échues sont supprimées lors d'une demande suivante.
+- Pas de `modifie_le` : le seul changement d'une ligne est daté par `envoye_le`.
 
 ## Catalogue de jeux
 
@@ -479,10 +511,10 @@ Règles :
 - **Ce que voit la personne qui demande :** `en_attente` et `ignoree` s'affichent toutes deux comme « en attente » (elle ne peut pas savoir qu'on l'a ignorée); `rejetee` s'affiche comme « rejetée ». Elle voit le courriel ou le code qu'elle a saisi, jamais le nom ni la photo du compte correspondant avant l'acceptation : sans cela, la demande révélerait qui est inscrit.
 - **Ce que fait la personne qui reçoit :** accepter (la demande disparaît et l'amitié naît), rejeter (`rejetee`) ou ignorer (`ignoree`, pour la retirer de sa boîte sans le dire). Elle voit les demandes rattachées à son compte, et seulement celles-là : une demande faite avec son code d'amitié est visible dès son envoi, même sans courriel; une demande faite avec son courriel ne l'est qu'une fois ce courriel vérifié.
 - **Annuler :** la personne qui demande peut supprimer sa demande à tout moment, quel que soit l'état. La ligne disparaît.
-- **Limite :** une personne a au plus **5** demandes `en_attente` ou `ignoree` à la fois. Les demandes `rejetee` ne comptent pas. Le nombre est un paramètre de configuration, et la règle est appliquée par le code. Comme les demandes ne s'expirent pas (cela exigerait une tâche planifiée), annuler est le moyen de libérer une place.
+- **Limite :** une personne a au plus **5** demandes envoyées à la fois, quel que soit leur état, y compris les demandes `rejetee` : tout ce qui figure dans la liste de ses demandes compte. Le nombre est un paramètre de configuration, et la règle est appliquée par le code. Comme les demandes ne s'expirent pas (cela exigerait une tâche planifiée), annuler une demande, ou retirer de la liste une demande rejetée, est le moyen de libérer une place.
 - **Demandes croisées :** si une personne demande l'amitié de quelqu'un dont elle a déjà une demande en attente, rattachée à son compte, la demande existante est acceptée au lieu d'en créer une seconde. Une demande non rattachée, donc invisible, n'est jamais acceptée de cette façon.
 - **Doublons :** quand la personne visée a déjà une demande de la même personne, aucune seconde demande n'est créée et aucune erreur n'est signalée. Une personne qui possède à la fois le code et le courriel d'une autre peut ainsi déduire qu'ils vont ensemble : risque jugé faible, puisque ces deux renseignements viennent normalement de la personne elle-même.
-- **Rattachement à la vérification d'un courriel :** les demandes non rattachées faites à ce courriel reçoivent `destinataire_id`; la saisie est conservée. Une demande est plutôt supprimée si la même personne en a déjà une rattachée au compte, ou si elle vient de ce compte. Ce rattachement sera mis en œuvre avec la vérification du courriel.
+- **Rattachement à la vérification d'un courriel :** les demandes non rattachées faites à ce courriel reçoivent `destinataire_id`; la saisie est conservée. Une demande est plutôt supprimée si la même personne en a déjà une rattachée au compte, si les deux personnes sont déjà amies, ou si elle vient de ce compte. Ce rattachement sera mis en œuvre avec la vérification du courriel.
 - **Changement de courriel :** les demandes rattachées suivent le compte et restent visibles. Les demandes non rattachées à l'ancien courriel le demeurent.
 - **Demande à soi-même par courriel :** refusée par le code, qui compare le courriel saisi avec celui du compte.
 - L'envoi du courriel d'invitation à une personne sans compte dépend de la mise en place de l'envoi de courriels. Tant qu'il n'existe pas, la demande reste en attente avec la même apparence.
@@ -516,9 +548,8 @@ Règles :
 
 Comptes :
 
-- Changement du courriel du compte par la personne : saisie du nouveau courriel, code de vérification envoyé à cette adresse, puis remplacement. Ce parcours dépend de la mise en place de l'envoi de courriels.
-- Ajout d'un courriel par une personne dont le fournisseur n'en donne pas : même parcours que le changement (saisie, code, enregistrement), jamais d'enregistrement sans confirmation, pour qu'un courriel saisi à la main ne bloque pas l'inscription d'une autre personne (ADR 0004, règle 5). L'écran du profil rappelle qu'un courriel vérifié est nécessaire pour recevoir les demandes d'amitié faites par courriel et les communications. Aucun fournisseur actuel (Google, Microsoft) n'en a besoin.
-- Vérification du courriel par un code envoyé par l'application, pour les communications futures (colonne `utilisateur.courriel_verifie_le`).
+- Mise en œuvre de l'ajout et de la modification du courriel ([ADR 0016](../adr/0016-ajout-et-modification-du-courriel.md)). L'écran du profil rappelle qu'un courriel vérifié est nécessaire pour recevoir les demandes d'amitié faites par courriel et les communications.
+- Vérification du courriel par un lien envoyé par l'application (colonne `utilisateur.courriel_verifie_le`), selon l'[ADR 0017](../adr/0017-verification-du-courriel.md). L'envoi de courriels reste à mettre en place.
 
 Catalogue :
 
@@ -560,5 +591,6 @@ Amitiés :
 | 0.10 | 17 novembre 2026 | `jeu.nom_recherche` : colonne calculée stockée avec index de trigrammes, extension `pg_trgm` et fonction `unaccent_immuable` ([ADR 0015](../adr/0015-recherche-sans-accents.md)). |
 | 0.11 | 27 novembre 2026 | Migration des amitiés : `demande_amitie` et `amitie`, avec leurs contraintes `CHECK`, leurs clés étrangères et leurs index, dont un index non unique sur `demande_amitie.courriel_destinataire`. Les dix tables du schéma sont migrées. |
 | 0.12 | 27 novembre 2026 | Colonne `demande_amitie.code_destinataire` : la demande conserve la saisie (code ou courriel) et n'est rattachée à un compte que lorsque la personne visée est établie. `destinataire_id` n'est plus exclusif avec `courriel_destinataire`. Une demande par code est visible sans courriel vérifié (ADR 0004, règles 3 et 5). `courriel_verifie_le` ne dépend que du code envoyé par MeepleZone. |
+| 0.13 | 28 novembre 2026 | Règles des demandes d'amitié : les demandes rejetées comptent dans la limite de 5; au rattachement, une demande entre deux personnes déjà amies est supprimée. Courriel du compte : unicité limitée aux courriels vérifiés et enregistrement dès la saisie ([ADR 0016](../adr/0016-ajout-et-modification-du-courriel.md) et [ADR 0017](../adr/0017-verification-du-courriel.md)). La vérification du courriel se fait par un lien, et non plus par un code. Migrations : index unique limité aux courriels vérifiés et table `demande_verification`. |
 
 Le numéro de version monte à chaque ajout ou modification importante du schéma. La version 1.0 correspondra au schéma complet du produit minimal viable.
