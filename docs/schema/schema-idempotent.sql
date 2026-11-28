@@ -703,3 +703,46 @@ BEGIN
 END $EF$;
 COMMIT;
 
+START TRANSACTION;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM historique_migration WHERE "migration_id" = '20261128213449_CreationTableDemandeVerification') THEN
+    CREATE TABLE demande_verification (
+        id uuid NOT NULL,
+        utilisateur_id uuid NOT NULL,
+        courriel text COLLATE courriel_ci NOT NULL,
+        cree_le timestamp with time zone NOT NULL DEFAULT (now()),
+        envoye_le timestamp with time zone,
+        duree_validite interval NOT NULL,
+        CONSTRAINT pk_demande_verification PRIMARY KEY (id),
+        CONSTRAINT ck_demande_verification_courriel CHECK (courriel = btrim(courriel) AND courriel <> ''),
+        CONSTRAINT ck_demande_verification_duree_validite CHECK (duree_validite > interval '0'),
+        CONSTRAINT fk_demande_verification_utilisateur_utilisateur_id FOREIGN KEY (utilisateur_id) REFERENCES utilisateur (id) ON DELETE CASCADE
+    );
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM historique_migration WHERE "migration_id" = '20261128213449_CreationTableDemandeVerification') THEN
+    CREATE INDEX ix_demande_verification_courriel ON demande_verification (courriel);
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM historique_migration WHERE "migration_id" = '20261128213449_CreationTableDemandeVerification') THEN
+    CREATE INDEX ix_demande_verification_utilisateur_id ON demande_verification (utilisateur_id);
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM historique_migration WHERE "migration_id" = '20261128213449_CreationTableDemandeVerification') THEN
+    INSERT INTO historique_migration (migration_id, product_version)
+    VALUES ('20261128213449_CreationTableDemandeVerification', '10.0.14');
+    END IF;
+END $EF$;
+COMMIT;
+
