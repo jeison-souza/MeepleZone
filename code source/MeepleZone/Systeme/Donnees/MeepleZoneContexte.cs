@@ -27,6 +27,8 @@ public class MeepleZoneContexte(DbContextOptions<MeepleZoneContexte> options) : 
 
     public DbSet<Amitie> Amities => Set<Amitie>();
 
+    public DbSet<DemandeVerification> DemandesVerification => Set<DemandeVerification>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasCollation(CollationCourriel, locale: "und-u-ks-level2", provider: "icu", deterministic: false);

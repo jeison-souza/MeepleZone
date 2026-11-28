@@ -175,6 +175,54 @@ namespace MeepleZone.Systeme.Donnees.Migrations
                         });
                 });
 
+            modelBuilder.Entity("MeepleZone.Systeme.Entites.DemandeVerification", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Courriel")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("courriel")
+                        .UseCollation("courriel_ci");
+
+                    b.Property<DateTimeOffset>("CreeLe")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("cree_le")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<TimeSpan>("DureeValidite")
+                        .HasColumnType("interval")
+                        .HasColumnName("duree_validite");
+
+                    b.Property<DateTimeOffset?>("EnvoyeLe")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("envoye_le");
+
+                    b.Property<Guid>("UtilisateurId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("utilisateur_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_demande_verification");
+
+                    b.HasIndex("Courriel")
+                        .HasDatabaseName("ix_demande_verification_courriel");
+
+                    b.HasIndex("UtilisateurId")
+                        .HasDatabaseName("ix_demande_verification_utilisateur_id");
+
+                    b.ToTable("demande_verification", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_demande_verification_courriel", "courriel = btrim(courriel) AND courriel <> ''");
+
+                            t.HasCheckConstraint("ck_demande_verification_duree_validite", "duree_validite > interval '0'");
+                        });
+                });
+
             modelBuilder.Entity("MeepleZone.Systeme.Entites.IdentiteExterne", b =>
                 {
                     b.Property<Guid>("Id")
@@ -878,6 +926,16 @@ namespace MeepleZone.Systeme.Donnees.Migrations
                         .HasForeignKey("DestinataireId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .HasConstraintName("fk_demande_amitie_utilisateur_destinataire_id");
+                });
+
+            modelBuilder.Entity("MeepleZone.Systeme.Entites.DemandeVerification", b =>
+                {
+                    b.HasOne("MeepleZone.Systeme.Entites.Utilisateur", null)
+                        .WithMany()
+                        .HasForeignKey("UtilisateurId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_demande_verification_utilisateur_utilisateur_id");
                 });
 
             modelBuilder.Entity("MeepleZone.Systeme.Entites.IdentiteExterne", b =>

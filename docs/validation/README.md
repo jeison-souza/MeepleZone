@@ -21,6 +21,7 @@ Les tests unitaires du projet n'utilisent pas de base de données ([ADR 0008](..
 | [`13-recherche-trigrammes.sql`](13-recherche-trigrammes.sql) | Recherche de jeux et détection des doublons (ADR 0015) : « contient » sans accents ni casse, tolérance aux fautes de frappe, texte trop court limité à « contient », jokers traités comme des caractères, similarité du nom entier pour les doublons avec un seuil plus strict que la recherche, nom court comparé à l'identique | 14 |
 | [`14-amities.sql`](14-amities.sql) | Tables `demande_amitie` et `amitie` : une seule saisie (courriel ou code), code toujours rattaché à un compte, demande à soi-même refusée, statuts permis, une seule demande par personne visée, courriel sans égard à la casse, rattachement d'une demande par courriel à un compte avec saisie conservée, paire d'amis ordonnée et unique, clés étrangères et suppression en cascade d'un compte | 43 |
 | [`15-courriel-verifie.sql`](15-courriel-verifie.sql) | Unicité du seul courriel vérifié ([ADR 0004](../adr/0004-liaison-comptes-fournisseurs.md), règle 1) : index partiel, copies non vérifiées acceptées, un seul compte par courriel vérifié sans égard à la casse, adresse libérée au changement, recherche d'un courriel à la création d'un compte | 14 |
+| [`16-demande-verification.sql`](16-demande-verification.sql) | Table `demande_verification` ([ADR 0017](../adr/0017-verification-du-courriel.md)) : valeurs par défaut, échéance, demandes répétées acceptées, courriel sans égard à la casse, contraintes `CHECK`, clé étrangère, index et suppression en cascade | 18 |
 
 ## Exécution
 
@@ -32,11 +33,11 @@ Chaque script fonctionne dans une transaction qui se termine par un `ROLLBACK` :
 
 ## Dernière exécution
 
-Les 291 cas ont été exécutés du 11 au 28 novembre 2026 contre la base de développement, chacun après l'application des migrations qu'il vérifie. Tous sont conformes. Une première exécution a échoué sur un problème de droits : les tables du catalogue et de `possession` avaient été créées avec un compte d'administration, ce qui les rendait inaccessibles au compte de l'application. Le script a révélé l'erreur, qui a été corrigée (propriétaire et privilèges) avant que le site ne s'en serve.
+Les 309 cas ont été exécutés du 11 au 28 novembre 2026 contre la base de développement, chacun après l'application des migrations qu'il vérifie. Tous sont conformes. Une première exécution a échoué sur un problème de droits : les tables du catalogue et de `possession` avaient été créées avec un compte d'administration, ce qui les rendait inaccessibles au compte de l'application. Le script a révélé l'erreur, qui a été corrigée (propriétaire et privilèges) avant que le site ne s'en serve.
 
 La migration des amitiés, vérifiée par `14-amities.sql` le 27 novembre, a été appliquée par l'application à son démarrage. Ce script a été exécuté de nouveau le 27 novembre, après l'ajout de la colonne `demande_amitie.code_destinataire`.
 
-La migration qui limite l'unicité aux courriels vérifiés a été appliquée par l'application à son démarrage, puis vérifiée le 28 novembre par `08-comptes-techniques.sql` et `15-courriel-verifie.sql`.
+La migration qui limite l'unicité aux courriels vérifiés a été appliquée par l'application à son démarrage, puis vérifiée le 28 novembre par `08-comptes-techniques.sql` et `15-courriel-verifie.sql`. La migration de la table `demande_verification` a été appliquée de la même façon, puis vérifiée le 28 novembre par `16-demande-verification.sql`.
 
 ## Ce que ces scripts ne prouvent pas
 

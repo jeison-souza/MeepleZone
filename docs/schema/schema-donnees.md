@@ -226,6 +226,8 @@ Chaque ligne est une demande de vérification d'un courriel ([ADR 0017](../adr/0
 | `envoye_le` | `timestamptz` | | Moment de l'envoi du courriel (UTC). Vide tant que l'envoi n'a pas réussi. |
 | `duree_validite` | `interval` | `NOT NULL`, `CHECK (duree_validite > interval '0')`¹ | Durée de validité appliquée à cette demande. |
 
+Deux index non uniques, sur `utilisateur_id` et sur `courriel`, servent aux limites d'envoi.
+
 Règles :
 
 - Les limites d'envoi comptent les demandes par compte (`utilisateur_id`) et par adresse (`courriel`), même celles dont l'envoi a échoué. Elles sont appliquées par le code, selon l'ADR 0017.
