@@ -1,3 +1,5 @@
-﻿namespace MeepleZone.Domaines.Compte.Contrats.Modeles;
+﻿using MeepleZone.Domaines.Compte.Contrats.Enums;
 
-public sealed record ProfilDto(string NomAffichage, string? Courriel, string CodeAmitie);
+namespace MeepleZone.Domaines.Compte.Contrats.Modeles;
+
+public sealed record ProfilDto(string NomAffichage, string? Courriel, string CodeAmitie, VisibiliteCollection VisibiliteCollection);

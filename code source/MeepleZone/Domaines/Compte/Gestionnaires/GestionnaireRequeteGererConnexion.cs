@@ -4,6 +4,7 @@ using MeepleZone.Domaines.Compte.Extensions;
 using MeepleZone.Systeme.Depots;
 using MeepleZone.Systeme.Depots.Enums;
 using MeepleZone.Systeme.Entites;
+using MeepleZone.Systeme.Entites.Constantes;
 using MeepleZone.Systeme.Interfaces.Gestionnaires;
 using System;
 using System.Threading.Tasks;
@@ -97,7 +98,7 @@ public class GestionnaireRequeteGererConnexion(IDepotCompte depotCompte, IGenera
         {
             Id = Guid.CreateVersion7(dateCreation),
             Role = "membre",
-            VisibiliteCollection = "privee",
+            VisibiliteCollection = VisibilitesCollection.Privee,
             NomAffichage = nomAffichage,
             CodeAmitie = code,
             Courriel = courrielUtilisateur,

@@ -22,9 +22,15 @@ public class DomaineCompteTest : BaseTest<DomaineCompte>
 
     private Fake<IGestionnaireRequete<SupprimerCompteReponse, SupprimerCompteRequete>> _gestionnaireSupprimerCompte = null!;
 
+    private Fake<IGestionnaireRequete<ModifierVisibiliteReponse, ModifierVisibiliteRequete>> _gestionnaireModifierVisibilite = null!;
+
+    private Fake<IGestionnaireRequete<RegenererCodeAmitieReponse, RegenererCodeAmitieRequete>> _gestionnaireRegenererCodeAmitie = null!;
+
     public override void InitialiserDependence()
     {
         base.InitialiserDependence();
+        _gestionnaireModifierVisibilite = CreerFausse<IGestionnaireRequete<ModifierVisibiliteReponse, ModifierVisibiliteRequete>>();
+        _gestionnaireRegenererCodeAmitie = CreerFausse<IGestionnaireRequete<RegenererCodeAmitieReponse, RegenererCodeAmitieRequete>>();
         _gestionnaireSupprimerCompte = CreerFausse<IGestionnaireRequete<SupprimerCompteReponse, SupprimerCompteRequete>>();
         _gestionnaireObtenirProfil = CreerFausse<IGestionnaireRequete<ProfilDto?, ObtenirProfilRequete>>();
         _gestionnaireLierFournisseur = CreerFausse<IGestionnaireRequete<LierFournisseurReponse, LierFournisseurRequete>>();
@@ -82,6 +88,42 @@ public class DomaineCompteTest : BaseTest<DomaineCompte>
 
         // Assert
         _gestionnaireObtenirProfil.CallsTo(g => g.TraiterAsync(A<ObtenirProfilRequete>._))
+            .MustHaveHappenedOnceExactly();
+        result.Should().BeSameAs(reponseAttendue);
+    }
+
+    [Fact]
+    public async Task ModifierVisibiliteAsync_EnToutTemps_DeleguerAuGestionnaireEtRetournerSaReponse()
+    {
+        // Arrange
+        var requete = CreerFixture<ModifierVisibiliteRequete>();
+        var reponseAttendue = CreerFixture<ModifierVisibiliteReponse>();
+        _gestionnaireModifierVisibilite.CallsTo(g => g.TraiterAsync(requete))
+            .Returns(reponseAttendue);
+
+        // Act
+        var result = await InstanceTest.ModifierVisibiliteAsync(requete);
+
+        // Assert
+        _gestionnaireModifierVisibilite.CallsTo(g => g.TraiterAsync(A<ModifierVisibiliteRequete>._))
+            .MustHaveHappenedOnceExactly();
+        result.Should().BeSameAs(reponseAttendue);
+    }
+
+    [Fact]
+    public async Task RegenererCodeAmitieAsync_EnToutTemps_DeleguerAuGestionnaireEtRetournerSaReponse()
+    {
+        // Arrange
+        var requete = CreerFixture<RegenererCodeAmitieRequete>();
+        var reponseAttendue = CreerFixture<RegenererCodeAmitieReponse>();
+        _gestionnaireRegenererCodeAmitie.CallsTo(g => g.TraiterAsync(requete))
+            .Returns(reponseAttendue);
+
+        // Act
+        var result = await InstanceTest.RegenererCodeAmitieAsync(requete);
+
+        // Assert
+        _gestionnaireRegenererCodeAmitie.CallsTo(g => g.TraiterAsync(A<RegenererCodeAmitieRequete>._))
             .MustHaveHappenedOnceExactly();
         result.Should().BeSameAs(reponseAttendue);
     }

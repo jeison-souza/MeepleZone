@@ -1,5 +1,6 @@
 using FakeItEasy;
 using FluentAssertions;
+using MeepleZone.Domaines.Compte.Contrats.Enums;
 using MeepleZone.Domaines.Compte.Contrats.Modeles;
 using MeepleZone.Domaines.Compte.Gestionnaires;
 using MeepleZone.Systeme.BaseTest;
@@ -25,12 +26,16 @@ public class GestionnaireRequeteObtenirProfilTest : BaseTest<GestionnaireRequete
         _utilisateurCourant = CreerFausse<IUtilisateurCourant>();
     }
 
-    [Fact]
-    public async Task TraiterAsync_UtilisateurExistant_RetournerSonProfil()
+    // Les valeurs de la colonne viennent du schéma publié (schema-donnees.md).
+    [Theory]
+    [InlineData("privee", VisibiliteCollection.Privee)]
+    [InlineData("amis", VisibiliteCollection.Amis)]
+    public async Task TraiterAsync_UtilisateurExistant_RetournerSonProfil(string valeur, VisibiliteCollection attendue)
     {
         // Arrange
         var requete = CreerFixture<ObtenirProfilRequete>();
         var utilisateur = CreerFixture<Utilisateur>();
+        utilisateur.VisibiliteCollection = valeur;
         _utilisateurCourant.CallsTo(x => x.Id).Returns(utilisateur.Id);
         _depotCompte.CallsTo(x => x.TrouverUtilisateurAsync(utilisateur.Id)).Returns(utilisateur);
 
@@ -38,7 +43,7 @@ public class GestionnaireRequeteObtenirProfilTest : BaseTest<GestionnaireRequete
         var result = await InstanceTest.TraiterAsync(requete);
 
         // Assert
-        result.Should().Be(new ProfilDto(utilisateur.NomAffichage, utilisateur.Courriel, utilisateur.CodeAmitie));
+        result.Should().Be(new ProfilDto(utilisateur.NomAffichage, utilisateur.Courriel, utilisateur.CodeAmitie, attendue));
     }
 
     [Fact]
@@ -80,6 +85,7 @@ public class GestionnaireRequeteObtenirProfilTest : BaseTest<GestionnaireRequete
         var requete = CreerFixture<ObtenirProfilRequete>();
         var utilisateur = CreerFixture<Utilisateur>();
         utilisateur.Courriel = null;
+        utilisateur.VisibiliteCollection = "privee";
         _utilisateurCourant.CallsTo(x => x.Id).Returns(utilisateur.Id);
         _depotCompte.CallsTo(x => x.TrouverUtilisateurAsync(utilisateur.Id)).Returns(utilisateur);
 

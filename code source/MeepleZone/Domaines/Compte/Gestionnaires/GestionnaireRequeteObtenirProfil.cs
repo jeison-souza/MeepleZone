@@ -1,4 +1,5 @@
 ﻿using MeepleZone.Domaines.Compte.Contrats.Modeles;
+using MeepleZone.Domaines.Compte.Extensions;
 using MeepleZone.Systeme.Depots;
 using MeepleZone.Systeme.Interfaces;
 using MeepleZone.Systeme.Interfaces.Gestionnaires;
@@ -22,6 +23,10 @@ public class GestionnaireRequeteObtenirProfil(IDepotCompte depotCompte, IUtilisa
             return null;
         }
 
-        return new ProfilDto(utilisateur.NomAffichage, utilisateur.Courriel, utilisateur.CodeAmitie);
+        return new ProfilDto(
+            utilisateur.NomAffichage,
+            utilisateur.Courriel,
+            utilisateur.CodeAmitie,
+            utilisateur.VisibiliteCollection.VersVisibiliteCollection());
     }
 }

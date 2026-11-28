@@ -16,6 +16,10 @@ public interface IDepotCompte
 
     Task MettreAJourConnexionAsync(IdentiteExterne identite);
 
+    Task<ResultatModificationCodeAmitie> ModifierCodeAmitieAsync(Guid utilisateurId, string code);
+
+    Task<ResultatModificationVisibilite> ModifierVisibiliteAsync(Guid utilisateurId, string visibilite);
+
     Task<ResultatSuppressionCompte> SupprimerCompteAsync(Guid utilisateurId, Guid compteSupprimeId);
 
     Task<IdentiteExterne?> TrouverIdentiteAsync(string fournisseur, string identifiant);
