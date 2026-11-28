@@ -639,3 +639,42 @@ BEGIN
 END $EF$;
 COMMIT;
 
+START TRANSACTION;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM historique_migration WHERE "migration_id" = '20261128021701_AjoutCodeDestinataireDemandeAmitie') THEN
+    ALTER TABLE demande_amitie DROP CONSTRAINT ck_demande_amitie_destinataire;
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM historique_migration WHERE "migration_id" = '20261128021701_AjoutCodeDestinataireDemandeAmitie') THEN
+    ALTER TABLE demande_amitie ADD code_destinataire text;
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM historique_migration WHERE "migration_id" = '20261128021701_AjoutCodeDestinataireDemandeAmitie') THEN
+    ALTER TABLE demande_amitie ADD CONSTRAINT ck_demande_amitie_code_rattache CHECK (code_destinataire IS NULL OR destinataire_id IS NOT NULL);
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM historique_migration WHERE "migration_id" = '20261128021701_AjoutCodeDestinataireDemandeAmitie') THEN
+    ALTER TABLE demande_amitie ADD CONSTRAINT ck_demande_amitie_destinataire CHECK ((courriel_destinataire IS NULL) <> (code_destinataire IS NULL));
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM historique_migration WHERE "migration_id" = '20261128021701_AjoutCodeDestinataireDemandeAmitie') THEN
+    INSERT INTO historique_migration (migration_id, product_version)
+    VALUES ('20261128021701_AjoutCodeDestinataireDemandeAmitie', '10.0.14');
+    END IF;
+END $EF$;
+COMMIT;
+

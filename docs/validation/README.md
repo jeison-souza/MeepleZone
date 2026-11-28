@@ -19,7 +19,7 @@ Les tests unitaires du projet n'utilisent pas de base de données ([ADR 0008](..
 | [`11-filtre-collection.sql`](11-filtre-collection.sql) | Filtre de la collection (issue #13) : nombre de joueurs, meilleur nombre, durée maximale, note minimale, parties jouées, mode de jeu et mécaniques au choix, valeurs inconnues exclues, critères combinés, isolement entre personnes, noms des mécaniques triés | 16 |
 | [`12-colonne-nom-recherche.sql`](12-colonne-nom-recherche.sql) | Colonne `jeu.nom_recherche` (ADR 0015) : fonction `unaccent_immuable` immuable, colonne générée stockée, index de trigrammes, extensions, valeurs sans accents ni casse, recalcul au changement de nom, écriture directe refusée, recherche « contient » et similarité de trigrammes | 15 |
 | [`13-recherche-trigrammes.sql`](13-recherche-trigrammes.sql) | Recherche de jeux et détection des doublons (ADR 0015) : « contient » sans accents ni casse, tolérance aux fautes de frappe, texte trop court limité à « contient », jokers traités comme des caractères, similarité du nom entier pour les doublons avec un seuil plus strict que la recherche, nom court comparé à l'identique | 14 |
-| [`14-amities.sql`](14-amities.sql) | Tables `demande_amitie` et `amitie` : destinataire unique (compte ou courriel), demande à soi-même refusée, statuts permis, une seule demande par personne visée, courriel sans égard à la casse, rattachement d'un courriel à un compte, paire d'amis ordonnée et unique, clés étrangères et suppression en cascade d'un compte | 38 |
+| [`14-amities.sql`](14-amities.sql) | Tables `demande_amitie` et `amitie` : une seule saisie (courriel ou code), code toujours rattaché à un compte, demande à soi-même refusée, statuts permis, une seule demande par personne visée, courriel sans égard à la casse, rattachement d'une demande par courriel à un compte avec saisie conservée, paire d'amis ordonnée et unique, clés étrangères et suppression en cascade d'un compte | 43 |
 
 ## Exécution
 
@@ -31,9 +31,9 @@ Chaque script fonctionne dans une transaction qui se termine par un `ROLLBACK` :
 
 ## Dernière exécution
 
-Les 274 cas ont été exécutés du 11 au 27 novembre 2026 contre la base de développement, chacun après l'application des migrations qu'il vérifie. Tous sont conformes. Une première exécution a échoué sur un problème de droits : les tables du catalogue et de `possession` avaient été créées avec un compte d'administration, ce qui les rendait inaccessibles au compte de l'application. Le script a révélé l'erreur, qui a été corrigée (propriétaire et privilèges) avant que le site ne s'en serve.
+Les 279 cas ont été exécutés du 11 au 27 novembre 2026 contre la base de développement, chacun après l'application des migrations qu'il vérifie. Tous sont conformes. Une première exécution a échoué sur un problème de droits : les tables du catalogue et de `possession` avaient été créées avec un compte d'administration, ce qui les rendait inaccessibles au compte de l'application. Le script a révélé l'erreur, qui a été corrigée (propriétaire et privilèges) avant que le site ne s'en serve.
 
-La migration des amitiés, vérifiée par `14-amities.sql` le 27 novembre, a été appliquée par l'application à son démarrage.
+La migration des amitiés, vérifiée par `14-amities.sql` le 27 novembre, a été appliquée par l'application à son démarrage. Ce script a été exécuté de nouveau le 27 novembre, après l'ajout de la colonne `demande_amitie.code_destinataire`.
 
 ## Ce que ces scripts ne prouvent pas
 

@@ -1,11 +1,14 @@
 -- Validation des amitiés sur la base de développement (tables demande_amitie et amitie).
 -- Ne laisse rien dans la base : tout est annulé par le ROLLBACK final.
--- Prérequis : migration CreationTablesAmities appliquée (au démarrage de l'application, ou avec schema-idempotent.sql).
+-- Prérequis : migrations CreationTablesAmities et AjoutCodeDestinataireDemandeAmitie appliquées
+-- (au démarrage de l'application, ou avec schema-idempotent.sql).
 -- Exécuter en entier (Run all) avec le compte de déploiement. Résultat attendu : toutes les lignes de la dernière requête avec ok = true.
 
--- A. Constats (lecture seule). Attendu : le compte utilisé est celui de déploiement; la migration figure dans l'historique.
+-- A. Constats (lecture seule). Attendu : le compte utilisé est celui de déploiement; les deux migrations figurent dans l'historique.
 SELECT current_user AS compte;
-SELECT migration_id FROM historique_migration WHERE migration_id LIKE '%_CreationTablesAmities';
+SELECT migration_id FROM historique_migration
+ WHERE migration_id LIKE '%_CreationTablesAmities' OR migration_id LIKE '%_AjoutCodeDestinataireDemandeAmitie'
+ ORDER BY migration_id;
 
 -- B. Essais, dans une transaction annulée à la fin.
 BEGIN;
@@ -35,10 +38,10 @@ INSERT INTO utilisateur (id, nom_affichage, code_amitie) VALUES
     ('00000000-0000-0000-0000-0000000000a3', 'Essai 3', 'STUVWXYZ'),
     ('00000000-0000-0000-0000-0000000000a4', 'Essai 4', 'ABCDEFGJ');
 
--- Demande à une personne qui a un compte : insertion minimale et valeurs par défaut.
-SELECT pg_temp.essayer('demande a un compte acceptee', $q$
-    INSERT INTO demande_amitie (id, demandeur_id, destinataire_id)
-    VALUES ('00000000-0000-0000-0000-0000000000f1', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000a2') $q$, 'ok');
+-- Demande par code d'amitié : rattachée à un compte dès l'envoi; insertion minimale et valeurs par défaut.
+SELECT pg_temp.essayer('demande par code acceptee', $q$
+    INSERT INTO demande_amitie (id, demandeur_id, destinataire_id, code_destinataire)
+    VALUES ('00000000-0000-0000-0000-0000000000f1', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000a2', 'JKLMNPQR') $q$, 'ok');
 SELECT pg_temp.essayer('statut et dates par defaut', $q$
     DO $x$ BEGIN
         IF NOT EXISTS (SELECT 1 FROM demande_amitie WHERE id = '00000000-0000-0000-0000-0000000000f1'
@@ -47,21 +50,27 @@ SELECT pg_temp.essayer('statut et dates par defaut', $q$
         END IF;
     END $x$ $q$, 'ok');
 
--- Demande par courriel à une personne sans compte.
+-- Demande par courriel, pas encore rattachée à un compte.
 SELECT pg_temp.essayer('demande par courriel acceptee', $q$
     INSERT INTO demande_amitie (id, demandeur_id, courriel_destinataire)
     VALUES ('00000000-0000-0000-0000-0000000000f2', '00000000-0000-0000-0000-0000000000a1', 'nom@exemple.ca') $q$, 'ok');
 
--- Exactement un des deux destinataires, et jamais soi-même.
-SELECT pg_temp.essayer('destinataire et courriel ensemble refuses', $q$
-    INSERT INTO demande_amitie (id, demandeur_id, destinataire_id, courriel_destinataire)
-    VALUES (gen_random_uuid(), '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000a3', 'autre@exemple.ca') $q$, 'ck_demande_amitie_destinataire');
-SELECT pg_temp.essayer('ni destinataire ni courriel refuse', $q$
+-- Exactement une saisie (courriel ou code), un code toujours rattaché à un compte, et jamais soi-même.
+SELECT pg_temp.essayer('courriel et code ensemble refuses', $q$
+    INSERT INTO demande_amitie (id, demandeur_id, destinataire_id, courriel_destinataire, code_destinataire)
+    VALUES (gen_random_uuid(), '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000a3', 'autre@exemple.ca', 'STUVWXYZ') $q$, 'ck_demande_amitie_destinataire');
+SELECT pg_temp.essayer('ni courriel ni code refuse', $q$
     INSERT INTO demande_amitie (id, demandeur_id)
     VALUES (gen_random_uuid(), '00000000-0000-0000-0000-0000000000a1') $q$, 'ck_demande_amitie_destinataire');
-SELECT pg_temp.essayer('demande a soi-meme refusee', $q$
+SELECT pg_temp.essayer('compte vise sans courriel ni code refuse', $q$
     INSERT INTO demande_amitie (id, demandeur_id, destinataire_id)
-    VALUES (gen_random_uuid(), '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000a1') $q$, 'ck_demande_amitie_demandeur_distinct');
+    VALUES (gen_random_uuid(), '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000a3') $q$, 'ck_demande_amitie_destinataire');
+SELECT pg_temp.essayer('code sans compte rattache refuse', $q$
+    INSERT INTO demande_amitie (id, demandeur_id, code_destinataire)
+    VALUES (gen_random_uuid(), '00000000-0000-0000-0000-0000000000a1', 'STUVWXYZ') $q$, 'ck_demande_amitie_code_rattache');
+SELECT pg_temp.essayer('demande a soi-meme refusee', $q$
+    INSERT INTO demande_amitie (id, demandeur_id, destinataire_id, code_destinataire)
+    VALUES (gen_random_uuid(), '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000a1', 'ABCDEFGH') $q$, 'ck_demande_amitie_demandeur_distinct');
 
 -- Statuts permis.
 SELECT pg_temp.essayer('statut ignoree accepte', $q$
@@ -75,17 +84,20 @@ SELECT pg_temp.essayer('statut absent refuse', $q$
 
 -- Une seule demande à la même personne, quel que soit son état.
 SELECT pg_temp.essayer('deuxieme demande a la meme personne refusee', $q$
-    INSERT INTO demande_amitie (id, demandeur_id, destinataire_id)
-    VALUES (gen_random_uuid(), '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000a2') $q$, 'ix_demande_amitie_demandeur_id_destinataire_id');
+    INSERT INTO demande_amitie (id, demandeur_id, destinataire_id, code_destinataire)
+    VALUES (gen_random_uuid(), '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000a2', 'ZZZZZZZZ') $q$, 'ix_demande_amitie_demandeur_id_destinataire_id');
+SELECT pg_temp.essayer('courriel rattache a une personne deja visee refuse', $q$
+    INSERT INTO demande_amitie (id, demandeur_id, destinataire_id, courriel_destinataire)
+    VALUES (gen_random_uuid(), '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000a2', 'deux@exemple.ca') $q$, 'ix_demande_amitie_demandeur_id_destinataire_id');
 SELECT pg_temp.essayer('meme destinataire pour un autre demandeur', $q$
-    INSERT INTO demande_amitie (id, demandeur_id, destinataire_id)
-    VALUES ('00000000-0000-0000-0000-0000000000f3', '00000000-0000-0000-0000-0000000000a3', '00000000-0000-0000-0000-0000000000a2') $q$, 'ok');
+    INSERT INTO demande_amitie (id, demandeur_id, destinataire_id, code_destinataire)
+    VALUES ('00000000-0000-0000-0000-0000000000f3', '00000000-0000-0000-0000-0000000000a3', '00000000-0000-0000-0000-0000000000a2', 'JKLMNPQR') $q$, 'ok');
 SELECT pg_temp.essayer('meme demandeur pour un autre destinataire', $q$
-    INSERT INTO demande_amitie (id, demandeur_id, destinataire_id)
-    VALUES ('00000000-0000-0000-0000-0000000000f4', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000a3') $q$, 'ok');
+    INSERT INTO demande_amitie (id, demandeur_id, destinataire_id, code_destinataire)
+    VALUES ('00000000-0000-0000-0000-0000000000f4', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000a3', 'STUVWXYZ') $q$, 'ok');
 SELECT pg_temp.essayer('demande en sens inverse acceptee par la base (regle du code)', $q$
-    INSERT INTO demande_amitie (id, demandeur_id, destinataire_id)
-    VALUES ('00000000-0000-0000-0000-0000000000f5', '00000000-0000-0000-0000-0000000000a2', '00000000-0000-0000-0000-0000000000a1') $q$, 'ok');
+    INSERT INTO demande_amitie (id, demandeur_id, destinataire_id, code_destinataire)
+    VALUES ('00000000-0000-0000-0000-0000000000f5', '00000000-0000-0000-0000-0000000000a2', '00000000-0000-0000-0000-0000000000a1', 'ABCDEFGH') $q$, 'ok');
 
 -- Courriel du destinataire : unicité et recherche sans égard à la casse, accents distingués.
 SELECT pg_temp.essayer('meme courriel pour le meme demandeur refuse', $q$
@@ -108,21 +120,28 @@ SELECT pg_temp.essayer('recherche par courriel sans egard a la casse', $q$
         END IF;
     END $x$ $q$, 'ok');
 
--- Rattachement à un compte quand la personne s'inscrit avec ce courriel.
-SELECT pg_temp.essayer('courriel remplace par le destinataire', $q$
-    UPDATE demande_amitie SET destinataire_id = '00000000-0000-0000-0000-0000000000a4', courriel_destinataire = NULL
+-- Rattachement à un compte quand la personne vérifie ce courriel : la saisie est conservée.
+SELECT pg_temp.essayer('demande par courriel rattachee a un compte', $q$
+    UPDATE demande_amitie SET destinataire_id = '00000000-0000-0000-0000-0000000000a4'
     WHERE id = '00000000-0000-0000-0000-0000000000f2' $q$, 'ok');
+SELECT pg_temp.essayer('courriel saisi conserve apres rattachement', $q$
+    DO $x$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM demande_amitie WHERE id = '00000000-0000-0000-0000-0000000000f2'
+                       AND courriel_destinataire = 'nom@exemple.ca' AND code_destinataire IS NULL) THEN
+            RAISE EXCEPTION 'saisie perdue';
+        END IF;
+    END $x$ $q$, 'ok');
 SELECT pg_temp.essayer('rattachement qui doublerait une demande refuse', $q$
-    UPDATE demande_amitie SET destinataire_id = '00000000-0000-0000-0000-0000000000a2', courriel_destinataire = NULL
+    UPDATE demande_amitie SET destinataire_id = '00000000-0000-0000-0000-0000000000a2'
     WHERE id = '00000000-0000-0000-0000-0000000000f6' $q$, 'ix_demande_amitie_demandeur_id_destinataire_id');
 
 -- Clés étrangères des demandes.
 SELECT pg_temp.essayer('demandeur inexistant', $q$
-    INSERT INTO demande_amitie (id, demandeur_id, destinataire_id)
-    VALUES (gen_random_uuid(), gen_random_uuid(), '00000000-0000-0000-0000-0000000000a2') $q$, 'fk_demande_amitie_utilisateur_demandeur_id');
+    INSERT INTO demande_amitie (id, demandeur_id, destinataire_id, code_destinataire)
+    VALUES (gen_random_uuid(), gen_random_uuid(), '00000000-0000-0000-0000-0000000000a2', 'JKLMNPQR') $q$, 'fk_demande_amitie_utilisateur_demandeur_id');
 SELECT pg_temp.essayer('destinataire inexistant', $q$
-    INSERT INTO demande_amitie (id, demandeur_id, destinataire_id)
-    VALUES (gen_random_uuid(), '00000000-0000-0000-0000-0000000000a1', gen_random_uuid()) $q$, 'fk_demande_amitie_utilisateur_destinataire_id');
+    INSERT INTO demande_amitie (id, demandeur_id, destinataire_id, code_destinataire)
+    VALUES (gen_random_uuid(), '00000000-0000-0000-0000-0000000000a1', gen_random_uuid(), 'ZZZZZZZZ') $q$, 'fk_demande_amitie_utilisateur_destinataire_id');
 
 -- Amitiés : paire ordonnée, présente une seule fois.
 SELECT pg_temp.essayer('amitie ordonnee acceptee', $q$
@@ -194,6 +213,13 @@ SELECT pg_temp.essayer('demandes des autres conservees', $q$
         IF (SELECT count(*) FROM demande_amitie WHERE id IN ('00000000-0000-0000-0000-0000000000f2',
                 '00000000-0000-0000-0000-0000000000f4', '00000000-0000-0000-0000-0000000000f6')) <> 3 THEN
             RAISE EXCEPTION 'demande d un autre compte supprimee';
+        END IF;
+    END $x$ $q$, 'ok');
+SELECT pg_temp.essayer('suppression du destinataire efface la demande par courriel rattachee', $q$
+    DO $x$ BEGIN
+        DELETE FROM utilisateur WHERE id = '00000000-0000-0000-0000-0000000000a4';
+        IF EXISTS (SELECT 1 FROM demande_amitie WHERE id = '00000000-0000-0000-0000-0000000000f2') THEN
+            RAISE EXCEPTION 'demande recue conservee';
         END IF;
     END $x$ $q$, 'ok');
 SELECT pg_temp.essayer('amities supprimees des deux cotes, les autres conservees', $q$
